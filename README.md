@@ -44,12 +44,6 @@ Freedium is a mobile application designed to help you bypass Medium's paywall an
    flutter run
    ```
 
-## Usage
-
-1. **Enter Medium URL**: Open the app and paste the Medium article URL.
-2. **Get Article**: Click on "Get Article" to bypass the paywall and read the article.
-   Initially, we reverse-engineered Medium.com's GraphQL endpoints to show unpaywalled posts. Now, we pay for subscriptions and share access through Freedium.
-
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
