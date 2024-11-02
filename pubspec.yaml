@@ -1,0 +1,34 @@
+name: freedium
+description: "A new Flutter project."
+publish_to: "none"
+version: 0.1.0
+
+environment:
+  sdk: ^3.5.4
+
+dependencies:
+  app_links: ^6.3.2
+  flutter:
+    sdk: flutter
+  receive_sharing_intent_plus: ^1.0.1
+  super_clipboard: ^0.8.24
+  webview_flutter: ^4.10.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter:
+  uses-material-design: true
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path_android: "assets/icon/ic_launcher.png"
+  adaptive_icon_background: "assets/icon/ic_launcher_background.png"
+  adaptive_icon_foreground: "assets/icon/ic_launcher_foreground.png"
+  adaptive_icon_monochrome: "assets/icon/ic_launcher_monochrome.png"
+  min_sdk_android: 21
+  image_path_ios: "assets/icon/icon.png"
