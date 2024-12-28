@@ -87,13 +87,18 @@ class _WebviewScreenState extends State<WebviewScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: _pageLoaded
-            ? WebViewWidget(
-                controller: _controller,
-              )
-            : const Center(
-                child: CircularProgressIndicator(),
-              ),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            _controller.reload();
+          },
+          child: _pageLoaded
+              ? WebViewWidget(
+                  controller: _controller,
+                )
+              : const Center(
+                  child: CircularProgressIndicator(),
+                ),
+        ),
       ),
       floatingActionButton: _pageLoaded
           ? FloatingActionButton.small(
