@@ -4,10 +4,10 @@ publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: ^3.5.4
+  sdk: ^3.6.0
 
 dependencies:
-  app_links: ^6.3.2
+  app_links: ^6.3.3
   flutter:
     sdk: flutter
   receive_sharing_intent_plus: ^1.0.1
