@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:freedium/screens/webview_screen.dart';
+import 'package:freedium_mobile/screens/webview_screen.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 
 class HomeScreen extends StatefulWidget {

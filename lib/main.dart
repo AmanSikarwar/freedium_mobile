@@ -3,8 +3,8 @@ import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
-import 'package:freedium/screens/home_screen.dart';
-import 'package:freedium/screens/webview_screen.dart';
+import 'package:freedium_mobile/screens/home_screen.dart';
+import 'package:freedium_mobile/screens/webview_screen.dart';
 import 'package:receive_sharing_intent_plus/receive_sharing_intent_plus.dart';
 
 void main() {
@@ -69,7 +69,7 @@ class _MainAppState extends State<MainApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: _navigatorKey,
-      title: 'Freedium',
+      title: 'Freedium Mobile',
       theme: ThemeData(
         colorScheme: const ColorScheme.light().copyWith(
           primary: Colors.green,

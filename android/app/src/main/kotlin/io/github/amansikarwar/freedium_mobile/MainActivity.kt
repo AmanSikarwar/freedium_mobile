@@ -1,4 +1,4 @@
-package io.github.amansikarwar.freedium
+package io.github.amansikarwar.freedium_mobile
 
 import io.flutter.embedding.android.FlutterActivity
 
