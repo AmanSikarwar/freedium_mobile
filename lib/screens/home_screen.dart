@@ -32,13 +32,36 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        centerTitle: true,
         title: const Text('Freedium'),
         titleTextStyle: const TextStyle(
           color: Colors.green,
           fontSize: 32,
           fontWeight: FontWeight.bold,
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.info),
+            onPressed: () {
+              showAboutDialog(
+                context: context,
+                applicationIcon: Image.asset(
+                  'assets/icon/ic_launcher.png',
+                  width: 48,
+                  height: 48,
+                ),
+                applicationName: 'Freedium',
+                applicationVersion: '0.2.0',
+                children: const [
+                  Text(
+                    'Freedium is a paywall bypasser for Medium articles.\n\n'
+                    'Just paste the URL of the article you want to read and '
+                    'Freedium will take care of the rest!',
+                  ),
+                ],
+              );
+            },
+          )
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16),

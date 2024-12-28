@@ -23,6 +23,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  assets:
+    - assets/icon/ic_launcher.png
+
 flutter_launcher_icons:
   android: "ic_launcher"
   ios: true
