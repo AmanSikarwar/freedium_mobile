@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:share_plus/share_plus.dart';
 
 class WebviewScreen extends StatefulWidget {
   const WebviewScreen({
@@ -24,35 +25,24 @@ class _WebviewScreenState extends State<WebviewScreen> {
   void initState() {
     const params = PlatformWebViewControllerCreationParams();
 
-    final WebViewController controller =
-        WebViewController.fromPlatformCreationParams(params);
+    if (!Uri.parse(widget.url).isAbsolute) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Invalid URL')),
+      );
+      Navigator.of(context).pop();
+      return;
+    }
 
-    controller
+    _controller = WebViewController.fromPlatformCreationParams(params)
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setNavigationDelegate(
         NavigationDelegate(
-          onProgress: (int progress) {
-            debugPrint('WebView is loading (progress : $progress%)');
-          },
-          onPageStarted: (String url) {
-            debugPrint('Page started loading: $url');
-          },
           onPageFinished: (String url) {
             debugPrint('Page finished loading: $url');
             setState(() => _pageLoaded = true);
           },
           onWebResourceError: (WebResourceError error) {
-            debugPrint('''
-  Page resource error:
-  code: ${error.errorCode}
-  description: ${error.description}
-  errorType: ${error.errorType}
-  isForMainFrame: ${error.isForMainFrame}
-          ''');
-          },
-          onNavigationRequest: (NavigationRequest request) {
-            debugPrint('allowing navigation to ${request.url}');
-            return NavigationDecision.navigate;
+            debugPrint('Error loading page: ${error.description}');
           },
           onHttpError: (HttpResponseError error) {
             debugPrint('Error occurred on page: ${error.response?.statusCode}');
@@ -87,12 +77,9 @@ class _WebviewScreenState extends State<WebviewScreen> {
         },
       )
       ..loadRequest(
-        Uri.parse(
-          Uri.parse(_urlPrefix).replace(path: widget.url).toString(),
-        ),
+        Uri.parse(_urlPrefix).replace(path: widget.url),
       );
 
-    _controller = controller;
     super.initState();
   }
 
@@ -108,6 +95,14 @@ class _WebviewScreenState extends State<WebviewScreen> {
                 child: CircularProgressIndicator(),
               ),
       ),
+      floatingActionButton: _pageLoaded
+          ? FloatingActionButton.small(
+              onPressed: () {
+                Share.shareUri(Uri.parse(_urlPrefix).replace(path: widget.url));
+              },
+              child: const Icon(Icons.share),
+            )
+          : null,
     );
   }
 }

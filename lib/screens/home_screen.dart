@@ -153,7 +153,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (value == null || value.isEmpty) {
                       return 'Please enter a URL';
                     }
-                    if (!value.startsWith('http')) {
+                    final urlRegExp = RegExp(
+                      r'^https?:\/\/([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$',
+                      caseSensitive: false,
+                    );
+                    if (!urlRegExp.hasMatch(value)) {
                       return 'Please enter a valid URL';
                     }
                     return null;
