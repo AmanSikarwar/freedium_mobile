@@ -1,4 +1,5 @@
 name: Build and Release
+
 on:
   workflow_dispatch:
     inputs:
@@ -6,33 +7,19 @@ on:
         description: "Optional release tag."
         required: false
         default: ""
-  push:
-    branches:
-      - main
 
 jobs:
   build:
+    if: ${{ github.event.inputs.custom_tag != '' }}
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
-
-      - uses: subosito/flutter-action@v2
         with:
-          channel: stable
-      - run: flutter --version
-
-      - uses: actions/setup-java@v4
-        with:
-          distribution: "zulu"
-          java-version: "17"
-
-      - name: Flutter Doctor
-        run: flutter doctor -v
+          fetch-depth: 0
+          fetch-tags: true
 
       - name: Create tag
-        if: ${{ github.event.inputs.custom_tag != '' }}
+        id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -44,12 +31,14 @@ jobs:
           dry_run: false
 
       - name: Build Android APKs
+        if: ${{ steps.tag_version.outputs.new_tag != '' }}
         run: |
           flutter pub get
           flutter build apk --release --split-per-abi
           ls -l build/app/outputs/flutter-apk/
 
       - name: Upload Release APKs
+        if: ${{ steps.tag_version.outputs.new_tag != '' }}
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
