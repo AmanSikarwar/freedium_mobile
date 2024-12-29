@@ -1,29 +1,41 @@
 # Freedium Mobile App
 
-<p align="center"><a href="https://iosf.in/" target="_blank"><img src="https://avatars.githubusercontent.com/u/142643505?s=200&v=4" width="20%"></a></p>
-
-<h1 align="center">Freedium - Your paywall breakthrough for Medium!</h1>
+<p align="center">
+   <img src="https://avatars.githubusercontent.com/u/142643505?s=200&v=4" alt="Freedium Logo"/>
+</p>
 
 ## Overview
 
-Freedium is a mobile application designed to help you bypass Medium's paywall and access articles without restrictions. This app is built using Flutter and supports both Android and iOS platforms.
+Freedium is a mobile application designed to help you bypass Medium's paywall and access articles without restrictions. This app is built using Flutter and provides a seamless reading experience on both Android and iOS platforms.
 
 > This app opens Medium articles in [Freedium.cfd](https://freedium.cfd) to bypass the paywall.
 
 ## Features
 
-- **Bypass Medium Paywall**: Access Medium articles without hitting the paywall.
-- **Share and Receive Links**: Share Medium article links with the app and open them directly.
-- **Clipboard Integration**: Easily paste Medium URLs from your clipboard.
+- **Paywall Bypass**: Access Medium articles without hitting the member-only paywall
+- **Cross-Platform**: Works on both Android and iOS devices
+- **Share Integration**: Share articles directly to Freedium from other apps
+- **Clipboard Support**: Quickly paste URLs from your clipboard
+- **Dynamic Theming**: Supports light/dark mode and Material You theming
 
-## Installation
+## Getting Started
 
-### Prerequisites
+### For Users
+
+1. Download the app from releases or your platform's app store
+2. Launch Freedium
+3. Paste a Medium article URL or share directly to the app
+4. Enjoy reading without restrictions!
+
+### For Developers
+
+#### Prerequisites
 
 - Flutter SDK: [Install Flutter](https://flutter.dev/docs/get-started/install)
 - Dart SDK: Included with Flutter
+- Android Studio or VS Code with Flutter extensions
 
-### Steps
+#### Setup
 
 1. **Clone the repository**:
 
@@ -44,10 +56,36 @@ Freedium is a mobile application designed to help you bypass Medium's paywall an
    flutter run
    ```
 
+#### Building
+
+- For Android:
+
+  ```sh
+  flutter build apk --release
+  ```
+
+- For iOS:
+
+  ```sh
+  flutter build ios --release
+  ```
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit pull requests.
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
-Thanks to [Freedium-cfd](https://freedium.cfd) for providing a way to bypass the Medium paywall.
+- [Freedium.cfd](https://freedium.cfd) for providing the paywall bypass service
+- Flutter team for the amazing framework
+- All contributors who help improve this project
