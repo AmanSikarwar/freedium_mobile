@@ -8,9 +8,12 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: write
+
 jobs:
   build:
-    if: ${{ github.event.inputs.custom_tag != '' }}
+    if: github.event.inputs.custom_tag != ''
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -18,27 +21,29 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+
       - name: Create tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          tag_prefix: ${{ github.event.inputs.custom_tag }}
-          default_bump: patch
+          custom_tag: ${{ github.event.inputs.custom_tag }}
           release_branches: main
-          create_annotated_tag: false
-          fetch_all_tags: false
-          dry_run: false
+          create_annotated_tag: true
 
       - name: Build Android APKs
-        if: ${{ steps.tag_version.outputs.new_tag != '' }}
+        if: steps.tag_version.outputs.new_tag != ''
         run: |
           flutter pub get
           flutter build apk --release --split-per-abi
           ls -l build/app/outputs/flutter-apk/
 
       - name: Upload Release APKs
-        if: ${{ steps.tag_version.outputs.new_tag != '' }}
+        if: steps.tag_version.outputs.new_tag != ''
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
