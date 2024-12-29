@@ -26,6 +26,11 @@ jobs:
         with:
           channel: "stable"
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
       - name: Create tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
