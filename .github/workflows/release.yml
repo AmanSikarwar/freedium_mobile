@@ -1,0 +1,64 @@
+name: Build and Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      beta:
+        type: boolean
+        description: Is beta?
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - run: flutter --version
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: "zulu"
+          java-version: "17"
+
+      - name: Flutter Doctor
+        run: flutter doctor -v
+
+      - name: Extract Version
+        id: extract_version
+        run: |
+          VERSION=$(grep -oP "^version: [^\+]+" pubspec.yaml | tail -c +10)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          if [ ${{ inputs.beta }} == true ]; then BETA=true; else BETA=false; fi
+          echo "beta=$BETA" >> $GITHUB_OUTPUT
+          TAG="v$VERSION"
+          echo "tag=$TAG" >> $GITHUB_OUTPUT
+
+      - name: Build Android APK
+        run: |
+          flutter pub get
+          flutter build apk --release --split-per-abi
+          ls -l build/app/outputs/flutter-apk/
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: build/app/outputs/flutter-apk/*.apk
+
+      - name: Create Tag
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GH_ACCESS_TOKEN }}
+          custom_tag: "${{ steps.extract_version.outputs.tag }}"
+          tag_prefix: ""
+
+      - name: Create Draft Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          tag: "${{ steps.extract_version.outputs.tag }}"
+          prerelease: "${{ steps.extract_version.outputs.beta }}"
+          draft: "true"
+          generateReleaseNotes: true
