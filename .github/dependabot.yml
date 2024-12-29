@@ -8,7 +8,7 @@ updates:
   - package-ecosystem: "pub"
     directory: "/"
     schedule:
-      interval: "weekly
+      interval: "weekly"
 
 version: 2
 updates:
