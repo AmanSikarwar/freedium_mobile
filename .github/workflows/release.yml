@@ -1,5 +1,4 @@
 name: Build and Release
-
 on:
   workflow_dispatch:
   push:
@@ -9,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +30,7 @@ jobs:
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
-          github_token: ${{ secrets.SECRET_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build Android APKs
         run: |
@@ -44,3 +45,4 @@ jobs:
           name: Release ${{ steps.tag_version.outputs.new_tag }}
           artifacts: "build/app/outputs/flutter-apk/"
           body: ${{ steps.tag_version.outputs.changelog }}
+          token: ${{ secrets.GITHUB_TOKEN }}
