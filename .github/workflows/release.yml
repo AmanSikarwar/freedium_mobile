@@ -43,6 +43,6 @@ jobs:
         with:
           tag: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
-          artifacts: "build/app/outputs/flutter-apk/"
+          artifacts: "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk,build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk,build/app/outputs/flutter-apk/app-x86_64-release.apk"
           body: ${{ steps.tag_version.outputs.changelog }}
           token: ${{ secrets.GITHUB_TOKEN }}
