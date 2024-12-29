@@ -85,7 +85,9 @@ class _WebviewScreenState extends State<WebviewScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final backgroundColor = Theme.of(context).colorScheme.onPrimary;
     return Scaffold(
+      backgroundColor: _pageLoaded ? backgroundColor : null,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {

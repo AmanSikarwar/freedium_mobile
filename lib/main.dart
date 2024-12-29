@@ -2,9 +2,12 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:app_links/app_links.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:freedium_mobile/screens/home_screen.dart';
 import 'package:freedium_mobile/screens/webview_screen.dart';
+import 'package:freedium_mobile/theme/theme.dart';
+import 'package:freedium_mobile/theme/util.dart';
 import 'package:receive_sharing_intent_plus/receive_sharing_intent_plus.dart';
 
 void main() {
@@ -67,21 +70,29 @@ class _MainAppState extends State<MainApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      navigatorKey: _navigatorKey,
-      title: 'Freedium Mobile',
-      theme: ThemeData(
-        colorScheme: const ColorScheme.light().copyWith(
-          primary: Colors.green,
-        ),
-      ),
-      darkTheme: ThemeData.dark().copyWith(
-        colorScheme: const ColorScheme.dark().copyWith(
-          primary: Colors.green,
-        ),
-      ),
-      themeMode: ThemeMode.system,
-      home: const HomeScreen(),
+    TextTheme textTheme = createTextTheme(context, "Roboto", "Roboto");
+    MaterialTheme theme = MaterialTheme(textTheme);
+    return DynamicColorBuilder(
+      builder: (lightDynamic, darkDynamic) {
+        ColorScheme lightColorScheme;
+        ColorScheme darkColorScheme;
+
+        if (lightDynamic != null && darkDynamic != null) {
+          lightColorScheme = lightDynamic.harmonized();
+          darkColorScheme = darkDynamic.harmonized();
+        } else {
+          lightColorScheme = theme.light().colorScheme;
+          darkColorScheme = theme.dark().colorScheme;
+        }
+        return MaterialApp(
+          navigatorKey: _navigatorKey,
+          title: 'Freedium Mobile',
+          theme: theme.theme(lightColorScheme),
+          darkTheme: theme.theme(darkColorScheme),
+          themeMode: ThemeMode.system,
+          home: const HomeScreen(),
+        );
+      },
     );
   }
 }
