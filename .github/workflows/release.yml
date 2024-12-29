@@ -1,6 +1,11 @@
 name: Build and Release
 on:
   workflow_dispatch:
+    inputs:
+      custom_tag:
+        description: "Optional release tag."
+        required: false
+        default: ""
   push:
     branches:
       - main
@@ -27,10 +32,16 @@ jobs:
         run: flutter doctor -v
 
       - name: Create tag
-        id: tag_version
+        if: ${{ github.event.inputs.custom_tag != '' }}
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          tag_prefix: ${{ github.event.inputs.custom_tag }}
+          default_bump: patch
+          release_branches: main
+          create_annotated_tag: false
+          fetch_all_tags: false
+          dry_run: false
 
       - name: Build Android APKs
         run: |
