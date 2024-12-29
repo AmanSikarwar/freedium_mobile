@@ -22,7 +22,7 @@ Freedium is a mobile application designed to help you bypass Medium's paywall an
 
 ### For Users
 
-1. Download the app from releases or your platform's app store
+1. Download the app from [releases page](https://github.com/AmanSikarwar/freedium_mobile/releases/latest)
 2. Launch Freedium
 3. Paste a Medium article URL or share directly to the app
 4. Enjoy reading without restrictions!
@@ -40,7 +40,7 @@ Freedium is a mobile application designed to help you bypass Medium's paywall an
 1. **Clone the repository**:
 
    ```sh
-   git clone https://github.com/amansikarwar/freedium.git
+   git clone https://github.com/amansikarwar/freedium_mobile.git
    cd freedium
    ```
 
@@ -87,5 +87,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgements
 
 - [Freedium.cfd](https://freedium.cfd) for providing the paywall bypass service
-- Flutter team for the amazing framework
-- All contributors who help improve this project
