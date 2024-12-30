@@ -41,7 +41,7 @@ Freedium is a mobile application designed to help you bypass Medium's paywall an
 
    ```sh
    git clone https://github.com/amansikarwar/freedium_mobile.git
-   cd freedium
+   cd freedium_mobile
    ```
 
 2. **Install dependencies**:
