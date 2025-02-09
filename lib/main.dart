@@ -8,7 +8,7 @@ import 'package:freedium_mobile/screens/home_screen.dart';
 import 'package:freedium_mobile/screens/webview_screen.dart';
 import 'package:freedium_mobile/theme/theme.dart';
 import 'package:freedium_mobile/theme/util.dart';
-import 'package:receive_sharing_intent_plus/receive_sharing_intent_plus.dart';
+import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 void main() {
   runApp(const MainApp());
@@ -24,15 +24,49 @@ class MainApp extends StatefulWidget {
 class _MainAppState extends State<MainApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
   late AppLinks _appLinks;
+  late StreamSubscription _intentSub;
+  final _sharedFiles = <SharedMediaFile>[];
+
   StreamSubscription<Uri>? _linkSubscription;
 
   @override
   void initState() {
-    ReceiveSharingIntentPlus.getInitialText().then((String? value) {
-      log('Received initial text: $value');
+    super.initState();
 
-      if (value != null) {
-        final uri = Uri.tryParse(value);
+    _intentSub =
+        ReceiveSharingIntent.instance.getMediaStream().listen((values) {
+      setState(() {
+        _sharedFiles.clear();
+        _sharedFiles.addAll(values);
+
+        log("Shared files: ${_sharedFiles.map((e) => e.path).toList()}");
+      });
+      if (_sharedFiles.isNotEmpty) {
+        final uri = Uri.tryParse(_sharedFiles.first.path);
+
+        if (uri != null) {
+          _navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => WebviewScreen(
+                url: uri.toString(),
+              ),
+            ),
+          );
+        }
+      }
+    }, onError: (err) {
+      log("getIntentDataStream error: $err");
+    });
+
+    ReceiveSharingIntent.instance.getInitialMedia().then((value) {
+      setState(() {
+        _sharedFiles.clear();
+        _sharedFiles.addAll(value);
+
+        log("Shared files: ${_sharedFiles.map((e) => e.path).toList()}");
+      });
+      if (_sharedFiles.isNotEmpty) {
+        final uri = Uri.tryParse(_sharedFiles.first.path);
 
         if (uri != null) {
           _navigatorKey.currentState?.push(
@@ -45,6 +79,7 @@ class _MainAppState extends State<MainApp> {
         }
       }
     });
+
     _appLinks = AppLinks();
 
     _linkSubscription = _appLinks.uriLinkStream.listen((Uri uri) {
@@ -58,13 +93,12 @@ class _MainAppState extends State<MainApp> {
         ),
       );
     });
-
-    super.initState();
   }
 
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _intentSub.cancel();
     super.dispose();
   }
 

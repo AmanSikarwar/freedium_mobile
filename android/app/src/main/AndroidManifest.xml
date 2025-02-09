@@ -19,7 +19,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="medium" />
             </intent-filter>
-            <intent-filter android:autoVerify="true">
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
@@ -28,7 +28,7 @@
                 <data android:host="rsci.app.link" />
                 <data android:host="rsci-alternate.app.link" />
             </intent-filter>
-            <intent-filter android:autoVerify="true">
+            <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />

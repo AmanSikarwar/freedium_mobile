@@ -55,7 +55,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Uri.https('github.com', 'amansikarwar/freedium_mobile')),
               child: Text(
                 'GitHub',
-                style: TextStyle(color: Theme.of(context).primaryColor),
+                style: TextStyle(color: Theme.of(context).colorScheme.primary),
               ),
             ),
           ],
@@ -102,7 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Freedium'),
+        title: Text(
+          'Freedium',
+          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+        ),
         titleTextStyle: const TextStyle(
           color: Colors.green,
           fontSize: 32,
