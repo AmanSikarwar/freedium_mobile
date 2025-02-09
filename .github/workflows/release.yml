@@ -3,8 +3,11 @@ name: Build and Release
 on:
   workflow_dispatch:
     inputs:
-      custom_tag:
-        description: "Optional release tag."
+      version_name:
+        description: "Release Version Name (e.g., 1.0.0)"
+        required: true
+      release_notes:
+        description: "Release Notes (Markdown supported)"
         required: false
         default: ""
 
@@ -12,47 +15,117 @@ permissions:
   contents: write
 
 jobs:
-  build:
-    if: github.event.inputs.custom_tag != ''
-    runs-on: ubuntu-latest
+  build-and-release:
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          fetch-tags: true
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
+          cache: "true"
+          cache-key: "flutter"
 
       - uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "17"
+          cache: "gradle"
 
-      - name: Create tag
+      - name: Cache pub dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.pub-cache
+            ${{ github.workspace }}/.dart_tool
+            ${{ github.workspace }}/build  # Cache the /build directory too.
+          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pub-
+
+      - name: Flutter Pub Get
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --release --split-per-abi --build-number=${{ github.run_number }}  -t lib/main.dart --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
+        env:
+          KEYSTORE_PATH: ${{ secrets.KEYSTORE_PATH }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Build iOS IPA (Simplified - Requires Xcode configuration)
+        run: |
+          flutter build ios --release --no-codesign # Build without signing (sign in Xcode)
+          cd build/ios/iphoneos
+          # Create a simple archive (adjust as needed for your Xcode project structure)
+          # The critical part here is to use your *actual* archive and export options
+          #  from your Xcode project.  This is just a *placeholder* example.
+          xcrun xcodebuild -archivePath Runner.xcarchive archive -scheme Runner
+          xcrun xcodebuild -exportArchive -archivePath Runner.xcarchive -exportOptionsPlist exportOptions.plist -exportPath ./
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: v${{ github.event.inputs.version_name }}
+          release_name: Release v${{ github.event.inputs.version_name }}
+          body: |
+            ${{ github.event.inputs.release_notes }}
+            ---
+            ### Changelog
+
+            ${{ steps.tag_version.outputs.changelog || 'No automated changelog available.' }}
+          draft: false
+          prerelease: false
+
+      - name: Upload Android APKs
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+          asset_name: app-arm64-v8a-release-${{ github.event.inputs.version_name }}.apk
+          asset_content_type: application/vnd.android.package-archive
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+          asset_name: app-armeabi-v7a-release-${{ github.event.inputs.version_name }}.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/app/outputs/flutter-apk/app-x86_64-release.apk
+          asset_name: app-x86_64-release-${{ github.event.inputs.version_name }}.apk
+          asset_content_type: application/vnd.android.package-archive
+
+      - name: Upload iOS IPA (Example - Adjust Path)
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: build/ios/iphoneos/Runner.ipa #  *Correct path to your built IPA*
+          asset_name: Runner-${{ github.event.inputs.version_name }}.ipa
+          asset_content_type: application/octet-stream
+
+      - name: Mathieudutour/github-tag-action step (for debugging only, can be removed)
         id: tag_version
         uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ github.event.inputs.custom_tag }}
+          custom_tag: ${{ github.event.inputs.version_name }}
           release_branches: main
           create_annotated_tag: true
-
-      - name: Build Android APKs
-        if: steps.tag_version.outputs.new_tag != ''
-        run: |
-          flutter pub get
-          flutter build apk --release --split-per-abi
-          ls -l build/app/outputs/flutter-apk/
-
-      - name: Upload Release APKs
-        if: steps.tag_version.outputs.new_tag != ''
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
-          artifacts: "build/app/outputs/flutter-apk/app-arm64-v8a-release.apk,build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk,build/app/outputs/flutter-apk/app-x86_64-release.apk"
-          body: ${{ steps.tag_version.outputs.changelog }}
-          token: ${{ secrets.GITHUB_TOKEN }}
