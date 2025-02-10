@@ -26,8 +26,8 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: "stable"
-          cache: "true"
-          cache-key: "flutter"
+          cache: true
+          cache-key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
 
       - uses: actions/setup-java@v4
         with:
@@ -41,7 +41,7 @@ jobs:
           path: |
             ~/.pub-cache
             ${{ github.workspace }}/.dart_tool
-            ${{ github.workspace }}/build  # Cache the /build directory too.
+            ${{ github.workspace }}/build
           key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
           restore-keys: |
             ${{ runner.os }}-pub-
@@ -61,77 +61,30 @@ jobs:
           echo "storeFile=my-release-key.keystore" >> android/key.properties
 
       - name: Build Android APK
-        run: flutter build apk --release --split-per-abi --build-number=${{ github.run_number }}  -t lib/main.dart --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
+        run: flutter build apk --release --split-per-abi --build-number=${{ github.run_number }} -t lib/main.dart --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
 
-      # - name: Build iOS IPA (Simplified - Requires Xcode configuration)
+      # iOS build steps (commented out for now - enable and configure when ready)
+      # - name: Build iOS IPA
       #   run: |
-      #     flutter build ios --release --no-codesign # Build without signing (sign in Xcode)
+      #     flutter build ios --release --no-codesign
       #     cd build/ios/iphoneos
-      #     # Create a simple archive (adjust as needed for your Xcode project structure)
-      #     # The critical part here is to use your *actual* archive and export options
-      #     #  from your Xcode project.  This is just a *placeholder* example.
-      #     xcrun xcodebuild -archivePath Runner.xcarchive archive -scheme Runner
+      #     xcrun xcodebuild -archivePath Runner.xcarchive archive -scheme Runner -destination "generic/platform=iOS" # Add destination
       #     xcrun xcodebuild -exportArchive -archivePath Runner.xcarchive -exportOptionsPlist exportOptions.plist -exportPath ./
 
-      - name: Create Release
+      - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: v${{ github.event.inputs.version_name }}
-          release_name: Release v${{ github.event.inputs.version_name }}
-          body: |
-            ${{ github.event.inputs.release_notes }}
-            ---
-            ### Changelog
-
-            ${{ steps.tag_version.outputs.changelog || 'No automated changelog available.' }}
+          tag: v${{ github.event.inputs.version_name }}
+          name: Release v${{ github.event.inputs.version_name }}
+          body: ${{ github.event.inputs.release_notes }}
           draft: false
           prerelease: false
-
-      - name: Upload Android APKs
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
-          asset_name: app-arm64-v8a-release-${{ github.event.inputs.version_name }}.apk
-          asset_content_type: application/vnd.android.package-archive
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
-          asset_name: app-armeabi-v7a-release-${{ github.event.inputs.version_name }}.apk
-          asset_content_type: application/vnd.android.package-archive
-
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-x86_64-release.apk
-          asset_name: app-x86_64-release-${{ github.event.inputs.version_name }}.apk
-          asset_content_type: application/vnd.android.package-archive
-
-      # - name: Upload iOS IPA (Example - Adjust Path)
-      #   uses: actions/upload-release-asset@v1
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #   with:
-      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
-      #     asset_path: build/ios/iphoneos/Runner.ipa #  *Correct path to your built IPA*
-      #     asset_name: Runner-${{ github.event.inputs.version_name }}.ipa
-      #     asset_content_type: application/octet-stream
-
-      - name: Mathieudutour/github-tag-action step (for debugging only, can be removed)
-        id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          custom_tag: ${{ github.event.inputs.version_name }}
-          release_branches: main
-          create_annotated_tag: true
+          artifacts: |
+            build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
+            build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
+            build/app/outputs/flutter-apk/app-x86_64-release.apk
+            # build/ios/iphoneos/Runner.ipa  # Add this back when you enable iOS builds
+          generateReleaseNotes: true
