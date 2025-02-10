@@ -49,23 +49,29 @@ jobs:
       - name: Flutter Pub Get
         run: flutter pub get
 
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
+
+      - name: Create key.properties
+        run: |
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
+          echo "storeFile=android/app/my-release-key.keystore" >> android/key.properties
+
       - name: Build Android APK
         run: flutter build apk --release --split-per-abi --build-number=${{ github.run_number }}  -t lib/main.dart --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
-        env:
-          KEYSTORE_PATH: ${{ secrets.KEYSTORE_PATH }}
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-      - name: Build iOS IPA (Simplified - Requires Xcode configuration)
-        run: |
-          flutter build ios --release --no-codesign # Build without signing (sign in Xcode)
-          cd build/ios/iphoneos
-          # Create a simple archive (adjust as needed for your Xcode project structure)
-          # The critical part here is to use your *actual* archive and export options
-          #  from your Xcode project.  This is just a *placeholder* example.
-          xcrun xcodebuild -archivePath Runner.xcarchive archive -scheme Runner
-          xcrun xcodebuild -exportArchive -archivePath Runner.xcarchive -exportOptionsPlist exportOptions.plist -exportPath ./
+      # - name: Build iOS IPA (Simplified - Requires Xcode configuration)
+      #   run: |
+      #     flutter build ios --release --no-codesign # Build without signing (sign in Xcode)
+      #     cd build/ios/iphoneos
+      #     # Create a simple archive (adjust as needed for your Xcode project structure)
+      #     # The critical part here is to use your *actual* archive and export options
+      #     #  from your Xcode project.  This is just a *placeholder* example.
+      #     xcrun xcodebuild -archivePath Runner.xcarchive archive -scheme Runner
+      #     xcrun xcodebuild -exportArchive -archivePath Runner.xcarchive -exportOptionsPlist exportOptions.plist -exportPath ./
 
       - name: Create Release
         id: create_release
@@ -111,15 +117,15 @@ jobs:
           asset_name: app-x86_64-release-${{ github.event.inputs.version_name }}.apk
           asset_content_type: application/vnd.android.package-archive
 
-      - name: Upload iOS IPA (Example - Adjust Path)
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/ios/iphoneos/Runner.ipa #  *Correct path to your built IPA*
-          asset_name: Runner-${{ github.event.inputs.version_name }}.ipa
-          asset_content_type: application/octet-stream
+      # - name: Upload iOS IPA (Example - Adjust Path)
+      #   uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ steps.create_release.outputs.upload_url }}
+      #     asset_path: build/ios/iphoneos/Runner.ipa #  *Correct path to your built IPA*
+      #     asset_name: Runner-${{ github.event.inputs.version_name }}.ipa
+      #     asset_content_type: application/octet-stream
 
       - name: Mathieudutour/github-tag-action step (for debugging only, can be removed)
         id: tag_version
