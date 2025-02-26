@@ -4,10 +4,10 @@ publish_to: "none"
 version: 0.1.0
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.7.0
 
 dependencies:
-  app_links: ^6.3.3
+  app_links: ^6.4.0
   dynamic_color: ^1.7.0
   flutter:
     sdk: flutter
