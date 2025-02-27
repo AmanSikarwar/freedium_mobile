@@ -11,6 +11,7 @@ import 'package:freedium_mobile/theme/util.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MainApp());
 }
 
@@ -33,30 +34,30 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     super.initState();
 
-    _intentSub =
-        ReceiveSharingIntent.instance.getMediaStream().listen((values) {
-      setState(() {
-        _sharedFiles.clear();
-        _sharedFiles.addAll(values);
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (values) {
+        setState(() {
+          _sharedFiles.clear();
+          _sharedFiles.addAll(values);
 
-        log("Shared files: ${_sharedFiles.map((e) => e.path).toList()}");
-      });
-      if (_sharedFiles.isNotEmpty) {
-        final uri = Uri.tryParse(_sharedFiles.first.path);
+          log("Shared files: ${_sharedFiles.map((e) => e.path).toList()}");
+        });
+        if (_sharedFiles.isNotEmpty) {
+          final uri = Uri.tryParse(_sharedFiles.first.path);
 
-        if (uri != null) {
-          _navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (context) => WebviewScreen(
-                url: uri.toString(),
+          if (uri != null) {
+            _navigatorKey.currentState?.push(
+              MaterialPageRoute(
+                builder: (context) => WebviewScreen(url: uri.toString()),
               ),
-            ),
-          );
+            );
+          }
         }
-      }
-    }, onError: (err) {
-      log("getIntentDataStream error: $err");
-    });
+      },
+      onError: (err) {
+        log("getIntentDataStream error: $err");
+      },
+    );
 
     ReceiveSharingIntent.instance.getInitialMedia().then((value) {
       setState(() {
@@ -71,9 +72,7 @@ class _MainAppState extends State<MainApp> {
         if (uri != null) {
           _navigatorKey.currentState?.push(
             MaterialPageRoute(
-              builder: (context) => WebviewScreen(
-                url: uri.toString(),
-              ),
+              builder: (context) => WebviewScreen(url: uri.toString()),
             ),
           );
         }
@@ -87,9 +86,7 @@ class _MainAppState extends State<MainApp> {
 
       _navigatorKey.currentState?.push(
         MaterialPageRoute(
-          builder: (context) => WebviewScreen(
-            url: uri.toString(),
-          ),
+          builder: (context) => WebviewScreen(url: uri.toString()),
         ),
       );
     });
