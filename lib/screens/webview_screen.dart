@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
-import 'package:super_clipboard/super_clipboard.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -186,24 +185,6 @@ class _WebviewScreenState extends State<WebviewScreen> {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(args[0].toString())));
-        }
-        return null;
-      },
-    );
-
-    // Add JavaScript channel for clipboard
-    _controller?.addJavaScriptHandler(
-      handlerName: 'Clipboard',
-      callback: (args) {
-        if (args.isNotEmpty) {
-          final clipboard = SystemClipboard.instance!;
-          final item = DataWriterItem();
-          item.add(Formats.plainText(args[0].toString()));
-          clipboard.write([item]);
-
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Copied to clipboard!')));
         }
         return null;
       },

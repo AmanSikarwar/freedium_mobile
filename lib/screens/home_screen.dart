@@ -43,16 +43,20 @@ class _HomeScreenState extends State<HomeScreen> {
       applicationName: 'Freedium',
       applicationVersion: '0.2.0',
       children: [
-        Text('Freedium is a paywall bypasser for Medium articles.\n\n'
-            'Just paste the URL of the article you want to read and '
-            'Freedium will take care of the rest!\n\n'),
+        Text(
+          'Freedium is a paywall bypasser for Medium articles.\n\n'
+          'Just paste the URL of the article you want to read and '
+          'Freedium will take care of the rest!\n\n',
+        ),
         Wrap(
           alignment: WrapAlignment.start,
           children: [
             const Text('Source code available on '),
             GestureDetector(
-              onTap: () => _launchUri(
-                  Uri.https('github.com', 'amansikarwar/freedium_mobile')),
+              onTap:
+                  () => _launchUri(
+                    Uri.https('github.com', 'amansikarwar/freedium_mobile'),
+                  ),
               child: Text(
                 'GitHub',
                 style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -64,22 +68,15 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Made with ❤️ by',
-              style: const TextStyle(
-                fontSize: 12,
-              ),
-            ),
+            Text('Made with ❤️ by', style: const TextStyle(fontSize: 12)),
             TextButton(
-              onPressed: () =>
-                  _launchUri(Uri.https('github.com', 'amansikarwar')),
+              onPressed:
+                  () => _launchUri(Uri.https('github.com', 'amansikarwar')),
               child: const Text(
                 'Aman Sikarwar',
-                style: TextStyle(
-                  fontSize: 12,
-                ),
+                style: TextStyle(fontSize: 12),
               ),
-            )
+            ),
           ],
         ),
       ],
@@ -91,9 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
       await launchUrl(uri);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not launch URL: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not launch URL: $e')));
       }
     }
   }
@@ -115,7 +112,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.info),
             onPressed: _showAboutFreediumDialog,
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -128,10 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text(
                 'Your paywall breakthrough for Medium!',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               Form(
@@ -175,9 +169,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_formKey.currentState?.validate() ?? false) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => WebviewScreen(
-                            url: _urlController.text,
-                          ),
+                          builder:
+                              (context) =>
+                                  WebviewScreen(url: _urlController.text),
                         ),
                       );
                     }
