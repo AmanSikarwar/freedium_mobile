@@ -274,7 +274,6 @@ class _WebviewScreenState extends State<WebviewScreen> {
                     ShareParams(
                       subject: 'Check out this link',
                       title: 'Check out this link',
-                      text: 'Check out this link: ${widget.url}',
                       uri: Uri.parse(widget.url),
                     ),
                   );
