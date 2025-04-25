@@ -270,8 +270,13 @@ class _WebviewScreenState extends State<WebviewScreen> {
           showWebView
               ? FloatingActionButton.small(
                 onPressed: () {
-                  Share.shareUri(
-                    Uri.parse(_urlPrefix).replace(path: widget.url),
+                  SharePlus.instance.share(
+                    ShareParams(
+                      subject: 'Check out this link',
+                      title: 'Check out this link',
+                      text: 'Check out this link: ${widget.url}',
+                      uri: Uri.parse(widget.url),
+                    ),
                   );
                 },
                 child: const Icon(Icons.share),
