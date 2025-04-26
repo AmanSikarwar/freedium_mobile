@@ -272,9 +272,9 @@ class _WebviewScreenState extends State<WebviewScreen> {
                 onPressed: () {
                   SharePlus.instance.share(
                     ShareParams(
-                      subject: 'Check out this link',
-                      title: 'Check out this link',
-                      uri: Uri.parse(widget.url),
+                      subject: 'Read this article without Paywall',
+                      title: 'Share Freedium link',
+                      uri: Uri.parse(_urlPrefix).replace(path: widget.url),
                     ),
                   );
                 },
