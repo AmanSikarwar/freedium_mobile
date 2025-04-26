@@ -330,12 +330,6 @@ class _WebviewScreenState extends State<WebviewScreen> {
     }
   }
 
-  @override
-  void dispose() {
-    _pullToRefreshController?.dispose();
-    super.dispose();
-  }
-
   void _updateInitialLoadState() {
     final bool isThemedPage =
         _controller?.getUrl().toString().startsWith(_urlPrefix) ?? false;
