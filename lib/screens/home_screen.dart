@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freedium_mobile/screens/webview_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -101,7 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(
           'Freedium',
-          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          style: GoogleFonts.playfairDisplay(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         titleTextStyle: const TextStyle(
           color: Colors.green,
