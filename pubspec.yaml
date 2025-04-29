@@ -1,7 +1,7 @@
 name: freedium_mobile
 description: "A new Flutter project."
 publish_to: "none"
-version: 0.1.0
+version: 0.3.0
 
 environment:
   sdk: ^3.7.0
