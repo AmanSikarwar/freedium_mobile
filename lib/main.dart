@@ -11,6 +11,7 @@ import 'package:freedium_mobile/theme/util.dart';
 import 'package:receive_sharing_intent/receive_sharing_intent.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MainApp());
 }
 
@@ -33,30 +34,35 @@ class _MainAppState extends State<MainApp> {
   void initState() {
     super.initState();
 
-    _intentSub =
-        ReceiveSharingIntent.instance.getMediaStream().listen((values) {
-      setState(() {
-        _sharedFiles.clear();
-        _sharedFiles.addAll(values);
+    _intentSub = ReceiveSharingIntent.instance.getMediaStream().listen(
+      (values) {
+        setState(() {
+          _sharedFiles.clear();
+          _sharedFiles.addAll(values);
 
-        log("Shared files: ${_sharedFiles.map((e) => e.path).toList()}");
-      });
-      if (_sharedFiles.isNotEmpty) {
-        final uri = Uri.tryParse(_sharedFiles.first.path);
+          log("Shared files: ${_sharedFiles.map((e) => e.path).toList()}");
+        });
+        if (_sharedFiles.isNotEmpty) {
+          final uri = Uri.tryParse(_sharedFiles.first.path);
 
-        if (uri != null) {
-          _navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (context) => WebviewScreen(
-                url: uri.toString(),
-              ),
-            ),
-          );
+          if (uri != null) {
+            // Delay navigation to ensure theme is applied
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              Future.delayed(const Duration(milliseconds: 200), () {
+                _navigatorKey.currentState?.push(
+                  MaterialPageRoute(
+                    builder: (context) => WebviewScreen(url: uri.toString()),
+                  ),
+                );
+              });
+            });
+          }
         }
-      }
-    }, onError: (err) {
-      log("getIntentDataStream error: $err");
-    });
+      },
+      onError: (err) {
+        log("getIntentDataStream error: $err");
+      },
+    );
 
     ReceiveSharingIntent.instance.getInitialMedia().then((value) {
       setState(() {
@@ -69,13 +75,17 @@ class _MainAppState extends State<MainApp> {
         final uri = Uri.tryParse(_sharedFiles.first.path);
 
         if (uri != null) {
-          _navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (context) => WebviewScreen(
-                url: uri.toString(),
-              ),
-            ),
-          );
+          // Delay navigation to ensure theme is applied
+
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            Future.delayed(const Duration(milliseconds: 200), () {
+              _navigatorKey.currentState?.push(
+                MaterialPageRoute(
+                  builder: (context) => WebviewScreen(url: uri.toString()),
+                ),
+              );
+            });
+          });
         }
       }
     });
@@ -85,19 +95,23 @@ class _MainAppState extends State<MainApp> {
     _linkSubscription = _appLinks.uriLinkStream.listen((Uri uri) {
       log('Received uri: $uri');
 
-      _navigatorKey.currentState?.push(
-        MaterialPageRoute(
-          builder: (context) => WebviewScreen(
-            url: uri.toString(),
-          ),
-        ),
-      );
+      // Delay navigation to ensure theme is applied
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Future.delayed(const Duration(milliseconds: 200), () {
+          _navigatorKey.currentState?.push(
+            MaterialPageRoute(
+              builder: (context) => WebviewScreen(url: uri.toString()),
+            ),
+          );
+        });
+      });
     });
   }
 
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    _linkSubscription = null;
     _intentSub.cancel();
     super.dispose();
   }
@@ -105,7 +119,7 @@ class _MainAppState extends State<MainApp> {
   @override
   Widget build(BuildContext context) {
     TextTheme textTheme = createTextTheme(context, "Roboto", "Roboto");
-    MaterialTheme theme = MaterialTheme(textTheme);
+    MaterialTheme materialTheme = MaterialTheme(textTheme);
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
         ColorScheme lightColorScheme;
@@ -115,14 +129,14 @@ class _MainAppState extends State<MainApp> {
           lightColorScheme = lightDynamic.harmonized();
           darkColorScheme = darkDynamic.harmonized();
         } else {
-          lightColorScheme = theme.light().colorScheme;
-          darkColorScheme = theme.dark().colorScheme;
+          lightColorScheme = materialTheme.light().colorScheme;
+          darkColorScheme = materialTheme.dark().colorScheme;
         }
         return MaterialApp(
           navigatorKey: _navigatorKey,
           title: 'Freedium Mobile',
-          theme: theme.theme(lightColorScheme),
-          darkTheme: theme.theme(darkColorScheme),
+          theme: materialTheme.theme(lightColorScheme),
+          darkTheme: materialTheme.theme(darkColorScheme),
           themeMode: ThemeMode.system,
           home: const HomeScreen(),
         );

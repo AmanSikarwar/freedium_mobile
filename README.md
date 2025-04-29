@@ -1,7 +1,12 @@
 # Freedium Mobile App
 
 <p align="center">
-   <img src="https://avatars.githubusercontent.com/u/142643505?s=200&v=4" alt="Freedium Logo"/>
+   <img src="https://github.com/AmanSikarwar/freedium_mobile/blob/659ae7cee4d378c9a7e7decaa3199dd239cc2af1/assets/icon/icon.png?raw=true" alt="Freedium Mobile Logo" width="148px"/>
+</p>
+<p align="center">
+    <a href="https://github.com/AmanSikarwar/freedium_mobile/blob/main/LICENSE"><img src="https://img.shields.io/github/license/AmanSikarwar/freedium_mobile?style=flat-square" alt="License"></a>
+    <a href="https://github.com/AmanSikarwar/freedium_mobile/releases/latest"><img src="https://img.shields.io/github/downloads/AmanSikarwar/freedium_mobile/total?style=flat-square" alt="Downloads"></a>
+    <a href="https://github.com/AmanSikarwar/freedium_mobile/stargazers"><img src="https://img.shields.io/github/stars/AmanSikarwar/freedium_mobile?style=flat-square" alt="Stars"></a>
 </p>
 
 ## Overview

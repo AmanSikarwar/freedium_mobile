@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freedium_mobile/screens/webview_screen.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:super_clipboard/super_clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -41,18 +42,22 @@ class _HomeScreenState extends State<HomeScreen> {
         height: 48,
       ),
       applicationName: 'Freedium',
-      applicationVersion: '0.2.0',
+      applicationVersion: '0.3.0',
       children: [
-        Text('Freedium is a paywall bypasser for Medium articles.\n\n'
-            'Just paste the URL of the article you want to read and '
-            'Freedium will take care of the rest!\n\n'),
+        Text(
+          'Freedium is a paywall bypasser for Medium articles.\n\n'
+          'Just paste the URL of the article you want to read and '
+          'Freedium will take care of the rest!\n\n',
+        ),
         Wrap(
           alignment: WrapAlignment.start,
           children: [
             const Text('Source code available on '),
             GestureDetector(
-              onTap: () => _launchUri(
-                  Uri.https('github.com', 'amansikarwar/freedium_mobile')),
+              onTap:
+                  () => _launchUri(
+                    Uri.https('github.com', 'amansikarwar/freedium_mobile'),
+                  ),
               child: Text(
                 'GitHub',
                 style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -64,22 +69,15 @@ class _HomeScreenState extends State<HomeScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              'Made with ❤️ by',
-              style: const TextStyle(
-                fontSize: 12,
-              ),
-            ),
+            Text('Made with ❤️ by', style: const TextStyle(fontSize: 12)),
             TextButton(
-              onPressed: () =>
-                  _launchUri(Uri.https('github.com', 'amansikarwar')),
+              onPressed:
+                  () => _launchUri(Uri.https('github.com', 'amansikarwar')),
               child: const Text(
                 'Aman Sikarwar',
-                style: TextStyle(
-                  fontSize: 12,
-                ),
+                style: TextStyle(fontSize: 12),
               ),
-            )
+            ),
           ],
         ),
       ],
@@ -91,9 +89,9 @@ class _HomeScreenState extends State<HomeScreen> {
       await launchUrl(uri);
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not launch URL: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not launch URL: $e')));
       }
     }
   }
@@ -104,7 +102,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(
           'Freedium',
-          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          style: GoogleFonts.playfairDisplay(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         titleTextStyle: const TextStyle(
           color: Colors.green,
@@ -115,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: const Icon(Icons.info),
             onPressed: _showAboutFreediumDialog,
-          )
+          ),
         ],
       ),
       body: Padding(
@@ -128,10 +129,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const Text(
                 'Your paywall breakthrough for Medium!',
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 24),
               Form(
@@ -157,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       return 'Please enter a URL';
                     }
                     final urlRegExp = RegExp(
-                      r'^https?:\/\/([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$',
+                      r'^https?:\/\/([\w-]+\.)+[\w-]+(\/[\w-./?%&=@]*)?$',
                       caseSensitive: false,
                     );
                     if (!urlRegExp.hasMatch(value)) {
@@ -175,9 +173,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     if (_formKey.currentState?.validate() ?? false) {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (context) => WebviewScreen(
-                            url: _urlController.text,
-                          ),
+                          builder:
+                              (context) =>
+                                  WebviewScreen(url: _urlController.text),
                         ),
                       );
                     }
