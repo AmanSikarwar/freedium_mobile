@@ -155,7 +155,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       return 'Please enter a URL';
                     }
                     final urlRegExp = RegExp(
-                      r'^https?:\/\/([\w-]+\.)+[\w-]+(\/[\w-./?%&=]*)?$',
+                      r'^https?:\/\/([\w-]+\.)+[\w-]+(\/[\w-./?%&=@]*)?$',
                       caseSensitive: false,
                     );
                     if (!urlRegExp.hasMatch(value)) {
