@@ -5,7 +5,7 @@
 
 version: 2
 updates:
-  - package-ecosystem: "pub"
+  - package-ecosystem: "flutter"
     directory: "/"
     schedule:
       interval: "weekly"
