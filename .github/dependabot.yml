@@ -8,13 +8,8 @@ updates:
   - package-ecosystem: "flutter"
     directory: "/"
     schedule:
-      interval: "weekly"
-
-version: 2
-updates:
+      interval: "daily"
   - package-ecosystem: "gradle"
     directory: "/android"
     schedule:
       interval: "weekly"
-
-
