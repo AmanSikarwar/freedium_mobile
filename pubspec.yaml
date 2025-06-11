@@ -18,7 +18,7 @@ dependencies:
       url: https://github.com/KasemJaffer/receive_sharing_intent
       # ref: 2cea396843cd3ab1b5ec4334be4233864637874e
   share_plus: ^11.0.0
-  super_clipboard: ^0.8.24
+  super_clipboard: ^0.9.1
   url_launcher: ^6.3.1
 
 dev_dependencies:
