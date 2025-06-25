@@ -8,7 +8,7 @@ import 'package:freedium_mobile/screens/home_screen.dart';
 import 'package:freedium_mobile/screens/webview_screen.dart';
 import 'package:freedium_mobile/theme/theme.dart';
 import 'package:freedium_mobile/theme/util.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
