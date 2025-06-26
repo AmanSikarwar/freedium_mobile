@@ -1,14 +1,13 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:app_links/app_links.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:freedium_mobile/screens/home_screen.dart';
 import 'package:freedium_mobile/screens/webview_screen.dart';
 import 'package:freedium_mobile/theme/theme.dart';
 import 'package:freedium_mobile/theme/util.dart';
-import 'package:receive_sharing_intent/receive_sharing_intent.dart';
+import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +23,6 @@ class MainApp extends StatefulWidget {
 
 class _MainAppState extends State<MainApp> {
   final _navigatorKey = GlobalKey<NavigatorState>();
-  late AppLinks _appLinks;
   late StreamSubscription _intentSub;
   final _sharedFiles = <SharedMediaFile>[];
 
@@ -88,23 +86,6 @@ class _MainAppState extends State<MainApp> {
           });
         }
       }
-    });
-
-    _appLinks = AppLinks();
-
-    _linkSubscription = _appLinks.uriLinkStream.listen((Uri uri) {
-      log('Received uri: $uri');
-
-      // Delay navigation to ensure theme is applied
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Future.delayed(const Duration(milliseconds: 200), () {
-          _navigatorKey.currentState?.push(
-            MaterialPageRoute(
-              builder: (context) => WebviewScreen(url: uri.toString()),
-            ),
-          );
-        });
-      });
     });
   }
 

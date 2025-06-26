@@ -6,10 +6,6 @@ on:
       version_name:
         description: "Release Version Name (e.g., 1.0.0)"
         required: true
-      release_notes:
-        description: "Release Notes (Markdown supported)"
-        required: false
-        default: ""
 
 permissions:
   contents: write
@@ -49,6 +45,9 @@ jobs:
       - name: Flutter Pub Get
         run: flutter pub get
 
+      - name: Flutter Pub Upgrade
+        run: flutter pub upgrade
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
@@ -63,14 +62,6 @@ jobs:
       - name: Build Android APK
         run: flutter build apk --release --split-per-abi --build-number=${{ github.run_number }} -t lib/main.dart --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
 
-      # iOS build steps (commented out for now - enable and configure when ready)
-      # - name: Build iOS IPA
-      #   run: |
-      #     flutter build ios --release --no-codesign
-      #     cd build/ios/iphoneos
-      #     xcrun xcodebuild -archivePath Runner.xcarchive archive -scheme Runner -destination "generic/platform=iOS" # Add destination
-      #     xcrun xcodebuild -exportArchive -archivePath Runner.xcarchive -exportOptionsPlist exportOptions.plist -exportPath ./
-
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1
@@ -79,12 +70,10 @@ jobs:
         with:
           tag: v${{ github.event.inputs.version_name }}
           name: Release v${{ github.event.inputs.version_name }}
-          body: ${{ github.event.inputs.release_notes }}
           draft: false
           prerelease: false
           artifacts: |
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk
             build/app/outputs/flutter-apk/app-x86_64-release.apk
-            # build/ios/iphoneos/Runner.ipa  # Add this back when you enable iOS builds
           generateReleaseNotes: true
