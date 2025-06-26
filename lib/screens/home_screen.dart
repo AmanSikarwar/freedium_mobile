@@ -42,7 +42,7 @@ class _HomeScreenState extends State<HomeScreen> {
         height: 48,
       ),
       applicationName: 'Freedium',
-      applicationVersion: '0.3.0',
+      applicationVersion: '0.3.1',
       children: [
         Text(
           'Freedium is a paywall bypasser for Medium articles.\n\n'
