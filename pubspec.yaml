@@ -15,7 +15,7 @@ dependencies:
   listen_sharing_intent: ^1.9.2
   share_plus: ^11.0.0
   super_clipboard: ^0.9.1
-  url_launcher: ^6.3.1
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
