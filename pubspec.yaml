@@ -14,7 +14,6 @@ dependencies:
   google_fonts: ^6.2.1
   listen_sharing_intent: ^1.9.2
   share_plus: ^11.0.0
-  super_clipboard: ^0.9.1
   url_launcher: ^6.3.2
 
 dev_dependencies:

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:freedium_mobile/screens/webview_screen.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:super_clipboard/super_clipboard.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,14 +22,23 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _pasteUrl() async {
-    final clipboard = SystemClipboard.instance;
-    if (clipboard == null) return;
-    final reader = await clipboard.read();
-
-    if (reader.canProvide(Formats.uri)) {
-      final url = await reader.readValue(Formats.uri);
-
-      _urlController.text = url!.uri.toString();
+    try {
+      final ClipboardData? data = await Clipboard.getData(Clipboard.kTextPlain);
+      if (data != null && data.text != null && data.text!.isNotEmpty) {
+        _urlController.text = data.text!;
+      } else {
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(const SnackBar(content: Text('Clipboard is empty')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error accessing clipboard: $e')),
+        );
+      }
     }
   }
 
