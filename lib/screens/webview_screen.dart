@@ -22,7 +22,8 @@ class _WebviewScreenState extends State<WebviewScreen> {
   double _progress = 0;
   final GlobalKey webViewKey = GlobalKey();
   PullToRefreshController? _pullToRefreshController;
-  bool _isDisposed = false; // Add disposal flag
+
+  bool _isVisible = true;
 
   static const String _urlPrefix = 'https://freedium.cfd';
 
@@ -281,11 +282,7 @@ class _WebviewScreenState extends State<WebviewScreen> {
     super.initState();
     _pullToRefreshController = PullToRefreshController(
       onRefresh: () {
-        if (mounted && !_isDisposed) {
-          setState(() {
-            _themeApplied = false;
-            _pageLoaded = false;
-          });
+        if (mounted) {
           _controller?.reload();
         }
       },
@@ -295,7 +292,7 @@ class _WebviewScreenState extends State<WebviewScreen> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_isDisposed && mounted && _pullToRefreshController != null) {
+    if (mounted && _pullToRefreshController != null) {
       _pullToRefreshController?.settings.color =
           Theme.of(context).colorScheme.primary;
       _pullToRefreshController?.settings.backgroundColor =
@@ -304,8 +301,7 @@ class _WebviewScreenState extends State<WebviewScreen> {
   }
 
   void _updateInitialLoadState() {
-    if (_isDisposed || !mounted) return;
-
+    if (!mounted) return;
     final bool isThemedPage =
         _controller?.getUrl().toString().startsWith(_urlPrefix) ?? false;
     if (_isInitialLoad &&
@@ -324,43 +320,36 @@ class _WebviewScreenState extends State<WebviewScreen> {
     _controller?.addJavaScriptHandler(
       handlerName: 'themeApplied',
       callback: (args) {
-        if (mounted && !_isDisposed) {
+        if (mounted) {
           setState(() {
             _themeApplied = true;
             _updateInitialLoadState();
           });
         }
-        return null;
       },
     );
 
     _controller?.addJavaScriptHandler(
       handlerName: 'Toaster',
       callback: (args) {
-        if (args.isNotEmpty && mounted && !_isDisposed) {
+        if (args.isNotEmpty && mounted) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(args[0].toString())));
         }
-        return null;
       },
     );
   }
 
   void _handleWebViewCrash() {
-    if (mounted && !_isDisposed) {
+    if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Text('WebView crashed. Reloading...'),
           action: SnackBarAction(
             label: 'Reload',
             onPressed: () {
-              if (mounted && !_isDisposed) {
-                setState(() {
-                  _pageLoaded = false;
-                  _themeApplied = false;
-                  _progress = 0;
-                });
+              if (mounted) {
                 _controller?.reload();
               }
             },
@@ -372,174 +361,136 @@ class _WebviewScreenState extends State<WebviewScreen> {
 
   @override
   void dispose() {
-    if (_isDisposed) return; // Prevent double disposal
-    _isDisposed = true;
-
-    // Dispose controller first to prevent any callbacks
     _controller?.dispose();
     _controller = null;
-
-    // Safely dispose pull-to-refresh controller with extra safety
-    final pullToRefreshController = _pullToRefreshController;
-    _pullToRefreshController = null;
-    if (pullToRefreshController != null) {
-      try {
-        pullToRefreshController.dispose();
-      } catch (e) {
-        debugPrint('Error disposing pull-to-refresh controller: $e');
-      }
-    }
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final backgroundColor = Theme.of(context).colorScheme.surface;
-    final bool isThemedPage =
-        _controller?.getUrl().toString().startsWith(_urlPrefix) ?? false;
-    final bool showWebView =
-        _pageLoaded && (isThemedPage ? _themeApplied : true);
-
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (bool didPop, Object? result) async {
         if (didPop) {
           return;
         }
+
         final navigator = Navigator.of(context);
-        if (_controller != null && await _controller!.canGoBack()) {
-          await _controller!.goBack();
-        } else {
-          if (mounted) {
-            navigator.pop();
-          }
+        if (await _controller?.canGoBack() ?? false) {
+          _controller!.goBack();
+          return;
+        }
+
+        if (mounted) {
+          setState(() {
+            _isVisible = false;
+          });
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted) {
+              navigator.pop();
+            }
+          });
         }
       },
-      child: Scaffold(
-        backgroundColor: showWebView ? backgroundColor : null,
-        body: SafeArea(
-          child: Stack(
-            children: [
-              InAppWebView(
-                key: webViewKey,
-                initialUrlRequest: URLRequest(
-                  url: WebUri.uri(
-                    Uri.parse(_urlPrefix).replace(path: widget.url),
-                  ),
-                ),
-                initialSettings: InAppWebViewSettings(
-                  javaScriptEnabled: true,
-                  isInspectable: kDebugMode,
-                  mediaPlaybackRequiresUserGesture: false,
-                  allowsInlineMediaPlayback: true,
-                  useHybridComposition: true,
-                  cacheEnabled: true,
-                  transparentBackground: true,
-                  // From docs: useShouldOverrideUrlLoading must be true for it to work.
-                  useShouldOverrideUrlLoading: true,
-                  // Additional settings for stability
-                  domStorageEnabled: true,
-                  databaseEnabled: true,
-                  clearCache: false,
-                  clearSessionCache: false,
-                  // Handle localStorage access issues
-                  allowFileAccessFromFileURLs: false,
-                  allowUniversalAccessFromFileURLs: false,
-                  // Performance settings
-                  disableVerticalScroll: false,
-                  disableHorizontalScroll: false,
-                  // Security settings
-                  // Allow back-forward navigation gestures
-                  allowsBackForwardNavigationGestures: true,
-                  // Hardware acceleration settings for stability
-                  hardwareAcceleration: true,
-                  // Memory and rendering optimizations
-                  allowsPictureInPictureMediaPlayback: true,
-                  // Mixed content mode
-                  mixedContentMode:
-                      MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
-                ),
-                pullToRefreshController: _pullToRefreshController,
-                onWebViewCreated: _onWebViewCreated,
-                onLoadStop: (controller, url) async {
-                  if (!_isDisposed) {
-                    try {
-                      _pullToRefreshController?.endRefreshing();
-                    } catch (e) {
-                      debugPrint('Error ending refresh: $e');
-                    }
-                  }
+      child: _buildWebView(),
+    );
+  }
 
-                  if (mounted && !_isDisposed) {
-                    setState(() {
-                      _pageLoaded = true;
-                    });
-                  }
+  Widget _buildWebView() {
+    if (!_isVisible) {
+      return Scaffold(backgroundColor: Theme.of(context).colorScheme.surface);
+    }
 
-                  if (url != null && url.toString().startsWith(_urlPrefix)) {
-                    try {
-                      final script = await _getThemeInjectionScript();
-                      await controller.evaluateJavascript(source: script);
-                    } catch (e) {
-                      debugPrint('Failed to inject theme script: $e');
-                      // Even if theme injection fails, mark as applied to continue
-                      if (mounted && !_isDisposed) {
-                        setState(() {
-                          _themeApplied = true;
-                          _updateInitialLoadState();
-                        });
-                      }
-                    }
-                  } else {
-                    if (mounted && !_isDisposed) {
-                      setState(() {
-                        _themeApplied = false;
-                        _updateInitialLoadState();
+    final backgroundColor = Theme.of(context).colorScheme.surface;
+    final bool isThemedPage =
+        _controller?.getUrl().toString().startsWith(_urlPrefix) ?? false;
+    final bool showWebView =
+        _pageLoaded && (isThemedPage ? _themeApplied : true);
+
+    return Scaffold(
+      backgroundColor: showWebView ? backgroundColor : null,
+      body: SafeArea(
+        child: Stack(
+          children: [
+            InAppWebView(
+              key: webViewKey,
+              initialUrlRequest: URLRequest(
+                url: WebUri.uri(
+                  Uri.parse(_urlPrefix).replace(path: widget.url),
+                ),
+              ),
+              initialSettings: InAppWebViewSettings(
+                javaScriptEnabled: true,
+                isInspectable: kDebugMode,
+                mediaPlaybackRequiresUserGesture: false,
+                allowsInlineMediaPlayback: true,
+                useHybridComposition: true,
+                cacheEnabled: true,
+                transparentBackground: true,
+                useShouldOverrideUrlLoading: true,
+                domStorageEnabled: true,
+                databaseEnabled: true,
+                clearCache: false,
+                clearSessionCache: false,
+                allowFileAccessFromFileURLs: false,
+                allowUniversalAccessFromFileURLs: false,
+                disableVerticalScroll: false,
+                disableHorizontalScroll: false,
+                allowsBackForwardNavigationGestures: true,
+                hardwareAcceleration: true,
+                allowsPictureInPictureMediaPlayback: true,
+                mixedContentMode:
+                    MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
+              ),
+              pullToRefreshController: _pullToRefreshController,
+              onWebViewCreated: _onWebViewCreated,
+              onLoadStop: (controller, url) {
+                _pullToRefreshController?.endRefreshing();
+                if (mounted) {
+                  setState(() => _pageLoaded = true);
+                }
+                if (url != null && url.toString().startsWith(_urlPrefix)) {
+                  _getThemeInjectionScript()
+                      .then((script) {
+                        controller.evaluateJavascript(source: script);
+                      })
+                      .catchError((e) {
+                        debugPrint('Failed to inject theme script: $e');
+                        if (mounted) setState(() => _themeApplied = true);
                       });
-                    }
+                } else {
+                  if (mounted) setState(() => _themeApplied = false);
+                }
+                _updateInitialLoadState();
+              },
+              onProgressChanged: (controller, progress) {
+                if (mounted) {
+                  setState(() => _progress = progress / 100.0);
+                }
+              },
+              shouldOverrideUrlLoading: (controller, navigationAction) async {
+                if (mounted) {
+                  setState(() {
+                    _themeApplied = false;
+                    _pageLoaded = false;
+                    _progress = 0;
+                  });
+                }
+                var uri = navigationAction.request.url!;
+                if (!["http", "https"].contains(uri.scheme)) {
+                  if (await canLaunchUrl(Uri.parse(uri.toString()))) {
+                    await launchUrl(Uri.parse(uri.toString()));
+                    return NavigationActionPolicy.CANCEL;
                   }
-                },
-                onProgressChanged: (controller, progress) async {
-                  if (mounted && !_isDisposed) {
-                    setState(() {
-                      _progress = progress / 100.0;
-                    });
-                  }
-                },
-                shouldOverrideUrlLoading: (controller, navigationAction) async {
-                  if (mounted && !_isDisposed) {
-                    setState(() {
-                      _themeApplied = false;
-                      _pageLoaded = false;
-                      _progress = 0;
-                    });
-                  }
-                  var uri = navigationAction.request.url!;
-
-                  if (!["http", "https"].contains(uri.scheme)) {
-                    if (await canLaunchUrl(Uri.parse(uri.toString()))) {
-                      await launchUrl(Uri.parse(uri.toString()));
-                      return NavigationActionPolicy.CANCEL;
-                    }
-                  }
-                  return NavigationActionPolicy.ALLOW;
-                },
-                onReceivedError: (controller, request, error) {
-                  debugPrint('Error loading page: ${error.description}');
-                  if (!_isDisposed) {
-                    try {
-                      _pullToRefreshController?.endRefreshing();
-                    } catch (e) {
-                      debugPrint('Error ending refresh on error: $e');
-                    }
-                  }
-
-                  // Only show error message for critical errors
-                  if (mounted &&
-                      !_isDisposed &&
-                      (error.type == WebResourceErrorType.HOST_LOOKUP ||
-                          error.type == WebResourceErrorType.TIMEOUT)) {
+                }
+                return NavigationActionPolicy.ALLOW;
+              },
+              onReceivedError: (controller, request, error) {
+                debugPrint('Error loading page: ${error.description}');
+                _pullToRefreshController?.endRefreshing();
+                if (mounted) {
+                  if (error.type == WebResourceErrorType.HOST_LOOKUP ||
+                      error.type == WebResourceErrorType.TIMEOUT) {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text('Network error: ${error.description}'),
@@ -550,49 +501,41 @@ class _WebviewScreenState extends State<WebviewScreen> {
                       ),
                     );
                   }
-
-                  if (mounted && !_isDisposed) {
-                    setState(() {
-                      _pageLoaded = true;
-                      _themeApplied = false;
-                      _progress = 1.0;
-                    });
-                    _updateInitialLoadState();
-                  }
-                },
-                onRenderProcessGone: (controller, detail) {
-                  // Handle renderer process crashes
-                  debugPrint('WebView renderer process crashed');
-                  _handleWebViewCrash();
-                },
-              ),
-
-              if (!_pageLoaded && _progress < 1.0)
-                LinearProgressIndicator(
-                  value: _progress > 0 ? _progress : null,
-                ),
-
-              if (!_pageLoaded && _isInitialLoad)
-                const Center(child: CircularProgressIndicator()),
-            ],
-          ),
+                  setState(() {
+                    _pageLoaded = true;
+                    _themeApplied = false;
+                    _progress = 1.0;
+                  });
+                  _updateInitialLoadState();
+                }
+              },
+              onRenderProcessGone: (controller, detail) {
+                debugPrint('WebView renderer process crashed');
+                _handleWebViewCrash();
+              },
+            ),
+            if (!_pageLoaded && _progress < 1.0)
+              LinearProgressIndicator(value: _progress > 0 ? _progress : null),
+            if (!_pageLoaded && _isInitialLoad)
+              const Center(child: CircularProgressIndicator()),
+          ],
         ),
-        floatingActionButton:
-            showWebView
-                ? FloatingActionButton.small(
-                  onPressed: () {
-                    SharePlus.instance.share(
-                      ShareParams(
-                        subject: 'Read this article without Paywall',
-                        title: 'Share Freedium link',
-                        uri: Uri.parse(_urlPrefix).replace(path: widget.url),
-                      ),
-                    );
-                  },
-                  child: const Icon(Icons.share),
-                )
-                : null,
       ),
+      floatingActionButton:
+          showWebView
+              ? FloatingActionButton.small(
+                onPressed: () {
+                  SharePlus.instance.share(
+                    ShareParams(
+                      subject: 'Read this article without Paywall',
+                      title: 'Share Freedium link',
+                      uri: Uri.parse(_urlPrefix).replace(path: widget.url),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.share),
+              )
+              : null,
     );
   }
 }
