@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_inappwebview: ^6.1.5
-  google_fonts: ^6.2.1
+  google_fonts: ^6.3.0
   listen_sharing_intent: ^1.9.2
   share_plus: ^11.0.0
   super_clipboard: ^0.9.1
