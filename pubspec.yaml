@@ -7,10 +7,11 @@ environment:
   sdk: ^3.7.0
 
 dependencies:
-  dynamic_color: ^1.7.0
+  dynamic_color: ^1.8.1
   flutter:
     sdk: flutter
   flutter_inappwebview: ^6.1.5
+  flutter_riverpod: ^2.6.1
   google_fonts: ^6.2.1
   listen_sharing_intent: ^1.9.2
   share_plus: ^11.0.0
@@ -27,6 +28,7 @@ flutter:
   assets:
     - assets/icon/
     - assets/js/
+    - assets/css/
 
 flutter_launcher_icons:
   android: "ic_launcher"
