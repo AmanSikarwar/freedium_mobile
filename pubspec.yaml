@@ -7,14 +7,14 @@ environment:
   sdk: ^3.7.0
 
 dependencies:
-  dynamic_color: ^1.7.0
+  dynamic_color: ^1.8.1
   flutter:
     sdk: flutter
   flutter_inappwebview: ^6.1.5
+  flutter_riverpod: ^2.6.1
   google_fonts: ^6.2.1
   listen_sharing_intent: ^1.9.2
   share_plus: ^11.0.0
-  super_clipboard: ^0.9.1
   url_launcher: ^6.3.2
 
 dev_dependencies:
@@ -25,9 +25,10 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-
   assets:
-    - assets/icon/icon.png
+    - assets/icon/
+    - assets/js/
+    - assets/css/
 
 flutter_launcher_icons:
   android: "ic_launcher"

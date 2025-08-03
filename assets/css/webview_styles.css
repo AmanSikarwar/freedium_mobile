@@ -1,0 +1,244 @@
+body {
+  background-color: var(--app-surface) !important;
+  color: var(--app-on-surface) !important;
+}
+#header {
+  background-color: var(--app-surface) !important;
+  color: var(--app-on-surface) !important;
+  box-shadow: 0 1px 3px 0 var(--app-shadow), 0 1px 2px -1px var(--app-shadow) !important;
+}
+#progress {
+  background: linear-gradient(
+    to right,
+    var(--app-primary) var(--scroll),
+    transparent 0
+  ) !important;
+}
+a {
+  color: var(--app-primary) !important;
+}
+a.text-green-500,
+.text-green-500 {
+  color: var(--app-primary) !important;
+}
+#header a.text-green-500 {
+  color: var(--app-primary) !important;
+}
+nav ul a {
+  color: var(--app-on-surface-variant) !important;
+}
+nav ul a:hover {
+  color: var(--app-on-surface) !important;
+}
+button.bg-green-500,
+button.bg-blue-500,
+button.bg-blue-800 {
+  background-color: var(--app-primary) !important;
+  color: var(--app-on-primary) !important;
+}
+button.bg-green-500:hover,
+button.bg-blue-500:hover,
+button.bg-blue-800:hover {
+  filter: brightness(1.1);
+}
+button.bg-green-500 a,
+.dark button.bg-green-500 a {
+  color: var(--app-on-primary) !important;
+}
+button#openProblemModal {
+  background-color: var(--app-error) !important;
+  color: var(--app-on-error) !important;
+}
+button#openProblemModal:hover {
+  background-color: var(--app-error-container) !important;
+  color: var(--app-on-error-container) !important;
+}
+button.bg-red-400 {
+  background-color: var(--app-error) !important;
+  color: var(--app-on-error) !important;
+}
+button.bg-blue-400 {
+  background-color: var(--app-secondary) !important;
+  color: var(--app-on-secondary) !important;
+}
+button.bg-yellow-400 {
+  background-color: var(--app-tertiary) !important;
+  color: var(--app-on-tertiary) !important;
+}
+button.bg-gray-300 {
+  background-color: var(--app-surface-container-high) !important;
+  color: var(--app-on-surface-variant) !important;
+}
+button.bg-gray-700 {
+  background-color: var(--app-surface-variant) !important;
+  color: var(--app-on-surface-variant) !important;
+}
+button.bg-gray-300:hover,
+button.bg-gray-700:hover {
+  filter: brightness(0.9);
+}
+button.bg-red-400,
+button.bg-blue-400,
+button.bg-yellow-400,
+button.bg-green-500,
+button.bg-blue-500,
+button.bg-blue-800,
+button.bg-gray-700 {
+  /* Re-apply specific on-colors if needed, overriding .text-white */
+  /* Patreon button */
+  &.bg-red-400 {
+    color: var(--app-on-error) !important;
+  }
+  /* Ko-fi button */
+  &.bg-blue-400 {
+    color: var(--app-on-secondary) !important;
+  }
+  /* Liberapay button */
+  &.bg-yellow-400 {
+    color: var(--app-on-tertiary) !important;
+  }
+  /* Primary buttons */
+  &.bg-green-500,
+  &.bg-blue-500,
+  &.bg-blue-800 {
+    color: var(--app-on-primary) !important;
+  }
+  /* GitHub button */
+  &.bg-gray-700 {
+    color: var(--app-on-surface-variant) !important;
+  }
+}
+button.text-gray-800 {
+  color: var(--app-on-surface-variant) !important;
+}
+#nav-toggle {
+  color: var(--app-on-surface-variant) !important;
+  border-color: var(--app-outline) !important;
+}
+#nav-toggle:hover {
+  color: var(--app-on-surface) !important;
+  border-color: var(--app-primary) !important;
+}
+.text-gray-900,
+.text-gray-800,
+.text-black {
+  color: var(--app-on-surface) !important;
+}
+.dark .text-gray-100,
+.dark .text-gray-200,
+.dark .text-white {
+  color: var(--app-on-surface) !important;
+}
+.text-gray-500,
+.text-gray-600 {
+  color: var(--app-on-surface-variant) !important;
+}
+.dark .text-gray-500,
+.dark .text-gray-400 {
+  color: var(--app-on-surface-variant) !important;
+}
+.bg-white {
+  background-color: var(--app-surface) !important;
+}
+.dark .bg-gray-800 {
+  background-color: var(--app-surface) !important;
+}
+.bg-gray-100 {
+  background-color: var(--app-surface-container-low) !important;
+}
+.dark .bg-gray-600 {
+  background-color: var(--app-surface-container) !important;
+}
+.text-yellow-500,
+.dark .text-yellow-400 {
+  color: var(--app-tertiary) !important;
+}
+.border,
+.border-gray-300,
+.dark .border-gray-700,
+.border-gray-600 {
+  border-color: var(--app-outline-variant) !important;
+}
+pre {
+  background-color: var(--app-surface-container-low) !important;
+  border-color: var(--app-outline-variant) !important;
+  color: var(--app-on-surface-variant) !important;
+}
+pre code {
+  background-color: transparent !important;
+  color: inherit !important;
+}
+p code,
+ul code,
+li code,
+code:not(pre *) {
+  background-color: var(--app-surface-container-high) !important;
+  color: var(--app-on-surface-variant) !important;
+  padding: 0.1em 0.3em;
+  border-radius: 4px;
+}
+.hljs-copy {
+  background-color: var(--app-surface-container-high) !important;
+  color: var(--app-on-surface-variant) !important;
+  border: 1px solid var(--app-outline-variant) !important;
+  border-radius: 4px;
+  padding: 2px 6px !important;
+  margin: 4px !important;
+}
+.hljs-copy:hover {
+  background-color: var(--app-surface-container-highest) !important;
+}
+.bg-green-100,
+.dark .bg-green-800 {
+  color: var(--app-on-primary-container) !important;
+  background-color: var(--app-primary-container) !important;
+  padding: 0.25em 0.5em !important;
+  border-radius: 9999px !important;
+  font-size: 0.8rem !important;
+}
+.bg-green-100 span,
+.dark .bg-green-800 span {
+  color: var(--app-on-primary-container) !important;
+}
+
+.modal-content {
+  background-color: var(--app-surface-container) !important;
+  color: var(--app-on-surface) !important;
+}
+#problem-description {
+  background-color: var(--app-surface-container) !important;
+  color: var(--app-on-surface) !important;
+  border: 1px solid var(--app-outline) !important;
+  border-radius: 4px;
+}
+#problem-description::placeholder {
+  color: var(--app-on-surface-variant) !important;
+}
+figcaption {
+  color: var(--app-on-surface-variant) !important;
+}
+svg {
+  fill: currentColor !important;
+}
+#openProblemModal svg {
+  fill: var(--app-on-error) !important;
+}
+#darkModeToggle svg {
+  fill: var(--app-on-primary) !important;
+}
+.notification-container > div {
+  background-color: var(--app-surface-container-low) !important;
+  border-color: var(--app-outline-variant) !important;
+  color: var(--app-on-surface) !important;
+}
+#darkModeToggle {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+}
