@@ -1,17 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
+import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  bool _isUpdateCardDismissed = false;
+
+  @override
+  Widget build(BuildContext context) {
     final homeState = ref.watch(homeProvider);
     final homeNotifier = ref.read(homeProvider.notifier);
+    final updateAsync = ref.watch(updateCheckProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -42,6 +52,20 @@ class HomeScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: [
+              updateAsync.when(
+                data: (updateInfo) {
+                  if (updateInfo != null && !_isUpdateCardDismissed) {
+                    return UpdateCard(
+                      updateInfo: updateInfo,
+                      onDismissed:
+                          () => setState(() => _isUpdateCardDismissed = true),
+                    );
+                  }
+                  return const SizedBox.shrink();
+                },
+                loading: () => const SizedBox.shrink(),
+                error: (err, stack) => const SizedBox.shrink(),
+              ),
               const Text(
                 AppConstants.appDescription,
                 textAlign: TextAlign.center,

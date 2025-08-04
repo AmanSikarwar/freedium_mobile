@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/features/home/presentation/widgets/update_section.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 void showAppAboutDialog(BuildContext context) {
@@ -29,6 +30,7 @@ void showAppAboutDialog(BuildContext context) {
         'Just paste the URL of the article you want to read and '
         'Freedium will take care of the rest!\n\n',
       ),
+      const UpdateSection(),
       Wrap(
         alignment: WrapAlignment.start,
         children: [
