@@ -93,7 +93,26 @@ class WebviewNotifier extends StateNotifier<WebviewState> {
         return NavigationActionPolicy.CANCEL;
       }
     }
-    return NavigationActionPolicy.ALLOW;
+
+    final freediumUri = Uri.parse(AppConstants.freediumUrl);
+    if (uri.host == freediumUri.host) {
+      return NavigationActionPolicy.ALLOW;
+    }
+
+    try {
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      }
+    } catch (e) {
+      debugPrint('Failed to launch URL: $e');
+      if (_context != null && _context!.mounted) {
+        ScaffoldMessenger.of(_context!).showSnackBar(
+          SnackBar(content: Text('Could not open link: ${uri.toString()}')),
+        );
+      }
+    }
+
+    return NavigationActionPolicy.CANCEL;
   }
 
   void onReceivedError(
