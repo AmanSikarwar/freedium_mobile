@@ -15,6 +15,7 @@ dependencies:
   google_fonts: ^6.3.0
   listen_sharing_intent: ^1.9.2
   share_plus: ^11.0.0
+  shimmer: ^3.0.0
   url_launcher: ^6.3.2
 
 dev_dependencies:
