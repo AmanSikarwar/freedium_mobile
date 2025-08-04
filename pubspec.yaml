@@ -1,7 +1,7 @@
 name: freedium_mobile
 description: "An app to read Medium articles without hitting the paywall"
 publish_to: "none"
-version: 0.3.1
+version: 0.4.0
 
 environment:
   sdk: ^3.7.0
@@ -12,11 +12,12 @@ dependencies:
     sdk: flutter
   flutter_inappwebview: ^6.1.5
   flutter_riverpod: ^2.6.1
-  google_fonts: ^6.2.1
+  google_fonts: ^6.3.0
   http: ^1.4.0
   listen_sharing_intent: ^1.9.2
   pub_semver: ^2.2.0
   share_plus: ^11.0.0
+  shimmer: ^3.0.0
   url_launcher: ^6.3.2
 
 dev_dependencies:

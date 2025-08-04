@@ -56,17 +56,19 @@ class App extends ConsumerWidget {
     });
 
     if (!hasHandledInitialIntent) {
-      ref.read(initialIntentHandledProvider.notifier).state = true;
-      ref.read(intentServiceProvider).getInitialIntent().then((value) {
-        if (value.isNotEmpty) {
-          final url = value.first.path;
-          if (url.isNotEmpty) {
-            Future.delayed(const Duration(milliseconds: 400)).then((_) {
-              _navigateToWebview(url);
-              ReceiveSharingIntent.instance.reset();
-            });
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        ref.read(initialIntentHandledProvider.notifier).state = true;
+        ref.read(intentServiceProvider).getInitialIntent().then((value) {
+          if (value.isNotEmpty) {
+            final url = value.first.path;
+            if (url.isNotEmpty) {
+              Future.delayed(const Duration(milliseconds: 400)).then((_) {
+                _navigateToWebview(url);
+                ReceiveSharingIntent.instance.reset();
+              });
+            }
           }
-        }
+        });
       });
     }
 

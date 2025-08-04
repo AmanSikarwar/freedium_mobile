@@ -1,5 +1,4 @@
 (function () {
-  // Defensive programming: wait for DOM to be ready
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", applyTheme);
   } else {
@@ -44,25 +43,23 @@
       customCSS.textContent = `%CUSTOM_CSS_CONTENT%`;
       document.head.appendChild(customCSS);
 
-      // Attempt to override highlight.js theme based on dark mode
       const desiredHljsTheme = isDarkMode ? "github-dark" : "github";
       try {
         const existingLink = document.querySelector(
           'link[href*="highlight.js/styles"]'
         );
         if (existingLink && !existingLink.href.includes(desiredHljsTheme)) {
-          existingLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${desiredHljsTheme}.min.css`;
+          existingLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/${desiredHljsTheme}.min.css`;
         } else if (!existingLink) {
           const link = document.createElement("link");
           link.rel = "stylesheet";
-          link.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${desiredHljsTheme}.min.css`;
+          link.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/${desiredHljsTheme}.min.css`;
           document.head.appendChild(link);
         }
       } catch (e) {
         console.warn("Failed to set HLJS theme:", e);
       }
 
-      // Override theme change function with error handling
       try {
         if (window.changeTheme) {
           window.changeTheme = function (themeName) {
@@ -70,14 +67,159 @@
               "Freedium App: Preventing web page theme change:",
               themeName
             );
-            return false; // Prevent original function execution
+            return false;
           };
         }
       } catch (e) {
         console.warn("Failed to override changeTheme function:", e);
       }
 
-      // Safely call Flutter handler
+      try {
+        function overrideCopyButtons() {
+          const copyButtons = document.querySelectorAll(".hljs-copy");
+          copyButtons.forEach((button) => {
+            const preElement = button.closest("pre");
+            let codeContent = "";
+
+            if (preElement) {
+              const codeElement = preElement.querySelector("code");
+              if (codeElement) {
+                codeContent = codeElement.textContent || codeElement.innerText;
+              }
+            }
+
+            if (!codeContent && button.contentCopy) {
+              codeContent = button.contentCopy;
+            }
+
+            const newButton = button.cloneNode(true);
+            button.parentNode.replaceChild(newButton, button);
+
+            newButton.contentCopy = codeContent;
+
+            newButton.addEventListener("click", function () {
+              const button = this;
+              const textToCopy = button.contentCopy || codeContent;
+
+              if (!textToCopy) {
+                console.error("No content to copy");
+                return;
+              }
+
+              function onCopySuccess() {
+                if (
+                  window.flutter_inappwebview &&
+                  window.flutter_inappwebview.callHandler
+                ) {
+                  window.flutter_inappwebview.callHandler(
+                    "Toaster",
+                    "Text copied to clipboard"
+                  );
+                }
+              }
+
+              function onCopyError(err) {
+                console.error("Failed to copy text: ", err);
+              }
+
+              if (navigator.clipboard && window.isSecureContext) {
+                navigator.clipboard
+                  .writeText(textToCopy)
+                  .then(onCopySuccess)
+                  .catch(function (err) {
+                    console.warn(
+                      "Modern clipboard failed, trying fallback:",
+                      err
+                    );
+                    try {
+                      const textArea = document.createElement("textarea");
+                      textArea.value = textToCopy;
+                      textArea.style.position = "fixed";
+                      textArea.style.left = "-999999px";
+                      textArea.style.top = "-999999px";
+                      document.body.appendChild(textArea);
+                      textArea.focus();
+                      textArea.select();
+                      const successful = document.execCommand("copy");
+                      textArea.remove();
+
+                      if (successful) {
+                        onCopySuccess();
+                      } else {
+                        onCopyError(new Error("execCommand copy failed"));
+                      }
+                    } catch (fallbackErr) {
+                      onCopyError(fallbackErr);
+                    }
+                  });
+              } else {
+                try {
+                  const textArea = document.createElement("textarea");
+                  textArea.value = textToCopy;
+                  textArea.style.position = "fixed";
+                  textArea.style.left = "-999999px";
+                  textArea.style.top = "-999999px";
+                  document.body.appendChild(textArea);
+                  textArea.focus();
+                  textArea.select();
+                  const successful = document.execCommand("copy");
+                  textArea.remove();
+
+                  if (successful) {
+                    onCopySuccess();
+                  } else {
+                    onCopyError(new Error("execCommand copy failed"));
+                  }
+                } catch (err) {
+                  onCopyError(err);
+                }
+              }
+            });
+          });
+        }
+
+        setTimeout(overrideCopyButtons, 500);
+
+        document.addEventListener("DOMContentLoaded", function () {
+          setTimeout(overrideCopyButtons, 100);
+        });
+
+        setTimeout(function () {
+          overrideCopyButtons();
+          setTimeout(overrideCopyButtons, 1000);
+        }, 1000);
+
+        const observer = new MutationObserver(function (mutations) {
+          mutations.forEach(function (mutation) {
+            if (mutation.addedNodes.length > 0) {
+              mutation.addedNodes.forEach(function (node) {
+                if (node.nodeType === 1) {
+                  if (node.classList && node.classList.contains("hljs-copy")) {
+                    setTimeout(overrideCopyButtons, 200);
+                  } else if (node.querySelectorAll) {
+                    const copyButtons = node.querySelectorAll(".hljs-copy");
+                    if (copyButtons.length > 0) {
+                      setTimeout(overrideCopyButtons, 200);
+                    }
+                  }
+                }
+              });
+            }
+          });
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true,
+        });
+
+        setTimeout(() => {
+          observer.disconnect();
+        }, 10000);
+      } catch (e) {
+        console.warn("Failed to override copy functionality:", e);
+      }
+
       try {
         if (
           window.flutter_inappwebview &&
@@ -90,7 +232,6 @@
       }
     } catch (e) {
       console.error("Theme application failed:", e);
-      // Still try to signal completion even if theme failed
       try {
         if (
           window.flutter_inappwebview &&

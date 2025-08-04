@@ -19,11 +19,8 @@ void showAppAboutDialog(BuildContext context) {
   showAboutDialog(
     context: context,
     applicationIcon: Image.asset('assets/icon/icon.png', width: 48, height: 48),
-    applicationName: 'Freedium',
-    applicationVersion: String.fromEnvironment(
-      'appVersion',
-      defaultValue: AppConstants.appVersion,
-    ),
+    applicationName: AppConstants.appName,
+    applicationVersion: AppConstants.appVersion,
     children: [
       const Text(
         'Freedium is a paywall bypasser for Medium articles.\n\n'

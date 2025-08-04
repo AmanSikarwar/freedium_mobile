@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
@@ -182,8 +183,8 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
               LinearProgressIndicator(
                 value: webviewState.progress > 0 ? webviewState.progress : null,
               ),
-            if (!webviewState.isPageLoaded && webviewState.isInitialLoad)
-              const Center(child: CircularProgressIndicator()),
+            if (!webviewState.isPageLoaded && webviewState.progress < 0.7)
+              const ArticleShimmer(),
           ],
         ),
       ),
