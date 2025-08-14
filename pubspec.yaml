@@ -16,7 +16,7 @@ dependencies:
   http: ^1.5.0
   listen_sharing_intent: ^1.9.2
   pub_semver: ^2.2.0
-  share_plus: ^11.0.0
+  share_plus: ^11.1.0
   shimmer: ^3.0.0
   url_launcher: ^6.3.2
 
