@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_inappwebview: ^6.1.5
-  flutter_riverpod: ^2.6.1
+  flutter_riverpod: ^3.0.0
   google_fonts: ^6.3.0
   http: ^1.5.0
   listen_sharing_intent: ^1.9.2
