@@ -1,125 +1,105 @@
-# Freedium Mobile - Copilot Instructions & Guidelines
+# Freedium Mobile - Copilot Instructions
 
-This document provides a set of instructions, architectural guidelines, and best practices for developing the Freedium Mobile application. The goal is to ensure the codebase remains clean, scalable, maintainable, and easy for multiple developers to contribute to.
+This Flutter app bypasses Medium paywalls by redirecting articles to Freedium.cfd. Key architecture and patterns:
 
-## 1. Guiding Principles
+## Core Architecture
 
-- **Separation of Concerns**: Code should be organized into distinct layers, primarily the Presentation, Domain, and Data layers. This makes the app more modular and testable.
-- **Unidirectional Data Flow**: Data flows in one direction: from the data layer to the presentation layer. UI events can trigger updates, but these updates must originate from the business logic or data layers, not directly within the widgets themselves.
-- **Immutability**: State objects and data models should be immutable to prevent unintended side effects and make state management more predictable.
-- **Dependency Injection**: Dependencies should be provided to classes rather than being created within them. This promotes loose coupling and improves testability.
+**Simple Feature-Based Structure**: Unlike full Clean Architecture, this app uses a simplified approach:
+- `lib/features/<feature>/presentation/` - UI screens and widgets  
+- `lib/features/<feature>/application/` - Riverpod providers and business logic
+- `lib/features/<feature>/domain/` - State models (e.g., `WebviewState`)
+- `lib/core/` - Shared services, constants, themes
 
-## 2. Recommended Architecture: Clean Architecture
+**Two Main Features**:
+- `home/` - URL input and navigation to WebView
+- `webview/` - WebView with dynamic theme injection for Freedium articles
 
-We will follow the principles of Clean Architecture, which divides the application into three primary layers.
+## State Management: Riverpod 3.0
 
-- **Presentation Layer**: Responsible for the UI and handling user input. It contains widgets and state management logic (Providers). It knows about the Domain Layer but not the Data Layer.
-- **Domain Layer**: The core of the application. It contains the business logic, use cases (application-specific business rules), and entities (business objects). This layer is independent of Flutter and any external packages.
-- **Data Layer**: Responsible for all data operations. It includes repositories, which abstract the data sources (API, local database, etc.), and the data sources themselves. This layer knows about the Domain Layer (to implement its interfaces) but not the Presentation Layer.
+**Current Provider Patterns**: This project uses Riverpod 3.0 with the new `Notifier`-based API:
+- Use `Notifier` instead of `StateNotifier` (no AutoDispose suffix needed)
+- Family providers use `NotifierProvider.family<WebviewNotifier, WebviewState, String>`
+- All provider refs are now just `Ref` (no generic parameters)
+- Constructor-based notifier initialization with `WebviewNotifier.new`
 
-### Folder Structure
+**Provider Types Used**:
+- `NotifierProvider.family` for URL-specific WebView state
+- `StreamProvider` for intent/sharing handling (`intentStreamProvider`)
+- `FutureProvider` for async operations (`dynamicThemeProvider`, `updateCheckProvider`)  
+- `Provider` for services (`themeInjectorServiceProvider`, `intentServiceProvider`)
 
-To enforce this separation, the `lib` directory should be organized by feature, with each feature containing its own layers:
+**Key Provider Examples**:
+```dart
+// Family provider for URL-specific WebView state  
+final webviewProvider = NotifierProvider.family<WebviewNotifier, WebviewState, String>(WebviewNotifier.new);
 
-```
-lib/
-├── core/                  # Shared code, utilities, and base classes
-│   ├── constants/         # Application-wide constants
-│   ├── services/          # Abstracted services (e.g., API, storage)
-│   ├── theme/             # App theme definitions
-│   └── widgets/           # Common, reusable widgets
-│
-├── features/              # Feature-specific code
-│   └── <feature_name>/
-│       ├── presentation/
-│       │   ├── <screen_name>_screen.dart
-│       │   └── widgets/
-│       │       └── <widget_name>.dart
-│       ├── application/   # State management and use cases
-│       │   ├── <state_provider_name>.dart
-│       │   └── use_cases/
-│       │       └── <use_case_name>.dart
-│       ├── domain/        # Business models and repository interfaces
-│       │   ├── <model_name>.dart
-│       │   └── repositories/
-│       │       └── <repository_interface>.dart
-│       └── data/          # Data sources and repository implementations
-│           ├── datasources/
-│           │   └── <data_source_name>.dart
-│           └── repositories/
-│               └── <repository_implementation>.dart
-│
-├── app.dart               # MaterialApp and root widget setup
-└── main.dart              # App entry point
+// Stream for handling shared URLs from other apps
+final intentStreamProvider = StreamProvider<String>((ref) { ... });
 ```
 
-## 3. State Management: Riverpod
+## WebView Integration Patterns
 
-We use the **Riverpod** package for state management and dependency injection.
+**Theme Injection System**: The app dynamically injects Flutter's Material theme into Freedium webpages:
+- `ThemeInjectorService` converts Flutter `ColorScheme` to CSS custom properties (e.g., `--app-primary`, `--app-surface`)
+- `assets/js/theme.js` template with `%placeholders%` for dynamic values (theme mode, CSS vars, custom styles)
+- `assets/css/webview_styles.css` contains Freedium-specific styling using CSS custom properties
+- Theme injection only occurs for `freedium.cfd` URLs; external links open in system browser
 
-- **Why Riverpod?**: It offers compile-time safety, is easy to test, and allows for providing dependencies and managing state without being tied to the widget tree.
+**WebView State Management**:
+- `WebviewState` tracks loading progress, theme application status, and controller instance
+- JavaScript handlers (`themeApplied`, `Toaster`) enable webpage-to-app communication via `addJavaScriptHandler`
+- Use `ref.listen()` pattern for navigation and lifecycle management in `app.dart`
+- Constructor injection pattern: `WebviewNotifier(this.url)` with URL as constructor parameter
 
-### Provider Naming Conventions:
+**Intent Handling**: App processes shared URLs from other apps via `listen_sharing_intent`:
+- `IntentService` wraps the plugin in Riverpod providers for reactive stream handling
+- `app.dart` handles both initial intents and streaming intents with duplicate prevention logic
+- Navigation uses route name checking (`/webview/$url`) to prevent duplicate WebView instances
 
-- **`myLogicProvider`**: For simple providers that expose a service or a value.
-- **`myLogicProvider.notifier`**: To access the `StateNotifier` class itself to call its methods.
-- **`myLogicProvider` (watching)**: To listen to the state of a `StateNotifier` and rebuild the UI when it changes.
+## Key Development Patterns
 
-### Best Practices:
+**Navigation**: Global `navigatorKey` for programmatic navigation from providers:
+```dart
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+// Use in providers: navigatorKey.currentState?.push(...)
+```
 
-- **Use `StateNotifierProvider`**: For managing complex state that can change over time. The state object itself should be immutable.
-- **Use `Provider`**: For exposing dependency-injected services (e.g., `UserRepository`).
-- **Use `FutureProvider` / `StreamProvider`**: For handling asynchronous data from APIs or streams.
-- **Use `.family`**: To create providers that take external parameters.
-- **Keep Providers Focused**: A provider should have a single responsibility.
+**Asset Loading**: Bundle JavaScript/CSS files are loaded via `rootBundle.loadString()` in `ThemeInjectorService`:
+- Template substitution pattern: replace `%placeholders%` in loaded assets with runtime values
+- CSS custom properties bridge Flutter theme to web content
 
-## 4. Code Style and Conventions
+**Dynamic Theming**: Uses `dynamic_color` package for Material You support with graceful fallback:
+- `DynamicColorPlugin.getCorePalette()` for system color extraction
+- Fallback to default Material 3 theme when dynamic colors unavailable
 
-We adhere to the official [Effective Dart](https://dart.dev/effective-dart) guidelines. The `flutter_lints` package is used to enforce these rules.
+**State Immutability**: All state objects use `copyWith()` pattern for updates with partial field updates
 
-### Naming
+**WebView Configuration**: Comprehensive `InAppWebViewSettings` in `webview_screen.dart`:
+- JavaScript enabled with debug-only inspection
+- Hybrid composition for performance, cache enabled for efficiency
+- Security: disabled file access, mixed content compatibility mode
 
-- **Files**: `snake_case.dart` (e.g., `home_screen.dart`).
-- **Classes & Enums**: `PascalCase` (e.g., `HomeViewModel`, `Status`).
-- **Variables & Functions**: `camelCase` (e.g., `userName`, `fetchUserData`).
-- **Constants**: `camelCase` (e.g., `defaultPadding`).
-- **Widgets**: Name widgets for what they are or do (e.g., `UserProfileCard`).
-- **Screens**: Suffix screen widgets with `Screen` (e.g., `HomeScreen`).
-- **Providers**: Suffix provider names with `Provider` (e.g., `userServiceProvider`).
+## Build & Development
 
-### Formatting
+**Dependencies**: 
+- Core: `flutter_riverpod: ^3.0.0`, `flutter_inappwebview: ^6.1.5`
+- Platform: `listen_sharing_intent`, `dynamic_color`, `share_plus`
+- Tooling: `flutter_lints: ^6.0.0` (standard Effective Dart rules)
 
-- Run `dart format .` regularly to ensure consistent formatting.
-- Add trailing commas to parameter lists with multiple lines to improve auto-formatting.
-- Keep line length under 80 characters where possible for better readability.
+**Commands**:
+- `flutter pub get` - Install dependencies
+- `flutter run` - Run in debug mode  
+- `flutter build apk --release` - Build Android APK
+- `dart format .` - Format code (no specific line length configured)
 
-### Documentation
+**Debug Patterns**:
+- WebView inspection enabled in debug mode via `isInspectable: kDebugMode`
+- `debugPrint()` for error logging (theme injection failures, WebView crashes)
+- JavaScript error handling with graceful fallbacks (theme application continues on script errors)
 
-- **Public APIs**: All public functions, classes, and variables should have Dartdoc comments (`///`).
-- **Complex Logic**: Add comments (`//`) to explain complex or non-obvious parts of the code.
-- **`@override`**: Always use the `@override` annotation for overridden methods.
+**Error Handling**: Comprehensive WebView error management in `webview_provider.dart`:
+- `onReceivedError`: Network/loading failures with progress reset
+- `onRenderProcessGone`: Renderer crashes with user notification and reload option
+- Theme injection wrapped in try-catch with fallback success state
 
-## 5. Best Practices
-
-### Widgets
-
-- **Keep Widgets Small and Reusable**: Break down large widgets into smaller, more manageable ones.
-- **Prefer `const` Constructors**: Use `const` for widgets whenever possible to improve performance by reducing unnecessary rebuilds.
-- **Avoid Business Logic in Widgets**: The presentation layer should be as "dumb" as possible. UI widgets should only be responsible for displaying state and forwarding user events to the state management layer.
-
-### Asynchronous Code
-
-- **Use `async/await`**: For a clear, readable asynchronous style.
-- **Handle Errors Gracefully**: Always include `try-catch` blocks for operations that can fail, like network requests. In Riverpod, `AsyncValue` (`.when`, `.error`, `.loading`) should be used to handle different states of an async operation in the UI.
-
-### Asset Management
-
-- **Centralize Asset Paths**: Define asset paths as constants in a dedicated file (e.g., `core/constants/asset_constants.dart`) to avoid typos.
-- **Optimize Images**: Compress images and use appropriate formats (e.g., WebP) to reduce app size.
-- **Use `.svg` for Icons**: Prefer SVG for icons that need to scale without quality loss, using the `flutter_svg` package.
-
-### Testing
-
-- **Unit Tests**: Write unit tests for all business logic in the Domain and Data layers (Use Cases, Repositories).
-- **Widget Tests**: Write widget tests for all UI components and screens to verify UI state and behavior.
-- **Integration Tests**: Write integration tests for critical user flows to ensure all layers of the application work together correctly.
+**App Constants**: Centralized in `lib/core/constants/app_constants.dart` (Freedium URL, app info, regex patterns)

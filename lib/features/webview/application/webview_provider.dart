@@ -6,11 +6,17 @@ import 'package:freedium_mobile/features/webview/application/theme_injector_serv
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class WebviewNotifier extends StateNotifier<WebviewState> {
+class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
   BuildContext? _context;
+  final String url;
 
-  WebviewNotifier() : super(WebviewState());
+  WebviewNotifier(this.url);
+
+  @override
+  WebviewState build() {
+    return WebviewState();
+  }
 
   void setThemeInjector(
     ThemeInjectorService themeInjector,
@@ -180,7 +186,7 @@ class WebviewNotifier extends StateNotifier<WebviewState> {
   }
 }
 
-final webviewProvider = StateNotifierProvider.autoDispose
-    .family<WebviewNotifier, WebviewState, String>((ref, url) {
-      return WebviewNotifier();
-    });
+final webviewProvider =
+    NotifierProvider.family<WebviewNotifier, WebviewState, String>(
+      WebviewNotifier.new,
+    );

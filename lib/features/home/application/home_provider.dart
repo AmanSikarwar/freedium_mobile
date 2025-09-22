@@ -10,19 +10,17 @@ class HomeState {
   HomeState({required this.urlController, required this.formKey});
 }
 
-class HomeNotifier extends StateNotifier<HomeState> {
-  final Ref _ref;
-
-  HomeNotifier(this._ref)
-    : super(
-        HomeState(
-          urlController: TextEditingController(),
-          formKey: GlobalKey<FormState>(),
-        ),
-      );
+class HomeNotifier extends Notifier<HomeState> {
+  @override
+  HomeState build() {
+    return HomeState(
+      urlController: TextEditingController(),
+      formKey: GlobalKey<FormState>(),
+    );
+  }
 
   Future<void> pasteFromClipboard() async {
-    final clipboardText = await _ref.read(clipboardServiceProvider).paste();
+    final clipboardText = await ref.read(clipboardServiceProvider).paste();
     if (clipboardText != null) {
       state.urlController.text = clipboardText;
     }
@@ -37,14 +35,8 @@ class HomeNotifier extends StateNotifier<HomeState> {
       );
     }
   }
-
-  @override
-  void dispose() {
-    state.urlController.dispose();
-    super.dispose();
-  }
 }
 
-final homeProvider = StateNotifierProvider.autoDispose<HomeNotifier, HomeState>(
-  (ref) => HomeNotifier(ref),
+final homeProvider = NotifierProvider<HomeNotifier, HomeState>(
+  HomeNotifier.new,
 );
