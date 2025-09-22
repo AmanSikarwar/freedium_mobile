@@ -9,7 +9,19 @@ import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
-final initialIntentHandledProvider = StateProvider<bool>((ref) => false);
+class InitialIntentHandledNotifier extends Notifier<bool> {
+  @override
+  bool build() => false;
+
+  void setHandled() {
+    state = true;
+  }
+}
+
+final initialIntentHandledProvider =
+    NotifierProvider<InitialIntentHandledNotifier, bool>(
+      InitialIntentHandledNotifier.new,
+    );
 
 class App extends ConsumerWidget {
   const App({super.key});
@@ -57,7 +69,7 @@ class App extends ConsumerWidget {
 
     if (!hasHandledInitialIntent) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(initialIntentHandledProvider.notifier).state = true;
+        ref.read(initialIntentHandledProvider.notifier).setHandled();
         ref.read(intentServiceProvider).getInitialIntent().then((value) {
           if (value.isNotEmpty) {
             final url = value.first.path;
