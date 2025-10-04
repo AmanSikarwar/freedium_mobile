@@ -159,34 +159,68 @@ button.text-gray-800 {
 .border-gray-600 {
   border-color: var(--app-outline-variant) !important;
 }
-pre {
-  background-color: var(--app-surface-container-low) !important;
-  border-color: var(--app-outline-variant) !important;
-  color: var(--app-on-surface-variant) !important;
+/* Code block container styling - aggressive overrides */
+pre,
+pre.flex,
+pre.flex-col,
+.flex.flex-col.justify-center.border,
+pre[class*="flex"],
+pre[class*="border"] {
+  background-color: var(--app-surface-container-high) !important;
+  border-color: var(--app-outline) !important;
+  border-width: 2px !important;
+  color: var(--app-on-surface) !important;
+  padding: 16px !important;
+  border-radius: 8px !important;
+  overflow-x: auto !important;
+  margin: 1em 0 !important;
 }
-pre code {
-  background-color: transparent !important;
-  color: inherit !important;
+
+/* Code element inside pre */
+pre code,
+pre code.p-2,
+pre code[class*="bg-gray"],
+code.p-2.bg-gray-100,
+code.p-2.overflow-x-auto,
+.p-2.bg-gray-100.dark\:bg-gray-900 {
+  background-color: var(--app-surface-container-highest) !important;
+  color: var(--app-on-surface) !important;
+  display: block !important;
+  padding: 12px !important;
+  border-radius: 4px !important;
+}
+
+/* Override any Tailwind/Freedium gray backgrounds */
+.bg-gray-100,
+.dark\:bg-gray-900,
+pre .bg-gray-100,
+.dark pre .bg-gray-900 {
+  background-color: var(--app-surface-container-highest) !important;
 }
 p code,
 ul code,
 li code,
 code:not(pre *) {
-  background-color: var(--app-surface-container-high) !important;
-  color: var(--app-on-surface-variant) !important;
-  padding: 0.1em 0.3em;
-  border-radius: 4px;
+  background-color: var(--app-surface-container-highest) !important;
+  color: var(--app-primary) !important;
+  padding: 0.2em 0.4em !important;
+  border-radius: 4px !important;
+  font-weight: 500 !important;
 }
 .hljs-copy {
-  background-color: var(--app-surface-container-high) !important;
-  color: var(--app-on-surface-variant) !important;
-  border: 1px solid var(--app-outline-variant) !important;
+  background-color: var(--app-primary-container) !important;
+  color: var(--app-on-primary-container) !important;
+  border: 1px solid var(--app-outline) !important;
   border-radius: 4px;
-  padding: 2px 6px !important;
+  padding: 4px 8px !important;
   margin: 4px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
 }
 .hljs-copy:hover {
-  background-color: var(--app-surface-container-highest) !important;
+  background-color: var(--app-primary) !important;
+  color: var(--app-on-primary) !important;
+  filter: brightness(1.1) !important;
 }
 .bg-green-100,
 .dark .bg-green-800 {
@@ -268,4 +302,41 @@ svg {
 .main-content code,
 .main-content pre {
   font-size: calc(var(--app-font-size, 18px) * 0.875) !important;
+}
+
+/* Additional code block improvements */
+.main-content pre code {
+  display: block !important;
+  padding: 12px !important;
+  line-height: 1.6 !important;
+  background-color: var(--app-surface-container-highest) !important;
+  border-radius: 4px !important;
+}
+
+/* Ensure code blocks are distinguishable from content */
+.main-content pre {
+  margin: 1.5em 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+  background-color: var(--app-surface-container-high) !important;
+}
+
+/* Syntax highlighting adjustments for better contrast */
+.main-content pre .hljs {
+  background-color: transparent !important;
+}
+
+/* Universal override for all code block related classes */
+*[class*="bg-gray-100"],
+*[class*="bg-gray-900"],
+.p-2[class*="bg-"],
+code[class*="bg-"],
+pre code[class*="bg-"] {
+  background-color: var(--app-surface-container-highest) !important;
+  color: var(--app-on-surface) !important;
+}
+
+/* Specific overrides for common Freedium patterns */
+.overflow-x-auto[class*="bg-gray"],
+.p-2.overflow-x-auto {
+  background-color: var(--app-surface-container-highest) !important;
 }

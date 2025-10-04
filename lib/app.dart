@@ -48,6 +48,7 @@ class App extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeAsync = ref.watch(dynamicThemeProvider);
+    final themeMode = ref.watch(themeModeProvider);
     final hasHandledInitialIntent = ref.watch(initialIntentHandledProvider);
 
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {
@@ -91,7 +92,7 @@ class App extends ConsumerWidget {
             title: AppConstants.appName,
             theme: theme.lightTheme,
             darkTheme: theme.darkTheme,
-            themeMode: ThemeMode.system,
+            themeMode: themeMode,
             home: const HomeScreen(),
           ),
       loading:
