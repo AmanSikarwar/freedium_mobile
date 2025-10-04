@@ -4,6 +4,7 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
+import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -37,6 +38,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           fontWeight: FontWeight.bold,
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.brightness_6),
+            onPressed: () => showThemeChooserBottomSheet(context),
+            tooltip: 'Theme',
+          ),
           IconButton(
             icon: const Icon(Icons.info),
             onPressed: () => showAppAboutDialog(context),

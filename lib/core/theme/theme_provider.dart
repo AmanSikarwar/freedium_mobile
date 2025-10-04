@@ -1,6 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/services/theme_mode_service.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/theme/util.dart';
 
@@ -9,6 +10,26 @@ class AppThemeProvider {
   final ThemeData darkTheme;
 
   AppThemeProvider({required this.lightTheme, required this.darkTheme});
+}
+
+class ThemeModeNotifier extends Notifier<ThemeMode> {
+  final ThemeModeService _themeModeService = ThemeModeService();
+
+  @override
+  ThemeMode build() {
+    _loadThemeMode();
+    return ThemeMode.system;
+  }
+
+  Future<void> _loadThemeMode() async {
+    final themeMode = await _themeModeService.loadThemeMode();
+    state = themeMode;
+  }
+
+  Future<void> setThemeMode(ThemeMode themeMode) async {
+    state = themeMode;
+    await _themeModeService.saveThemeMode(themeMode);
+  }
 }
 
 final themeProvider = Provider<AppThemeProvider>((ref) {
@@ -43,3 +64,7 @@ final dynamicThemeProvider = FutureProvider<AppThemeProvider>((ref) async {
     darkTheme: appTheme.theme(darkColorScheme),
   );
 });
+
+final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
+  ThemeModeNotifier.new,
+);
