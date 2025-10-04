@@ -242,3 +242,30 @@ svg {
   padding: 0 !important;
   border: none !important;
 }
+
+/* Dynamic font size support */
+.main-content,
+.main-content p,
+.main-content li,
+.main-content span,
+.main-content div {
+  font-size: var(--app-font-size, 18px) !important;
+}
+
+.main-content h1 {
+  font-size: calc(var(--app-font-size, 18px) * 2) !important;
+}
+
+.main-content h2 {
+  font-size: calc(var(--app-font-size, 18px) * 1.5) !important;
+}
+
+.main-content h3,
+.main-content h4 {
+  font-size: calc(var(--app-font-size, 18px) * 1.25) !important;
+}
+
+.main-content code,
+.main-content pre {
+  font-size: calc(var(--app-font-size, 18px) * 0.875) !important;
+}

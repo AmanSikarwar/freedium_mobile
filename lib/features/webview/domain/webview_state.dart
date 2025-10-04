@@ -6,6 +6,7 @@ class WebviewState {
   final bool isThemeApplied;
   final bool isInitialLoad;
   final InAppWebViewController? controller;
+  final double fontSize;
 
   WebviewState({
     this.progress = 0.0,
@@ -13,6 +14,7 @@ class WebviewState {
     this.isThemeApplied = false,
     this.isInitialLoad = true,
     this.controller,
+    this.fontSize = 18.0,
   });
 
   WebviewState copyWith({
@@ -21,6 +23,7 @@ class WebviewState {
     bool? isThemeApplied,
     bool? isInitialLoad,
     InAppWebViewController? controller,
+    double? fontSize,
   }) {
     return WebviewState(
       progress: progress ?? this.progress,
@@ -28,6 +31,7 @@ class WebviewState {
       isThemeApplied: isThemeApplied ?? this.isThemeApplied,
       isInitialLoad: isInitialLoad ?? this.isInitialLoad,
       controller: controller ?? this.controller,
+      fontSize: fontSize ?? this.fontSize,
     );
   }
 }

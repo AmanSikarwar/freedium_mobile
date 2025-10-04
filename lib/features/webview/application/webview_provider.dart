@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
+  final FontSizeService _fontSizeService = FontSizeService();
   BuildContext? _context;
   final String url;
 
@@ -15,7 +17,13 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   @override
   WebviewState build() {
+    _loadFontSize();
     return WebviewState();
+  }
+
+  Future<void> _loadFontSize() async {
+    final savedFontSize = await _fontSizeService.loadFontSize();
+    state = state.copyWith(fontSize: savedFontSize);
   }
 
   void setThemeInjector(
@@ -71,7 +79,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
   Future<void> _injectTheme(InAppWebViewController controller) async {
     if (_context == null) return;
     try {
-      final script = await _themeInjector.getThemeInjectionScript(_context!);
+      final script = await _themeInjector.getThemeInjectionScript(
+        _context!,
+        fontSize: state.fontSize,
+      );
       controller.evaluateJavascript(source: script);
     } catch (e) {
       debugPrint('Failed to inject theme script: $e');
@@ -183,6 +194,16 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   void reload() {
     state.controller?.reload();
+  }
+
+  Future<void> updateFontSize(double fontSize) async {
+    state = state.copyWith(fontSize: fontSize);
+    await _fontSizeService.saveFontSize(fontSize);
+
+    if (state.controller != null && state.isPageLoaded) {
+      final script = _themeInjector.getFontSizeUpdateScript(fontSize);
+      state.controller!.evaluateJavascript(source: script);
+    }
   }
 }
 
