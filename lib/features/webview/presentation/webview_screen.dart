@@ -4,6 +4,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
+import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
@@ -188,24 +189,108 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
           ],
         ),
       ),
-      floatingActionButton:
-          showWebView
-              ? FloatingActionButton.small(
-                onPressed: () {
-                  SharePlus.instance.share(
-                    ShareParams(
-                      subject: 'Read this article without Paywall',
-                      title: 'Share Freedium link',
-                      uri: Uri.parse(
-                        AppConstants.freediumUrl,
-                      ).replace(path: widget.url),
-                    ),
-                  );
-                },
-                tooltip: 'Share this link',
-                child: const Icon(Icons.share),
-              )
-              : null,
+      floatingActionButton: showWebView ? _buildActionButtons() : null,
+    );
+  }
+
+  Widget _buildActionButtons() {
+    final theme = Theme.of(context);
+    final webviewState = ref.watch(webviewProvider(widget.url));
+    final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
+
+    return Container(
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(30),
+        boxShadow: [
+          BoxShadow(
+            color: theme.colorScheme.shadow.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Material(
+            color: theme.colorScheme.primaryContainer,
+            type: MaterialType.circle,
+            child: InkWell(
+              splashColor: theme.colorScheme.onPrimaryContainer.withValues(
+                alpha: 0.1,
+              ),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(30),
+              ),
+              onTap: () {
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  backgroundColor: Colors.transparent,
+                  builder:
+                      (context) => FontSettingsSheet(
+                        initialFontSize: webviewState.fontSize,
+                        onFontSizeChanged: (fontSize) {
+                          webviewNotifier.updateFontSize(fontSize);
+                        },
+                      ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                child: Icon(
+                  Icons.text_fields,
+                  color: theme.colorScheme.onPrimaryContainer,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+          Container(
+            width: 1,
+            height: 24,
+            color: theme.colorScheme.outline.withValues(alpha: 0.3),
+          ),
+          Material(
+            color: theme.colorScheme.primaryContainer,
+            type: MaterialType.circle,
+            child: InkWell(
+              splashColor: theme.colorScheme.onPrimaryContainer.withValues(
+                alpha: 0.1,
+              ),
+              borderRadius: const BorderRadius.horizontal(
+                right: Radius.circular(30),
+              ),
+              onTap: () {
+                SharePlus.instance.share(
+                  ShareParams(
+                    subject: 'Read this article without Paywall',
+                    title: 'Share Freedium link',
+                    uri: Uri.parse(
+                      AppConstants.freediumUrl,
+                    ).replace(path: widget.url),
+                  ),
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                child: Icon(
+                  Icons.share,
+                  color: theme.colorScheme.onPrimaryContainer,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

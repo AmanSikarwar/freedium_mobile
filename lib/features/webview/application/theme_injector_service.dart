@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ThemeInjectorService {
-  Future<String> getThemeInjectionScript(BuildContext context) async {
+  Future<String> getThemeInjectionScript(
+    BuildContext context, {
+    double fontSize = 18.0,
+  }) async {
     final colorScheme = Theme.of(context).colorScheme;
     final isDark = colorScheme.brightness == Brightness.dark;
 
@@ -40,6 +43,7 @@ class ThemeInjectorService {
         --app-on-inverse-surface: ${colorToHex(colorScheme.onInverseSurface)};
         --app-inverse-primary: ${colorToHex(colorScheme.inversePrimary)};
         --app-surface-tint: ${colorToHex(colorScheme.surfaceTint)};
+        --app-font-size: ${fontSize}px;
       }
     ''';
 
@@ -58,5 +62,15 @@ class ThemeInjectorService {
           '%CUSTOM_CSS_CONTENT%',
           customCSSContent.replaceAll("'", r"\'").replaceAll("\n", r'\n'),
         );
+  }
+
+  String getFontSizeUpdateScript(double fontSize) {
+    return '''
+      (function() {
+        const root = document.documentElement;
+        root.style.setProperty('--app-font-size', '${fontSize}px');
+        console.log('Font size updated to ${fontSize}px');
+      })();
+    ''';
   }
 }
