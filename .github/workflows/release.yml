@@ -21,7 +21,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: "stable"
+          channel: "main"
           cache: true
           cache-key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
 
