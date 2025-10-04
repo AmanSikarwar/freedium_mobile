@@ -35,6 +35,13 @@ class ThemeInjectorService {
         --app-on-surface: ${colorToHex(colorScheme.onSurface)};
         --app-surface-variant: ${colorToHex(colorScheme.surfaceContainerHighest)};
         --app-on-surface-variant: ${colorToHex(colorScheme.onSurfaceVariant)};
+        --app-surface-dim: ${colorToHex(colorScheme.surfaceDim)};
+        --app-surface-bright: ${colorToHex(colorScheme.surfaceBright)};
+        --app-surface-container-lowest: ${colorToHex(colorScheme.surfaceContainerLowest)};
+        --app-surface-container-low: ${colorToHex(colorScheme.surfaceContainerLow)};
+        --app-surface-container: ${colorToHex(colorScheme.surfaceContainer)};
+        --app-surface-container-high: ${colorToHex(colorScheme.surfaceContainerHigh)};
+        --app-surface-container-highest: ${colorToHex(colorScheme.surfaceContainerHighest)};
         --app-outline: ${colorToHex(colorScheme.outline)};
         --app-outline-variant: ${colorToHex(colorScheme.outlineVariant)};
         --app-shadow: ${colorToHex(colorScheme.shadow)};
