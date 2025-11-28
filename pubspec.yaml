@@ -14,7 +14,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.5
   flutter_riverpod: ^3.0.3
   google_fonts: ^6.3.2
-  http: ^1.5.0
+  http: ^1.6.0
   listen_sharing_intent: ^1.9.2
   pub_semver: ^2.2.0
   share_plus: ^12.0.1
