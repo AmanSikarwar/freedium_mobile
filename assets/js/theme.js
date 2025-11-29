@@ -107,14 +107,8 @@
               }
 
               function onCopySuccess() {
-                if (
-                  window.flutter_inappwebview &&
-                  window.flutter_inappwebview.callHandler
-                ) {
-                  window.flutter_inappwebview.callHandler(
-                    "Toaster",
-                    "Text copied to clipboard"
-                  );
+                if (window.Toaster && window.Toaster.postMessage) {
+                  window.Toaster.postMessage("Text copied to clipboard");
                 }
               }
 
@@ -221,11 +215,8 @@
       }
 
       try {
-        if (
-          window.flutter_inappwebview &&
-          window.flutter_inappwebview.callHandler
-        ) {
-          window.flutter_inappwebview.callHandler("themeApplied");
+        if (window.themeApplied && window.themeApplied.postMessage) {
+          window.themeApplied.postMessage("done");
         }
       } catch (e) {
         console.warn("Failed to call Flutter handler:", e);
@@ -233,11 +224,8 @@
     } catch (e) {
       console.error("Theme application failed:", e);
       try {
-        if (
-          window.flutter_inappwebview &&
-          window.flutter_inappwebview.callHandler
-        ) {
-          window.flutter_inappwebview.callHandler("themeApplied");
+        if (window.themeApplied && window.themeApplied.postMessage) {
+          window.themeApplied.postMessage("done");
         }
       } catch (handlerError) {
         console.error(

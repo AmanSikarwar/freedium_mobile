@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
@@ -11,6 +9,7 @@ import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class WebviewScreen extends ConsumerStatefulWidget {
   const WebviewScreen({required this.url, super.key});
@@ -22,30 +21,23 @@ class WebviewScreen extends ConsumerStatefulWidget {
 }
 
 class _WebviewScreenState extends ConsumerState<WebviewScreen> {
-  final GlobalKey _webViewKey = GlobalKey();
-  PullToRefreshController? _pullToRefreshController;
   bool _isVisible = true;
+  WebViewController? _controller;
 
   @override
   void initState() {
     super.initState();
-    Future.microtask(
-      () => ref.read(webviewProvider(widget.url).notifier).onWebViewCreated,
-    );
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _initializeWebView();
+    });
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _pullToRefreshController ??= PullToRefreshController(
-      settings: PullToRefreshSettings(
-        color: Theme.of(context).colorScheme.primary,
-        backgroundColor: Theme.of(context).colorScheme.surface,
-      ),
-      onRefresh: () {
-        ref.read(webviewProvider(widget.url).notifier).reload();
-      },
-    );
+  void _initializeWebView() {
+    final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
+    final themeInjector = ref.read(themeInjectorServiceProvider);
+    webviewNotifier.setThemeInjector(themeInjector, context);
+    _controller = webviewNotifier.createController();
+    setState(() {});
   }
 
   @override
@@ -58,12 +50,6 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   Widget build(BuildContext context) {
     final webviewState = ref.watch(webviewProvider(widget.url));
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
-
-    ref.listen(webviewProvider(widget.url), (previous, next) {
-      if (next.isPageLoaded) {
-        _pullToRefreshController?.endRefreshing();
-      }
-    });
 
     return PopScope(
       canPop: false,
@@ -121,10 +107,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
 
     final backgroundColor = Theme.of(context).colorScheme.surface;
     final bool isThemedPage =
-        webviewState.controller?.getUrl().toString().startsWith(
-          AppConstants.freediumUrl,
-        ) ??
-        false;
+        webviewState.currentUrl?.startsWith(AppConstants.freediumUrl) ?? false;
     final bool showWebView =
         webviewState.isPageLoaded &&
         (isThemedPage ? webviewState.isThemeApplied : true);
@@ -134,37 +117,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
       body: SafeArea(
         child: Stack(
           children: [
-            InAppWebView(
-              key: _webViewKey,
-              initialUrlRequest: URLRequest(
-                url: WebUri.uri(
-                  Uri.parse(AppConstants.freediumUrl).replace(path: widget.url),
-                ),
-              ),
-              initialSettings: InAppWebViewSettings(
-                isInspectable: kDebugMode,
-                mediaPlaybackRequiresUserGesture: false,
-                transparentBackground: true,
-                useShouldOverrideUrlLoading: true,
-                mixedContentMode:
-                    MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
-              ),
-              pullToRefreshController: _pullToRefreshController,
-              onWebViewCreated: (controller) {
-                final webviewNotifier = ref.read(
-                  webviewProvider(widget.url).notifier,
-                );
-                final themeInjector = ref.read(themeInjectorServiceProvider);
-                webviewNotifier.setThemeInjector(themeInjector, context);
-                webviewNotifier.onWebViewCreated(controller);
-              },
-              onLoadStop: webviewNotifier.onLoadStop,
-              onProgressChanged: webviewNotifier.onProgressChanged,
-              shouldOverrideUrlLoading:
-                  webviewNotifier.shouldOverrideUrlLoading,
-              onReceivedError: webviewNotifier.onReceivedError,
-              onRenderProcessGone: webviewNotifier.onRenderProcessGone,
-            ),
+            if (_controller != null) WebViewWidget(controller: _controller!),
             if (!webviewState.isPageLoaded && webviewState.progress < 1.0)
               LinearProgressIndicator(
                 value: webviewState.progress > 0 ? webviewState.progress : null,
@@ -196,11 +149,11 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         ],
       ),
       child: Row(
-        mainAxisSize: .min,
+        mainAxisSize: MainAxisSize.min,
         children: [
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: .circle,
+            type: MaterialType.circle,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,
@@ -241,7 +194,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
           ),
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: .circle,
+            type: MaterialType.circle,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,

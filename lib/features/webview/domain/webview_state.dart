@@ -1,12 +1,13 @@
-import 'package:flutter_inappwebview/flutter_inappwebview.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 class WebviewState {
   final double progress;
   final bool isPageLoaded;
   final bool isThemeApplied;
   final bool isInitialLoad;
-  final InAppWebViewController? controller;
+  final WebViewController? controller;
   final double fontSize;
+  final String? currentUrl;
 
   WebviewState({
     this.progress = 0.0,
@@ -15,6 +16,7 @@ class WebviewState {
     this.isInitialLoad = true,
     this.controller,
     this.fontSize = 18.0,
+    this.currentUrl,
   });
 
   WebviewState copyWith({
@@ -22,8 +24,9 @@ class WebviewState {
     bool? isPageLoaded,
     bool? isThemeApplied,
     bool? isInitialLoad,
-    InAppWebViewController? controller,
+    WebViewController? controller,
     double? fontSize,
+    String? currentUrl,
   }) {
     return WebviewState(
       progress: progress ?? this.progress,
@@ -32,6 +35,7 @@ class WebviewState {
       isInitialLoad: isInitialLoad ?? this.isInitialLoad,
       controller: controller ?? this.controller,
       fontSize: fontSize ?? this.fontSize,
+      currentUrl: currentUrl ?? this.currentUrl,
     );
   }
 }

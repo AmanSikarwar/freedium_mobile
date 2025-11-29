@@ -10,7 +10,8 @@ dependencies:
   dynamic_color: ^1.8.1
   flutter:
     sdk: flutter
-  flutter_inappwebview: ^6.1.5
+  webview_flutter: ^4.13.0
+  webview_flutter_android: ^4.10.9
   flutter_markdown_plus: ^1.0.5
   flutter_riverpod: ^3.0.3
   google_fonts: ^6.3.2
