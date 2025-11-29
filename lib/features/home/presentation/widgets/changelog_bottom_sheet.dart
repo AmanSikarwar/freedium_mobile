@@ -46,24 +46,22 @@ class ChangelogBottomSheet extends StatelessWidget {
                   children: [
                     Expanded(
                       child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: .start,
                         children: [
                           Text(
                             'What\'s New',
                             style: Theme.of(context).textTheme.headlineSmall
-                                ?.copyWith(fontWeight: FontWeight.bold),
+                                ?.copyWith(fontWeight: .bold),
                           ),
                           const SizedBox(height: 4),
                           Text(
                             'Version ${updateInfo.latestVersion}',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium?.copyWith(
-                              color:
-                                  Theme.of(
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(
                                     context,
                                   ).colorScheme.onSurfaceVariant,
-                            ),
+                                ),
                           ),
                         ],
                       ),
@@ -93,37 +91,37 @@ class ChangelogBottomSheet extends StatelessWidget {
                     ),
                     h1: TextStyle(
                       fontSize: 24,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                       height: 1.5,
                       color: theme.colorScheme.onSurface,
                     ),
                     h2: TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                       height: 1.5,
                       color: theme.colorScheme.onSurface,
                     ),
                     h3: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                       height: 1.5,
                       color: theme.colorScheme.onSurface,
                     ),
                     h4: TextStyle(
                       fontSize: 16,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                       height: 1.5,
                       color: theme.colorScheme.onSurface,
                     ),
                     h5: TextStyle(
                       fontSize: 15,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                       height: 1.5,
                       color: theme.colorScheme.onSurface,
                     ),
                     h6: TextStyle(
                       fontSize: 14,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: .bold,
                       height: 1.5,
                       color: theme.colorScheme.onSurface,
                     ),

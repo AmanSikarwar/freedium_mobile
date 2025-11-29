@@ -1,170 +1,105 @@
 # Freedium Mobile - Copilot Instructions
 
-This Flutter app bypasses Medium paywalls by redirecting articles to Freedium.cfd. Key architecture and patterns:
+Flutter app that bypasses Medium paywalls via Freedium.cfd with Material You theming.
 
-## Core Architecture
+## Architecture
 
-**Simple Feature-Based Structure**: Unlike full Clean Architecture, this app uses a simplified approach:
-- `lib/features/<feature>/presentation/` - UI screens and widgets  
-- `lib/features/<feature>/application/` - Riverpod providers and business logic
+**Feature-Based Structure**:
+- `lib/features/<feature>/presentation/` - UI screens and widgets
+- `lib/features/<feature>/application/` - Riverpod providers and business logic  
 - `lib/features/<feature>/domain/` - State models (e.g., `WebviewState`)
 - `lib/core/` - Shared services, constants, themes
 
-**Two Main Features**:
-- `home/` - URL input and navigation to WebView (`HomeScreen`, `HomeNotifier`)
-- `webview/` - WebView with dynamic theme injection for Freedium articles (`WebviewScreen`, `WebviewNotifier`)
+**Two Features**: `home/` (URL input) and `webview/` (article display with theme injection)
 
-## State Management: Riverpod 3.0
+## Riverpod 3.0 Patterns (Critical)
 
-**Critical**: This project uses Riverpod 3.0 with the new `Notifier`-based API (NOT `StateNotifier`):
-- Use `Notifier` instead of `StateNotifier` (no AutoDispose suffix needed)
-- Family providers: `NotifierProvider.family<WebviewNotifier, WebviewState, String>(WebviewNotifier.new)`
-- All provider refs are just `Ref` (no generic parameters like `WidgetRef` or `ProviderRef`)
-- Constructor injection pattern: notifier receives parameters via constructor (e.g., `WebviewNotifier(this.url)`)
-
-**Provider Types in Use**:
-- `NotifierProvider.family` for URL-specific WebView state (see `webview_provider.dart`)
-- `StreamProvider` for intent/sharing handling (`intentStreamProvider` in `intent_service.dart`)
-- `FutureProvider` for async operations (`dynamicThemeProvider`, `updateCheckProvider`)  
-- `Provider` for services (`themeInjectorServiceProvider`, `intentServiceProvider`)
-
-**State Immutability**: All state objects use `copyWith()` for partial updates:
+Use `Notifier` API, NOT `StateNotifier`:
 ```dart
-state = state.copyWith(progress: progress / 100.0);
+// Family provider with constructor injection
+class WebviewNotifier extends Notifier<WebviewState> {
+  final String url;
+  WebviewNotifier(this.url);
+  @override WebviewState build() => WebviewState();
+}
+final webviewProvider = NotifierProvider.family<WebviewNotifier, WebviewState, String>(WebviewNotifier.new);
 ```
 
-## WebView Integration (Critical Pattern)
+**Provider Types**:
+- `NotifierProvider.family` - URL-specific state (`webview_provider.dart`)
+- `StreamProvider` - Intent handling (`intent_service.dart`)
+- `FutureProvider` - Async operations (`dynamicThemeProvider`)
+- `Provider` - Services (`themeInjectorServiceProvider`)
 
-**Theme Injection System** - 3-stage pipeline from Flutter to web:
-1. `ThemeInjectorService.getThemeInjectionScript()` converts Flutter `ColorScheme` to CSS custom properties
-2. `assets/js/theme.js` template with `%IS_DARK_MODE%`, `%CSS_VARS%`, `%CUSTOM_CSS_CONTENT%` placeholders
-3. `assets/css/webview_styles.css` applies custom properties to Freedium DOM elements
-
-**String Replacement Pattern** (used in theme injection):
+**State Updates**: Always use `copyWith()`:
 ```dart
-scriptTemplate
-  .replaceFirst('%IS_DARK_MODE%', isDark.toString())
-  .replaceFirst('%CSS_VARS%', cssVars.replaceAll("'", r"\'").replaceAll("\n", r'\n'))
-  .replaceFirst('%CUSTOM_CSS_CONTENT%', customCSSContent.replaceAll("'", r"\'").replaceAll("\n", r'\n'))
+state = state.copyWith(progress: progress / 100.0, isPageLoaded: true);
 ```
 
-**WebView Lifecycle Management**:
-- `onWebViewCreated()` → add JavaScript handlers (`themeApplied`, `Toaster`)
-- `onLoadStop()` → inject theme script for Freedium URLs only
-- `onProgressChanged()` → update loading progress (0.0 to 1.0)
-- `shouldOverrideUrlLoading()` → reset state flags, open external URLs in system browser
+## WebView Theme Injection Pipeline
 
-**JavaScript-to-Flutter Communication**:
+Three-stage Flutter-to-web theming:
+1. `ThemeInjectorService.getThemeInjectionScript()` - Converts `ColorScheme` to CSS variables
+2. `assets/js/theme.js` - Template with `%IS_DARK_MODE%`, `%CSS_VARS%`, `%CUSTOM_CSS_CONTENT%` placeholders
+3. `assets/css/webview_styles.css` - Applies CSS custom properties to Freedium DOM
+
+**Lifecycle**: `onWebViewCreated` → add JS handlers → `onLoadStop` → inject theme (Freedium URLs only)
+
+**JS-Flutter Bridge**:
 ```dart
-controller.addJavaScriptHandler(
-  handlerName: 'themeApplied',
-  callback: (args) => state = state.copyWith(isThemeApplied: true)
-);
+controller.addJavaScriptHandler(handlerName: 'themeApplied', callback: (args) => ...);
 ```
 
-## Intent Handling (Share-to-App Flow)
+## Intent Handling (Share-to-App)
 
-**Two-Phase Intent System**:
-1. **Initial intent** (`getInitialIntent()` in `app.dart`): Handles URL when app launches from share
-2. **Streaming intents** (`intentStreamProvider`): Handles URLs while app is already running
+**Two-phase system**: Initial intent (`getInitialIntent()` on launch) + streaming intents (`intentStreamProvider` while running)
 
-**Duplicate Prevention Pattern** (critical):
-- Check route name: `ModalRoute.of(context)?.settings.name?.startsWith('/webview/')` 
-- Reset intent after navigation: `ReceiveSharingIntent.instance.reset()`
-- Use `RouteSettings(name: '/webview/$url')` for route identification
+**Duplicate Prevention** (critical):
+- Check route: `ModalRoute.of(context)?.settings.name?.startsWith('/webview/')`
+- Reset after navigation: `ReceiveSharingIntent.instance.reset()`
+- Always reset in `dispose()` and pop callbacks
 
-## Navigation Patterns
+## Navigation
 
 **Global Navigator Key** for provider-initiated navigation:
 ```dart
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-// In app.dart: MaterialApp(navigatorKey: navigatorKey, ...)
-// In providers: navigatorKey.currentState?.push(...)
+navigatorKey.currentState?.push(...);  // From providers
 ```
 
-**PopScope Handling** (`webview_screen.dart`):
-- Check `canGoBack()` before popping to handle WebView back navigation
-- Set visibility to false before navigation: `setState(() => _isVisible = false)`
-- Always reset intent: `ReceiveSharingIntent.instance.reset()` in disposal/pop callbacks
+**WebView Back Navigation**: Check `canGoBack()` in `PopScope.onPopInvokedWithResult` before popping
 
-## Asset Loading & Template Substitution
+## Build Commands
 
-**Bundle Asset Pattern** (`ThemeInjectorService`):
-```dart
-final scriptTemplate = await rootBundle.loadString('assets/js/theme.js');
-final customCSS = await rootBundle.loadString('assets/css/webview_styles.css');
-// Replace placeholders with runtime values
-```
-
-**Asset Declaration** (pubspec.yaml):
-```yaml
-flutter:
-  assets:
-    - assets/icon/
-    - assets/js/
-    - assets/css/
-```
-
-## Dynamic Theming (Material You)
-
-**Graceful Fallback Pattern** (`theme_provider.dart`):
-```dart
-final corePalette = await DynamicColorPlugin.getCorePalette();
-if (corePalette != null) {
-  lightColorScheme = corePalette.toColorScheme();
-} else {
-  lightColorScheme = appTheme.light().colorScheme; // fallback
-}
-```
-
-## Error Handling Patterns
-
-**WebView Error Recovery** (`webview_provider.dart`):
-- `onReceivedError`: Reset progress, log error, continue gracefully
-- `onRenderProcessGone`: Show snackbar, offer reload option
-- Theme injection: Wrapped in try-catch with fallback to `isThemeApplied: true`
-
-**JavaScript Error Isolation**: Theme application continues even if script injection fails
-
-## Build & Development
-
-**Environment Setup**:
 ```bash
 flutter pub get              # Install dependencies
-flutter run                  # Debug mode (enables WebView inspection)
+flutter run                  # Debug (WebView inspection enabled)
 flutter build apk --release  # Production APK
-dart format .                # Format code (no specific line length)
+dart format .                # Format code
 ```
 
-**Android-Specific**:
-- Min SDK: 21 (from `pubspec.yaml`)
-- Compile SDK: Managed by Flutter plugin
-- Signing: `key.properties` file with keystore credentials (see `build.gradle.kts`)
-- Material 3: `com.google.android.material:material:1.14.0-alpha04`
+**Debug Mode**: WebView inspection via `isInspectable: kDebugMode`
 
-**Debug Mode Features**:
-- WebView inspection: `isInspectable: kDebugMode` in `webview_screen.dart`
-- Use `debugPrint()` for logging (not `print()`)
+## Key Files
 
-**App Constants** (`app_constants.dart`):
-- `freediumUrl`: Base URL for theme injection checks
-- `urlRegExp`: Validation regex for URL inputs
-- `appVersion`: Uses `String.fromEnvironment('APP_VERSION', defaultValue: '0.4.0')`
+- `lib/app.dart` - App setup, intent handling, global navigator key
+- `lib/core/constants/app_constants.dart` - `freediumUrl`, `urlRegExp`, `appVersion`
+- `lib/features/webview/application/webview_provider.dart` - WebView lifecycle management
+- `lib/features/webview/application/theme_injector_service.dart` - CSS variable generation
+- `assets/js/theme.js` & `assets/css/webview_styles.css` - Theme injection templates
 
-## Key Dependencies
+## Dependencies (pubspec.yaml)
 
-- `flutter_riverpod: ^3.0.0` - State management (Riverpod 3.x syntax)
+- `flutter_riverpod: ^3.0.3` - State management (Riverpod 3.x)
 - `flutter_inappwebview: ^6.1.5` - WebView with JS injection
-- `listen_sharing_intent: ^1.9.2` - Share-to-app functionality
+- `listen_sharing_intent: ^1.9.2` - Share-to-app
 - `dynamic_color: ^1.8.1` - Material You theming
-- `share_plus: ^12.0.0` - Share from app
-- `flutter_lints: ^6.0.0` - Standard Effective Dart rules
 
-## Common Patterns to Follow
+## Patterns to Follow
 
-1. **State updates**: Always use `copyWith()` for immutable state changes
-2. **Async operations**: Wrap in try-catch with fallback behavior
-3. **Navigation**: Use global `navigatorKey` from providers, check `context.mounted`
-4. **WebView lifecycle**: Always reset intent on disposal (`ReceiveSharingIntent.instance.reset()`)
-5. **Theme injection**: Only for `freedium.cfd` URLs, external links open in system browser
-6. **Provider initialization**: Use `.new` constructor reference syntax (Riverpod 3.0)
+1. **State**: Always `copyWith()` for immutability
+2. **Errors**: Try-catch with graceful fallbacks (see `_injectTheme`)
+3. **Navigation**: Check `context.mounted` before async navigation
+4. **Intents**: Always reset via `ReceiveSharingIntent.instance.reset()` on disposal
+5. **Theme injection**: Only for `freedium.cfd` URLs; external links open in system browser
+6. **Logging**: Use `debugPrint()`, not `print()`

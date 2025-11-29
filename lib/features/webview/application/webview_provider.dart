@@ -52,10 +52,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
       handlerName: 'Toaster',
       callback: (args) {
         if (args.isNotEmpty) {
-          final message =
-              args.length == 1 && args[0] is String
-                  ? args[0] as String
-                  : args.toString();
+          final message = switch (args) {
+            [String text] => text,
+            _ => args.toString(),
+          };
           if (_context != null) {
             ScaffoldMessenger.of(
               _context!,

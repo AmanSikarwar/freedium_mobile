@@ -7,13 +7,14 @@ class ThemeInjectorService {
     double fontSize = 18.0,
   }) async {
     final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == Brightness.dark;
+    final isDark = colorScheme.brightness == .dark;
 
     String colorToHex(Color color) {
       return '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
     }
 
-    final cssVars = '''
+    final cssVars =
+        '''
       :root {
         --app-primary: ${colorToHex(colorScheme.primary)};
         --app-on-primary: ${colorToHex(colorScheme.onPrimary)};

@@ -30,12 +30,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           AppConstants.appName,
           style: GoogleFonts.playfairDisplay(
             color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.bold,
+            fontWeight: .bold,
           ),
         ),
         titleTextStyle: GoogleFonts.playfairDisplay(
           fontSize: 24,
-          fontWeight: FontWeight.bold,
+          fontWeight: .bold,
         ),
         actions: [
           IconButton(
@@ -59,20 +59,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   MediaQuery.sizeOf(context).height - kToolbarHeight - 96,
             ),
             child: Align(
-              alignment: Alignment.center,
               child: Column(
                 spacing: 24,
-                mainAxisAlignment: MainAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: .center,
+                mainAxisSize: .min,
                 children: [
                   updateAsync.when(
                     data: (updateInfo) {
                       if (updateInfo != null && !_isUpdateCardDismissed) {
                         return UpdateCard(
                           updateInfo: updateInfo,
-                          onDismissed:
-                              () =>
-                                  setState(() => _isUpdateCardDismissed = true),
+                          onDismissed: () =>
+                              setState(() => _isUpdateCardDismissed = true),
                         );
                       }
                       return const SizedBox.shrink();
@@ -82,12 +80,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const Text(
                     AppConstants.appDescription,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+                    textAlign: .center,
+                    style: TextStyle(fontSize: 32, fontWeight: .bold),
                   ),
                   Form(
                     key: homeState.formKey,
-                    autovalidateMode: AutovalidateMode.onUserInteraction,
+                    autovalidateMode: .onUserInteraction,
                     child: TextFormField(
                       controller: homeState.urlController,
                       decoration: InputDecoration(
@@ -101,8 +99,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onPressed: homeNotifier.pasteFromClipboard,
                         ),
                       ),
-                      keyboardType: TextInputType.url,
-                      textInputAction: TextInputAction.done,
+                      keyboardType: .url,
+                      textInputAction: .done,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Please enter a URL';

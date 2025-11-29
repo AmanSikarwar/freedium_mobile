@@ -29,13 +29,11 @@ void showAppAboutDialog(BuildContext context) {
       ),
       const UpdateSection(),
       Wrap(
-        alignment: WrapAlignment.start,
         children: [
           const Text('Source code available on '),
           GestureDetector(
-            onTap:
-                () =>
-                    launchUri(Uri.https('github.com', 'amansikarwar/freedium')),
+            onTap: () =>
+                launchUri(Uri.https('github.com', 'amansikarwar/freedium')),
             child: Text(
               'GitHub',
               style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -44,8 +42,8 @@ void showAppAboutDialog(BuildContext context) {
         ],
       ),
       Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: .center,
+        mainAxisSize: .min,
         children: [
           const Text('Made with ❤️ by', style: TextStyle(fontSize: 12)),
           TextButton(

@@ -86,23 +86,20 @@ class App extends ConsumerWidget {
     }
 
     return themeAsync.when(
-      data:
-          (theme) => MaterialApp(
-            navigatorKey: navigatorKey,
-            title: AppConstants.appName,
-            theme: theme.lightTheme,
-            darkTheme: theme.darkTheme,
-            themeMode: themeMode,
-            home: const HomeScreen(),
-          ),
-      loading:
-          () => const MaterialApp(
-            home: Scaffold(body: Center(child: CircularProgressIndicator())),
-          ),
-      error:
-          (err, stack) => MaterialApp(
-            home: Scaffold(body: Center(child: Text('Error: $err'))),
-          ),
+      data: (theme) => MaterialApp(
+        navigatorKey: navigatorKey,
+        title: AppConstants.appName,
+        theme: theme.lightTheme,
+        darkTheme: theme.darkTheme,
+        themeMode: themeMode,
+        home: const HomeScreen(),
+      ),
+      loading: () => const MaterialApp(
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      ),
+      error: (err, stack) => MaterialApp(
+        home: Scaffold(body: Center(child: Text('Error: $err'))),
+      ),
     );
   }
 }

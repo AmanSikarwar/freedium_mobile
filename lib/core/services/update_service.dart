@@ -29,12 +29,12 @@ class UpdateService {
       final response = await http.get(Uri.parse(_apiUrl));
 
       if (response.statusCode == 200) {
-        final data = json.decode(response.body);
+        final data = json.decode(response.body) as Map<String, dynamic>;
         final latestVersionStr = (data['tag_name'] as String).replaceAll(
           'v',
           '',
         );
-        final currentVersionStr = AppConstants.appVersion;
+        const currentVersionStr = AppConstants.appVersion;
 
         final latestVersion = Version.parse(latestVersionStr);
         final currentVersion = Version.parse(currentVersionStr);
@@ -42,8 +42,8 @@ class UpdateService {
         if (latestVersion > currentVersion) {
           return UpdateInfo(
             latestVersion: 'v$latestVersionStr',
-            releaseUrl: data['html_url'],
-            releaseNotes: data['body'],
+            releaseUrl: data['html_url'] as String,
+            releaseNotes: data['body'] as String,
           );
         }
       }
