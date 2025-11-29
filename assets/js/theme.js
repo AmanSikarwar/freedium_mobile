@@ -43,7 +43,7 @@
       customCSS.textContent = `%CUSTOM_CSS_CONTENT%`;
       document.head.appendChild(customCSS);
 
-      const desiredHljsTheme = isDarkMode ? "github-dark" : "github";
+      const desiredHljsTheme = isDarkMode === "true" ? "github-dark" : "github";
       try {
         const existingLink = document.querySelector(
           'link[href*="highlight.js/styles"]'
@@ -172,16 +172,10 @@
           });
         }
 
+        // Initial call with delay to ensure DOM is ready
         setTimeout(overrideCopyButtons, 500);
-
-        document.addEventListener("DOMContentLoaded", function () {
-          setTimeout(overrideCopyButtons, 100);
-        });
-
-        setTimeout(function () {
-          overrideCopyButtons();
-          setTimeout(overrideCopyButtons, 1000);
-        }, 1000);
+        // Secondary call to catch any late-loaded elements
+        setTimeout(overrideCopyButtons, 1500);
 
         const observer = new MutationObserver(function (mutations) {
           mutations.forEach(function (mutation) {
