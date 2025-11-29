@@ -77,37 +77,6 @@ button.bg-gray-300:hover,
 button.bg-gray-700:hover {
   filter: brightness(0.9);
 }
-button.bg-red-400,
-button.bg-blue-400,
-button.bg-yellow-400,
-button.bg-green-500,
-button.bg-blue-500,
-button.bg-blue-800,
-button.bg-gray-700 {
-  /* Re-apply specific on-colors if needed, overriding .text-white */
-  /* Patreon button */
-  &.bg-red-400 {
-    color: var(--app-on-error) !important;
-  }
-  /* Ko-fi button */
-  &.bg-blue-400 {
-    color: var(--app-on-secondary) !important;
-  }
-  /* Liberapay button */
-  &.bg-yellow-400 {
-    color: var(--app-on-tertiary) !important;
-  }
-  /* Primary buttons */
-  &.bg-green-500,
-  &.bg-blue-500,
-  &.bg-blue-800 {
-    color: var(--app-on-primary) !important;
-  }
-  /* GitHub button */
-  &.bg-gray-700 {
-    color: var(--app-on-surface-variant) !important;
-  }
-}
 button.text-gray-800 {
   color: var(--app-on-surface-variant) !important;
 }
@@ -143,15 +112,113 @@ button.text-gray-800 {
 .dark .bg-gray-800 {
   background-color: var(--app-surface) !important;
 }
-.bg-gray-100 {
-  background-color: var(--app-surface-container-low) !important;
-}
-.dark .bg-gray-600 {
+.dark .bg-gray-600,
+.bg-gray-600 {
   background-color: var(--app-surface-container) !important;
 }
 .text-yellow-500,
 .dark .text-yellow-400 {
   color: var(--app-tertiary) !important;
+}
+
+/* Error page styling */
+.text-gray-700,
+.dark .text-gray-200 {
+  color: var(--app-on-surface-variant) !important;
+}
+
+/* "Oppps!" banner and primary accent boxes */
+.bg-green-500 {
+  background-color: var(--app-primary) !important;
+  color: var(--app-on-primary) !important;
+}
+.bg-green-500:hover,
+.hover\:bg-green-600:hover {
+  background-color: var(--app-primary) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Emergency transponder code box */
+.bg-black {
+  background-color: var(--app-inverse-surface) !important;
+  color: var(--app-inverse-on-surface) !important;
+}
+.bg-black .text-white,
+.bg-black p {
+  color: var(--app-inverse-on-surface) !important;
+}
+
+/* Form container styling */
+.shadow-md {
+  box-shadow: 0 4px 6px -1px var(--app-shadow), 0 2px 4px -2px var(--app-shadow) !important;
+}
+
+/* Form input styling */
+input[type="text"],
+input.focus\:outline-none {
+  background-color: var(--app-surface) !important;
+  color: var(--app-on-surface) !important;
+  border-color: var(--app-outline) !important;
+}
+input::placeholder {
+  color: var(--app-on-surface-variant) !important;
+}
+
+/* Red button variants (Patreon, error states) */
+.bg-red-500,
+button.bg-red-500 {
+  background-color: var(--app-error) !important;
+  color: var(--app-on-error) !important;
+}
+.bg-red-500:hover,
+.hover\:bg-red-600:hover {
+  background-color: var(--app-error) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Yellow button variants (Liberapay) */
+.bg-yellow-500,
+button.bg-yellow-500 {
+  background-color: var(--app-tertiary) !important;
+  color: var(--app-on-tertiary) !important;
+}
+.bg-yellow-500:hover,
+.hover\:bg-yellow-600:hover {
+  background-color: var(--app-tertiary) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* Gray button variants (Cancel, Close) */
+.bg-gray-500,
+button.bg-gray-500 {
+  background-color: var(--app-surface-variant) !important;
+  color: var(--app-on-surface-variant) !important;
+}
+.bg-gray-500:hover,
+.hover\:bg-gray-700:hover {
+  background-color: var(--app-surface-variant) !important;
+  filter: brightness(0.9) !important;
+}
+button.bg-gray-600 {
+  background-color: var(--app-surface-variant) !important;
+  color: var(--app-on-surface-variant) !important;
+}
+
+/* Container styling for error pages */
+.container {
+  background-color: var(--app-surface) !important;
+}
+
+/* Rounded box styling */
+.rounded-lg,
+.rounded-md {
+  border-color: var(--app-outline-variant) !important;
+}
+
+/* Shadow styling */
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px var(--app-shadow),
+    0 4px 6px -4px var(--app-shadow) !important;
 }
 .border,
 .border-gray-300,
@@ -277,13 +344,94 @@ svg {
   border: none !important;
 }
 
-/* Dynamic font size support */
-.main-content,
-.main-content p,
-.main-content li,
-.main-content span,
-.main-content div {
-  font-size: var(--app-font-size, 18px) !important;
+/* Dynamic font size support - Global typography scale */
+/* Base font size with Minor Third scale (1.2 ratio) */
+:root {
+  --font-scale-ratio: 1.2;
+}
+
+/* Base body text */
+body,
+p,
+li,
+span,
+div {
+  font-size: calc(var(--app-font-size, 18px) * 1.05) !important;
+  line-height: 1.6 !important;
+}
+
+/* Heading scale - using Minor Third (1.2) ratio for tighter scale */
+h1,
+.text-6xl,
+.text-5xl {
+  font-size: calc(var(--app-font-size, 18px) * 2) !important;
+  line-height: 1.2 !important;
+}
+
+h2,
+.text-4xl,
+.text-3xl {
+  font-size: calc(var(--app-font-size, 18px) * 1.728) !important;
+  line-height: 1.25 !important;
+}
+
+h3,
+.text-2xl {
+  font-size: calc(var(--app-font-size, 18px) * 1.44) !important;
+  line-height: 1.3 !important;
+}
+
+h4,
+.text-xl {
+  font-size: calc(var(--app-font-size, 18px) * 1.2) !important;
+  line-height: 1.35 !important;
+}
+
+h5,
+.text-lg {
+  font-size: calc(var(--app-font-size, 18px) * 1.1) !important;
+  line-height: 1.4 !important;
+}
+
+h6 {
+  font-size: calc(var(--app-font-size, 18px) * 1.05) !important;
+  line-height: 1.5 !important;
+  font-weight: 600 !important;
+}
+
+/* Small text */
+.text-sm,
+.text-xs,
+small,
+figcaption {
+  font-size: calc(var(--app-font-size, 18px) * 0.85) !important;
+  line-height: 1.5 !important;
+}
+
+/* Code blocks - slightly smaller */
+code,
+pre,
+.font-mono {
+  font-size: calc(var(--app-font-size, 18px) * 0.9) !important;
+  line-height: 1.6 !important;
+}
+
+/* Button text */
+button,
+.btn,
+input[type="submit"] {
+  font-size: calc(var(--app-font-size, 18px) * 0.95) !important;
+}
+
+/* Navigation text */
+nav a,
+nav li {
+  font-size: calc(var(--app-font-size, 18px) * 0.95) !important;
+}
+
+/* Main content specific overrides (article body) */
+.main-content {
+  font-size: calc(var(--app-font-size, 18px) * 1.05) !important;
 }
 
 .main-content h1 {
@@ -291,12 +439,15 @@ svg {
 }
 
 .main-content h2 {
-  font-size: calc(var(--app-font-size, 18px) * 1.5) !important;
+  font-size: calc(var(--app-font-size, 18px) * 1.728) !important;
 }
 
-.main-content h3,
+.main-content h3 {
+  font-size: calc(var(--app-font-size, 18px) * 1.44) !important;
+}
+
 .main-content h4 {
-  font-size: calc(var(--app-font-size, 18px) * 1.25) !important;
+  font-size: calc(var(--app-font-size, 18px) * 1.2) !important;
 }
 
 .main-content code,
@@ -304,24 +455,19 @@ svg {
   font-size: calc(var(--app-font-size, 18px) * 0.875) !important;
 }
 
-/* Additional code block improvements */
+/* Additional code block improvements for main content */
 .main-content pre code {
-  display: block !important;
-  padding: 12px !important;
   line-height: 1.6 !important;
-  background-color: var(--app-surface-container-highest) !important;
-  border-radius: 4px !important;
 }
 
 /* Ensure code blocks are distinguishable from content */
 .main-content pre {
   margin: 1.5em 0 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
-  background-color: var(--app-surface-container-high) !important;
 }
 
 /* Syntax highlighting adjustments for better contrast */
-.main-content pre .hljs {
+pre .hljs {
   background-color: transparent !important;
 }
 

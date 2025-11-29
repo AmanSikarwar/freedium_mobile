@@ -52,8 +52,10 @@ final dynamicThemeProvider = FutureProvider<AppThemeProvider>((ref) async {
 
   final lightDynamic = await DynamicColorPlugin.getCorePalette();
   if (lightDynamic != null) {
-    lightColorScheme = lightDynamic.toColorScheme();
-    darkColorScheme = lightDynamic.toColorScheme(brightness: .dark);
+    lightColorScheme = lightDynamic.toColorScheme().harmonized();
+    darkColorScheme = lightDynamic
+        .toColorScheme(brightness: Brightness.dark)
+        .harmonized();
   } else {
     lightColorScheme = appTheme.light().colorScheme;
     darkColorScheme = appTheme.dark().colorScheme;
