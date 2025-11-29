@@ -18,7 +18,7 @@ class ThemeModeNotifier extends Notifier<ThemeMode> {
   @override
   ThemeMode build() {
     _loadThemeMode();
-    return ThemeMode.system;
+    return .system;
   }
 
   Future<void> _loadThemeMode() async {
@@ -53,7 +53,7 @@ final dynamicThemeProvider = FutureProvider<AppThemeProvider>((ref) async {
   final lightDynamic = await DynamicColorPlugin.getCorePalette();
   if (lightDynamic != null) {
     lightColorScheme = lightDynamic.toColorScheme();
-    darkColorScheme = lightDynamic.toColorScheme(brightness: Brightness.dark);
+    darkColorScheme = lightDynamic.toColorScheme(brightness: .dark);
   } else {
     lightColorScheme = appTheme.light().colorScheme;
     darkColorScheme = appTheme.dark().colorScheme;

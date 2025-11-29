@@ -14,12 +14,12 @@ class ThemeModeService {
     final themeModeString = prefs.getString(_themeModeKey);
 
     if (themeModeString == null) {
-      return ThemeMode.system;
+      return .system;
     }
 
     return ThemeMode.values.firstWhere(
       (mode) => mode.name == themeModeString,
-      orElse: () => ThemeMode.system,
+      orElse: () => .system,
     );
   }
 }

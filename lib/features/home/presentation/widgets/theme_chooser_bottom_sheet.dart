@@ -21,7 +21,7 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisSize: .min,
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -29,52 +29,49 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
                 'Choose Theme',
                 style: Theme.of(
                   context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                ).textTheme.titleLarge?.copyWith(fontWeight: .bold),
               ),
             ),
             const Divider(),
             ListTile(
               leading: const Icon(Icons.light_mode),
               title: const Text('Light'),
-              trailing:
-                  currentThemeMode == ThemeMode.light
-                      ? Icon(
-                        Icons.check,
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                      : null,
+              trailing: currentThemeMode == .light
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
               onTap: () {
-                themeModeNotifier.setThemeMode(ThemeMode.light);
+                themeModeNotifier.setThemeMode(.light);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.dark_mode),
               title: const Text('Dark'),
-              trailing:
-                  currentThemeMode == ThemeMode.dark
-                      ? Icon(
-                        Icons.check,
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                      : null,
+              trailing: currentThemeMode == .dark
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
               onTap: () {
-                themeModeNotifier.setThemeMode(ThemeMode.dark);
+                themeModeNotifier.setThemeMode(.dark);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.brightness_auto),
               title: const Text('System'),
-              trailing:
-                  currentThemeMode == ThemeMode.system
-                      ? Icon(
-                        Icons.check,
-                        color: Theme.of(context).colorScheme.primary,
-                      )
-                      : null,
+              trailing: currentThemeMode == .system
+                  ? Icon(
+                      Icons.check,
+                      color: Theme.of(context).colorScheme.primary,
+                    )
+                  : null,
               onTap: () {
-                themeModeNotifier.setThemeMode(ThemeMode.system);
+                themeModeNotifier.setThemeMode(.system);
                 Navigator.pop(context);
               },
             ),

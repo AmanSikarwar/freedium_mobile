@@ -23,7 +23,7 @@ class UpdateCard extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: .start,
             children: [
               Row(
                 children: [
@@ -34,17 +34,16 @@ class UpdateCard extends StatelessWidget {
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: .start,
                       children: [
                         Text(
                           'Update Available',
                           style: TextStyle(
-                            fontWeight: FontWeight.bold,
+                            fontWeight: .bold,
                             fontSize: 16,
-                            color:
-                                Theme.of(
-                                  context,
-                                ).colorScheme.onSecondaryContainer,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSecondaryContainer,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -65,16 +64,17 @@ class UpdateCard extends StatelessWidget {
               ),
               const SizedBox(height: 16),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: .end,
                 children: [
                   OutlinedButton.icon(
-                    onPressed:
-                        () => showChangelogBottomSheet(context, updateInfo),
+                    onPressed: () =>
+                        showChangelogBottomSheet(context, updateInfo),
                     icon: const Icon(Icons.article_outlined, size: 18),
                     label: const Text('View Changelog'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor:
-                          Theme.of(context).colorScheme.onSecondaryContainer,
+                      foregroundColor: Theme.of(
+                        context,
+                      ).colorScheme.onSecondaryContainer,
                       side: BorderSide(
                         color: Theme.of(context)
                             .colorScheme
@@ -85,8 +85,8 @@ class UpdateCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   FilledButton.icon(
-                    onPressed:
-                        () => launchUrl(Uri.parse(updateInfo.releaseUrl)),
+                    onPressed: () =>
+                        launchUrl(Uri.parse(updateInfo.releaseUrl)),
                     icon: const Icon(Icons.download, size: 18),
                     label: const Text('Update'),
                     style: FilledButton.styleFrom(

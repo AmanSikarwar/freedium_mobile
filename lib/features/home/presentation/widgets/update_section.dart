@@ -50,8 +50,8 @@ class _UpdateSectionState extends ConsumerState<UpdateSection> {
               children: [
                 Text('Latest Version: ${_updateInfo!.latestVersion}'),
                 TextButton(
-                  onPressed:
-                      () => launchUrl(Uri.parse(_updateInfo!.releaseUrl)),
+                  onPressed: () =>
+                      launchUrl(Uri.parse(_updateInfo!.releaseUrl)),
                   child: const Text('View Release Notes'),
                 ),
               ],

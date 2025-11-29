@@ -37,7 +37,7 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
         borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Container(
             margin: const EdgeInsets.only(top: 12, bottom: 8),
@@ -52,12 +52,12 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: .spaceBetween,
               children: [
                 Text(
                   'Font Size',
                   style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: .bold,
                   ),
                 ),
                 IconButton(
@@ -71,13 +71,11 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisAlignment: .spaceBetween,
               children: [
                 Text(
                   'Size: ${_currentFontSize.toInt()}px',
-                  style: theme.textTheme.bodyLarge?.copyWith(
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: theme.textTheme.bodyLarge?.copyWith(fontWeight: .w500),
                 ),
                 TextButton.icon(
                   onPressed: () {

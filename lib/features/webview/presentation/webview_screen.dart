@@ -142,25 +142,10 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                 ),
               ),
               initialSettings: InAppWebViewSettings(
-                javaScriptEnabled: true,
                 isInspectable: kDebugMode,
                 mediaPlaybackRequiresUserGesture: false,
-                allowsInlineMediaPlayback: true,
-                useHybridComposition: true,
-                cacheEnabled: true,
                 transparentBackground: true,
                 useShouldOverrideUrlLoading: true,
-                domStorageEnabled: true,
-                databaseEnabled: true,
-                clearCache: false,
-                clearSessionCache: false,
-                allowFileAccessFromFileURLs: false,
-                allowUniversalAccessFromFileURLs: false,
-                disableVerticalScroll: false,
-                disableHorizontalScroll: false,
-                allowsBackForwardNavigationGestures: true,
-                hardwareAcceleration: true,
-                allowsPictureInPictureMediaPlayback: true,
                 mixedContentMode:
                     MixedContentMode.MIXED_CONTENT_COMPATIBILITY_MODE,
               ),
@@ -211,11 +196,11 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         ],
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: MaterialType.circle,
+            type: .circle,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,
@@ -228,13 +213,12 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
-                  builder:
-                      (context) => FontSettingsSheet(
-                        initialFontSize: webviewState.fontSize,
-                        onFontSizeChanged: (fontSize) {
-                          webviewNotifier.updateFontSize(fontSize);
-                        },
-                      ),
+                  builder: (context) => FontSettingsSheet(
+                    initialFontSize: webviewState.fontSize,
+                    onFontSizeChanged: (fontSize) {
+                      webviewNotifier.updateFontSize(fontSize);
+                    },
+                  ),
                 );
               },
               child: Container(
@@ -257,7 +241,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
           ),
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: MaterialType.circle,
+            type: .circle,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,

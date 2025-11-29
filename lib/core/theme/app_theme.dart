@@ -7,7 +7,7 @@ class AppTheme {
 
   static ColorScheme lightScheme() {
     return const ColorScheme(
-      brightness: Brightness.light,
+      brightness: .light,
       primary: Color(0xff000000),
       surfaceTint: Color(0xff5e5e5e),
       onPrimary: Color(0xffffffff),
@@ -62,7 +62,7 @@ class AppTheme {
 
   static ColorScheme lightMediumContrastScheme() {
     return const ColorScheme(
-      brightness: Brightness.light,
+      brightness: .light,
       primary: Color(0xff000000),
       surfaceTint: Color(0xff5e5e5e),
       onPrimary: Color(0xffffffff),
@@ -117,7 +117,7 @@ class AppTheme {
 
   static ColorScheme lightHighContrastScheme() {
     return const ColorScheme(
-      brightness: Brightness.light,
+      brightness: .light,
       primary: Color(0xff000000),
       surfaceTint: Color(0xff5e5e5e),
       onPrimary: Color(0xffffffff),
@@ -172,7 +172,7 @@ class AppTheme {
 
   static ColorScheme darkScheme() {
     return const ColorScheme(
-      brightness: Brightness.dark,
+      brightness: .dark,
       primary: Color(0xffc6c6c6),
       surfaceTint: Color(0xffc6c6c6),
       onPrimary: Color(0xff303030),
@@ -227,7 +227,7 @@ class AppTheme {
 
   static ColorScheme darkMediumContrastScheme() {
     return const ColorScheme(
-      brightness: Brightness.dark,
+      brightness: .dark,
       primary: Color(0xffdcdcdc),
       surfaceTint: Color(0xffc6c6c6),
       onPrimary: Color(0xff262626),
@@ -282,7 +282,7 @@ class AppTheme {
 
   static ColorScheme darkHighContrastScheme() {
     return const ColorScheme(
-      brightness: Brightness.dark,
+      brightness: .dark,
       primary: Color(0xfff0f0f0),
       surfaceTint: Color(0xffc6c6c6),
       onPrimary: Color(0xff000000),
