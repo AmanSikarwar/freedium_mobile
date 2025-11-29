@@ -23,24 +23,12 @@ jobs:
         with:
           channel: "main"
           cache: true
-          cache-key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock') }}
 
       - uses: actions/setup-java@v4
         with:
           distribution: "zulu"
           java-version: "17"
           cache: "gradle"
-
-      - name: Cache pub dependencies
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.pub-cache
-            ${{ github.workspace }}/.dart_tool
-            ${{ github.workspace }}/build
-          key: ${{ runner.os }}-pub-${{ hashFiles('**/pubspec.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-pub-
 
       - name: Flutter Pub Get
         run: flutter pub get
@@ -59,8 +47,21 @@ jobs:
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
           echo "storeFile=my-release-key.keystore" >> android/key.properties
 
-      - name: Build Android APK
-        run: flutter build apk --release --split-per-abi --build-number=${{ github.run_number }} -t lib/main.dart --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
+      - name: Build Android APK (Optimized)
+        run: |
+          flutter build apk --release --split-per-abi \
+            --obfuscate \
+            --split-debug-info=build/debug-info \
+            --build-number=${{ github.run_number }} \
+            -t lib/main.dart \
+            --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
+
+      - name: Upload debug symbols
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug-symbols-${{ github.event.inputs.version_name }}
+          path: build/debug-info/
+          retention-days: 90
 
       - name: Create GitHub Release
         id: create_release

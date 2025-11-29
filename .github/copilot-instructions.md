@@ -1,105 +1,125 @@
 # Freedium Mobile - Copilot Instructions
 
-Flutter app that bypasses Medium paywalls via Freedium.cfd with Material You theming.
+Flutter Android app bypassing Medium paywalls via Freedium.cfd with Material You theming.
 
 ## Architecture
 
-**Feature-Based Structure**:
-- `lib/features/<feature>/presentation/` - UI screens and widgets
-- `lib/features/<feature>/application/` - Riverpod providers and business logic  
-- `lib/features/<feature>/domain/` - State models (e.g., `WebviewState`)
-- `lib/core/` - Shared services, constants, themes
+**Feature-Based Structure** (`lib/`):
+```
+features/<feature>/
+  presentation/  # Screens, widgets (ConsumerStatefulWidget)
+  application/   # Riverpod providers, notifiers
+  domain/        # State classes with copyWith()
+core/
+  services/      # Shared services (clipboard, intent, theme_mode, update)
+  theme/         # AppTheme, theme_provider, util
+  constants/     # AppConstants (freediumUrl, urlRegExp, appVersion)
+```
 
-**Two Features**: `home/` (URL input) and `webview/` (article display with theme injection)
+**Two Features**: `home/` (URL input form) | `webview/` (article display with theme injection)
 
-## Riverpod 3.0 Patterns (Critical)
+## Riverpod Patterns (Critical)
 
-Use `Notifier` API, NOT `StateNotifier`:
+Use **Notifier API** (Riverpod 3.x), NOT StateNotifier:
 ```dart
-// Family provider with constructor injection
+// Family provider for URL-specific state
 class WebviewNotifier extends Notifier<WebviewState> {
   final String url;
   WebviewNotifier(this.url);
   @override WebviewState build() => WebviewState();
 }
 final webviewProvider = NotifierProvider.family<WebviewNotifier, WebviewState, String>(WebviewNotifier.new);
+
+// Simple notifier
+class HomeNotifier extends Notifier<HomeState> {
+  @override HomeState build() => HomeState(...);
+}
+final homeProvider = NotifierProvider<HomeNotifier, HomeState>(HomeNotifier.new);
 ```
 
-**Provider Types**:
-- `NotifierProvider.family` - URL-specific state (`webview_provider.dart`)
-- `StreamProvider` - Intent handling (`intent_service.dart`)
-- `FutureProvider` - Async operations (`dynamicThemeProvider`)
-- `Provider` - Services (`themeInjectorServiceProvider`)
+**Provider Types Used**:
+- `NotifierProvider.family` → URL-specific state (`webviewProvider`)
+- `NotifierProvider` → Singleton state (`homeProvider`, `themeModeProvider`)
+- `StreamProvider` → Intent stream (`intentStreamProvider`)
+- `FutureProvider` → Async init (`dynamicThemeProvider`)
+- `Provider` → Services (`intentServiceProvider`, `clipboardServiceProvider`)
 
-**State Updates**: Always use `copyWith()`:
+**State Updates**: Always `copyWith()` for immutability:
 ```dart
 state = state.copyWith(progress: progress / 100.0, isPageLoaded: true);
 ```
 
 ## WebView Theme Injection Pipeline
 
-Three-stage Flutter-to-web theming:
-1. `ThemeInjectorService.getThemeInjectionScript()` - Converts `ColorScheme` to CSS variables
-2. `assets/js/theme.js` - Template with `%IS_DARK_MODE%`, `%CSS_VARS%`, `%CUSTOM_CSS_CONTENT%` placeholders
-3. `assets/css/webview_styles.css` - Applies CSS custom properties to Freedium DOM
+Three-stage Flutter→Web theming:
+1. `ThemeInjectorService.getThemeInjectionScript()` converts `ColorScheme` to CSS variables
+2. `assets/js/theme.js` template with `%IS_DARK_MODE%`, `%CSS_VARS%`, `%CUSTOM_CSS_CONTENT%` placeholders
+3. `assets/css/webview_styles.css` applies `--app-*` CSS custom properties to Freedium DOM
 
-**Lifecycle**: `onWebViewCreated` → add JS handlers → `onLoadStop` → inject theme (Freedium URLs only)
-
-**JS-Flutter Bridge**:
+**WebView Lifecycle** (`webview_provider.dart`):
 ```dart
-controller.addJavaScriptHandler(handlerName: 'themeApplied', callback: (args) => ...);
+// 1. Create controller with JS channels
+controller.addJavaScriptChannel('themeApplied', onMessageReceived: ...);
+// 2. NavigationDelegate.onPageFinished → inject theme (freedium.cfd only)
+// 3. External links → launchUrl() with LaunchMode.externalApplication
 ```
+
+**URL Handling**: Only Freedium URLs navigate in WebView; others open system browser.
 
 ## Intent Handling (Share-to-App)
 
-**Two-phase system**: Initial intent (`getInitialIntent()` on launch) + streaming intents (`intentStreamProvider` while running)
+**Two-phase system** (`lib/app.dart`, `intent_service.dart`):
+- **Initial**: `getInitialIntent()` on app launch (with 400ms delay for UI ready)
+- **Streaming**: `intentStreamProvider` for intents while app is running
 
 **Duplicate Prevention** (critical):
-- Check route: `ModalRoute.of(context)?.settings.name?.startsWith('/webview/')`
-- Reset after navigation: `ReceiveSharingIntent.instance.reset()`
-- Always reset in `dispose()` and pop callbacks
+```dart
+// Check if already on webview route before navigating
+final isCurrentlyOnWebview = currentRoute?.settings.name?.startsWith('/webview/') ?? false;
+// Always reset after navigation and in dispose()
+ReceiveSharingIntent.instance.reset();
+```
 
 ## Navigation
 
-**Global Navigator Key** for provider-initiated navigation:
+**Global Navigator Key** (`lib/app.dart`) for provider-initiated navigation:
 ```dart
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-navigatorKey.currentState?.push(...);  // From providers
+navigatorKey.currentState?.push(...);  // From providers/listeners
 ```
 
-**WebView Back Navigation**: Check `canGoBack()` in `PopScope.onPopInvokedWithResult` before popping
+**WebView Back Handling** (`PopScope.onPopInvokedWithResult`):
+1. Check `canGoBack()` → call `goBack()` if true
+2. Otherwise `navigator.pop()` or `pushReplacement(HomeScreen)`
 
 ## Build Commands
 
 ```bash
 flutter pub get              # Install dependencies
-flutter run                  # Debug (WebView inspection enabled)
+flutter run                  # Debug (WebView debugging enabled via kDebugMode)
 flutter build apk --release  # Production APK
 dart format .                # Format code
 ```
 
-**Debug Mode**: WebView inspection via `isInspectable: kDebugMode`
+**Debug WebView**: Auto-enabled via `AndroidWebViewController.enableDebugging(kDebugMode)`
 
-## Key Files
+## Key Files Reference
 
-- `lib/app.dart` - App setup, intent handling, global navigator key
-- `lib/core/constants/app_constants.dart` - `freediumUrl`, `urlRegExp`, `appVersion`
-- `lib/features/webview/application/webview_provider.dart` - WebView lifecycle management
-- `lib/features/webview/application/theme_injector_service.dart` - CSS variable generation
-- `assets/js/theme.js` & `assets/css/webview_styles.css` - Theme injection templates
-
-## Dependencies (pubspec.yaml)
-
-- `flutter_riverpod: ^3.0.3` - State management (Riverpod 3.x)
-- `flutter_inappwebview: ^6.1.5` - WebView with JS injection
-- `listen_sharing_intent: ^1.9.2` - Share-to-app
-- `dynamic_color: ^1.8.1` - Material You theming
+| File | Purpose |
+|------|---------|
+| `lib/app.dart` | App widget, intent handling, global navigator key |
+| `lib/core/constants/app_constants.dart` | `freediumUrl`, `urlRegExp`, `appVersion` |
+| `lib/features/webview/application/webview_provider.dart` | WebView lifecycle, theme injection trigger |
+| `lib/features/webview/application/theme_injector_service.dart` | ColorScheme→CSS generation |
+| `assets/js/theme.js` | JS theme injection template |
+| `assets/css/webview_styles.css` | CSS overrides for Freedium DOM |
 
 ## Patterns to Follow
 
-1. **State**: Always `copyWith()` for immutability
-2. **Errors**: Try-catch with graceful fallbacks (see `_injectTheme`)
+1. **State**: Always `copyWith()`, never mutate directly
+2. **Errors**: Try-catch with `debugPrint()` fallbacks (see `_injectTheme`)
 3. **Navigation**: Check `context.mounted` before async navigation
-4. **Intents**: Always reset via `ReceiveSharingIntent.instance.reset()` on disposal
-5. **Theme injection**: Only for `freedium.cfd` URLs; external links open in system browser
+4. **Intents**: Always `ReceiveSharingIntent.instance.reset()` on disposal
+5. **Theme injection**: Only for `freedium.cfd` URLs
 6. **Logging**: Use `debugPrint()`, not `print()`
+7. **Widgets**: Use `ConsumerStatefulWidget` for stateful screens needing `ref`

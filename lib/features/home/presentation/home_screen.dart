@@ -6,7 +6,6 @@ import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -28,12 +27,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       appBar: AppBar(
         title: Text(
           AppConstants.appName,
-          style: GoogleFonts.playfairDisplay(
+          style: TextStyle(
+            fontFamily: 'PlayfairDisplay',
             color: Theme.of(context).colorScheme.primary,
             fontWeight: .bold,
           ),
         ),
-        titleTextStyle: GoogleFonts.playfairDisplay(
+        titleTextStyle: const TextStyle(
+          fontFamily: 'PlayfairDisplay',
           fontSize: 24,
           fontWeight: .bold,
         ),
