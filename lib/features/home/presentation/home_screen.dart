@@ -45,7 +45,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.info),
-            onPressed: () => showAppAboutDialog(context),
+            onPressed: () => showAppAboutDialog(context, ref),
             tooltip: 'About',
           ),
         ],

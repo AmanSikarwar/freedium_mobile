@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/services/cache_service.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_section.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-void showAppAboutDialog(BuildContext context) {
+void showAppAboutDialog(BuildContext context, WidgetRef ref) {
   Future<void> launchUri(Uri uri) async {
     try {
       await launchUrl(uri);
@@ -13,6 +15,20 @@ void showAppAboutDialog(BuildContext context) {
           context,
         ).showSnackBar(SnackBar(content: Text('Could not launch URL: $e')));
       }
+    }
+  }
+
+  Future<void> clearCache() async {
+    final cacheService = ref.read(cacheServiceProvider);
+    final success = await cacheService.clearWebViewCache();
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            success ? 'Cache cleared successfully' : 'Failed to clear cache',
+          ),
+        ),
+      );
     }
   }
 
@@ -27,6 +43,12 @@ void showAppAboutDialog(BuildContext context) {
         'Just paste the URL of the article you want to read and '
         'Freedium will take care of the rest!\n\n',
       ),
+      OutlinedButton.icon(
+        onPressed: clearCache,
+        icon: const Icon(Icons.delete_outline),
+        label: const Text('Clear Cache'),
+      ),
+      const SizedBox(height: 8),
       const UpdateSection(),
       Wrap(
         children: [
