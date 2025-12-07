@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/services/freedium_url_service.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
@@ -14,6 +15,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   final FontSizeService _fontSizeService = FontSizeService();
   BuildContext? _context;
   final String url;
+  String _activeBaseUrl = AppConstants.freediumUrl;
 
   WebviewNotifier(this.url);
 
@@ -22,6 +24,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _loadFontSize();
     return WebviewState();
   }
+
+  String get activeBaseUrl => _activeBaseUrl;
 
   Future<void> _loadFontSize() async {
     final savedFontSize = await _fontSizeService.loadFontSize();
@@ -36,8 +40,9 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _context = context;
   }
 
-  WebViewController createController() {
-    final initialUrl = Uri.parse(AppConstants.freediumUrl).replace(path: url);
+  WebViewController createController({String? baseUrl}) {
+    _activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
+    final initialUrl = Uri.parse(_activeBaseUrl).replace(path: url);
 
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -74,7 +79,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
           },
           onPageFinished: (String url) {
             state = state.copyWith(isPageLoaded: true, currentUrl: url);
-            if (url.startsWith(AppConstants.freediumUrl)) {
+            if (FreediumUrlService.isFreediumUrl(url)) {
               _injectTheme();
             } else {
               state = state.copyWith(isThemeApplied: false);
@@ -100,8 +105,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
               }
             }
 
-            final freediumUri = Uri.parse(AppConstants.freediumUrl);
-            if (uri.host == freediumUri.host) {
+            if (FreediumUrlService.isFreediumHost(uri.host)) {
               return NavigationDecision.navigate;
             }
 
@@ -152,8 +156,9 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   void _updateInitialLoadState() {
-    final bool isThemedPage =
-        state.currentUrl?.startsWith(AppConstants.freediumUrl) ?? false;
+    final bool isThemedPage = FreediumUrlService.isFreediumUrl(
+      state.currentUrl ?? '',
+    );
     if (state.isInitialLoad &&
         state.isPageLoaded &&
         (isThemedPage ? state.isThemeApplied : true)) {
