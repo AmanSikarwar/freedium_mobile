@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/services/freedium_url_service.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
@@ -32,11 +32,15 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     });
   }
 
-  void _initializeWebView() {
+  Future<void> _initializeWebView() async {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final themeInjector = ref.read(themeInjectorServiceProvider);
+    final freediumUrlService = ref.read(freediumUrlServiceProvider);
+
     webviewNotifier.setThemeInjector(themeInjector, context);
-    _controller = webviewNotifier.createController();
+
+    final activeUrl = await freediumUrlService.getActiveUrl();
+    _controller = webviewNotifier.createController(baseUrl: activeUrl);
     setState(() {});
   }
 
@@ -106,8 +110,9 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     }
 
     final backgroundColor = Theme.of(context).colorScheme.surface;
-    final bool isThemedPage =
-        webviewState.currentUrl?.startsWith(AppConstants.freediumUrl) ?? false;
+    final bool isThemedPage = FreediumUrlService.isFreediumUrl(
+      webviewState.currentUrl ?? '',
+    );
     final bool showWebView =
         webviewState.isPageLoaded &&
         (isThemedPage ? webviewState.isThemeApplied : true);
@@ -208,7 +213,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                     subject: 'Read this article without Paywall',
                     title: 'Share Freedium link',
                     uri: Uri.parse(
-                      AppConstants.freediumUrl,
+                      webviewNotifier.activeBaseUrl,
                     ).replace(path: widget.url),
                   ),
                 );
