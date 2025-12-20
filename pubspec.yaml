@@ -1,7 +1,7 @@
 name: freedium_mobile
 description: "An app to read Medium articles without hitting the paywall"
 publish_to: "none"
-version: 0.6.1
+version: 0.6.2
 
 environment:
   sdk: ^3.10.0
