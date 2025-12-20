@@ -2,8 +2,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
-import 'package:freedium_mobile/core/services/freedium_url_service.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/services/freedium_url_service.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -12,24 +12,34 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
-  final FontSizeService _fontSizeService = FontSizeService();
+  late FontSizeService _fontSizeService;
   BuildContext? _context;
   final String url;
-  String _activeBaseUrl = AppConstants.freediumUrl;
 
   WebviewNotifier(this.url);
 
   @override
   WebviewState build() {
-    _loadFontSize();
+    final prefsAsync = ref.watch(sharedPreferencesProvider);
+
+    prefsAsync.whenData((prefs) {
+      _fontSizeService = FontSizeService(prefs);
+      final savedFontSize = _fontSizeService.loadFontSize();
+      if (ref.mounted) {
+        state = state.copyWith(fontSize: savedFontSize);
+      }
+    });
+
+    ref.onDispose(() {
+      final controller = state.controller;
+      if (controller != null) {
+        controller.removeJavaScriptChannel('themeApplied');
+        controller.removeJavaScriptChannel('Toaster');
+        controller.clearCache();
+      }
+    });
+
     return WebviewState();
-  }
-
-  String get activeBaseUrl => _activeBaseUrl;
-
-  Future<void> _loadFontSize() async {
-    final savedFontSize = await _fontSizeService.loadFontSize();
-    state = state.copyWith(fontSize: savedFontSize);
   }
 
   void setThemeInjector(
@@ -41,8 +51,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   WebViewController createController({String? baseUrl}) {
-    _activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
-    final initialUrl = Uri.parse(_activeBaseUrl).replace(path: url);
+    final activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
+    final initialUrl = Uri.parse(activeBaseUrl).replace(path: url);
 
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -130,28 +140,36 @@ class WebviewNotifier extends Notifier<WebviewState> {
       )
       ..loadRequest(initialUrl);
 
-    // Enable debugging in debug mode for Android
     if (kDebugMode) {
       if (controller.platform is AndroidWebViewController) {
         AndroidWebViewController.enableDebugging(true);
       }
     }
 
-    state = state.copyWith(controller: controller);
+    state = state.copyWith(
+      controller: controller,
+      activeBaseUrl: activeBaseUrl,
+    );
     return controller;
   }
 
   Future<void> _injectTheme() async {
     if (_context == null || state.controller == null) return;
     try {
+      final colorScheme = Theme.of(_context!).colorScheme;
       final script = await _themeInjector.getThemeInjectionScript(
-        _context!,
+        colorScheme,
         fontSize: state.fontSize,
       );
-      state.controller!.runJavaScript(script);
+
+      if (!ref.mounted) return;
+
+      await state.controller!.runJavaScript(script);
     } catch (e) {
       debugPrint('Failed to inject theme script: $e');
-      state = state.copyWith(isThemeApplied: true);
+      if (ref.mounted) {
+        state = state.copyWith(isThemeApplied: false);
+      }
     }
   }
 

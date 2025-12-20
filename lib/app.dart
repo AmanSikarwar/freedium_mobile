@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
@@ -62,6 +63,7 @@ class App extends ConsumerWidget {
 
             if (!isCurrentlyOnWebview) {
               _navigateToWebview(url);
+              ReceiveSharingIntent.instance.reset();
             }
           }
         }
@@ -75,9 +77,11 @@ class App extends ConsumerWidget {
           if (value.isNotEmpty) {
             final url = value.first.path;
             if (url.isNotEmpty) {
-              Future.delayed(const Duration(milliseconds: 400)).then((_) {
-                _navigateToWebview(url);
-                ReceiveSharingIntent.instance.reset();
+              SchedulerBinding.instance.addPostFrameCallback((_) {
+                Future.delayed(const Duration(milliseconds: 200), () {
+                  _navigateToWebview(url);
+                  ReceiveSharingIntent.instance.reset();
+                });
               });
             }
           }

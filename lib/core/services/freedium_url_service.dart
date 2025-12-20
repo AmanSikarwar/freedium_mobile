@@ -43,19 +43,21 @@ class FreediumUrlService {
   }
 
   Future<bool> _isUrlReachable(String url) async {
+    HttpClient? client;
     try {
       final uri = Uri.parse(url);
-      final client = HttpClient();
+      client = HttpClient();
       client.connectionTimeout = _checkTimeout;
 
       final request = await client.headUrl(uri).timeout(_checkTimeout);
       final response = await request.close().timeout(_checkTimeout);
-      client.close();
 
       return response.statusCode >= 200 && response.statusCode < 400;
     } catch (e) {
       debugPrint('URL reachability check failed for $url: $e');
       return false;
+    } finally {
+      client?.close();
     }
   }
 
