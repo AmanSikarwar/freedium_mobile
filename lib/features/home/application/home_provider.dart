@@ -13,8 +13,12 @@ class HomeState {
 class HomeNotifier extends Notifier<HomeState> {
   @override
   HomeState build() {
+    final urlController = TextEditingController();
+
+    ref.onDispose(urlController.dispose);
+
     return HomeState(
-      urlController: TextEditingController(),
+      urlController: urlController,
       formKey: GlobalKey<FormState>(),
     );
   }

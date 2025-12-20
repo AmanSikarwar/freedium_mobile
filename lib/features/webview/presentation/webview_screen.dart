@@ -213,7 +213,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                     subject: 'Read this article without Paywall',
                     title: 'Share Freedium link',
                     uri: Uri.parse(
-                      webviewNotifier.activeBaseUrl,
+                      webviewState.activeBaseUrl,
                     ).replace(path: widget.url),
                   ),
                 );

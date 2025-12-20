@@ -13,17 +13,20 @@ class AppThemeProvider {
 }
 
 class ThemeModeNotifier extends Notifier<ThemeMode> {
-  final ThemeModeService _themeModeService = ThemeModeService();
+  late ThemeModeService _themeModeService;
 
   @override
   ThemeMode build() {
-    _loadThemeMode();
-    return .system;
-  }
+    final prefsAsync = ref.watch(sharedPreferencesProvider);
 
-  Future<void> _loadThemeMode() async {
-    final themeMode = await _themeModeService.loadThemeMode();
-    state = themeMode;
+    return prefsAsync.when(
+      data: (prefs) {
+        _themeModeService = ThemeModeService(prefs);
+        return _themeModeService.loadThemeMode();
+      },
+      loading: () => .system,
+      error: (_, _) => .system,
+    );
   }
 
   Future<void> setThemeMode(ThemeMode themeMode) async {

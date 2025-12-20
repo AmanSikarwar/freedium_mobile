@@ -1,4 +1,5 @@
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:freedium_mobile/core/constants/app_constants.dart';
 
 class WebviewState {
   final double progress;
@@ -8,6 +9,7 @@ class WebviewState {
   final WebViewController? controller;
   final double fontSize;
   final String? currentUrl;
+  final String activeBaseUrl;
 
   WebviewState({
     this.progress = 0.0,
@@ -17,6 +19,7 @@ class WebviewState {
     this.controller,
     this.fontSize = 18.0,
     this.currentUrl,
+    this.activeBaseUrl = AppConstants.freediumUrl,
   });
 
   WebviewState copyWith({
@@ -27,6 +30,7 @@ class WebviewState {
     WebViewController? controller,
     double? fontSize,
     String? currentUrl,
+    String? activeBaseUrl,
   }) {
     return WebviewState(
       progress: progress ?? this.progress,
@@ -36,6 +40,7 @@ class WebviewState {
       controller: controller ?? this.controller,
       fontSize: fontSize ?? this.fontSize,
       currentUrl: currentUrl ?? this.currentUrl,
+      activeBaseUrl: activeBaseUrl ?? this.activeBaseUrl,
     );
   }
 }

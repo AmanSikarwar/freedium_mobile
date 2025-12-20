@@ -3,11 +3,10 @@ import 'package:flutter/services.dart';
 
 class ThemeInjectorService {
   Future<String> getThemeInjectionScript(
-    BuildContext context, {
+    ColorScheme colorScheme, {
     double fontSize = 18.0,
   }) async {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isDark = colorScheme.brightness == .dark;
+    final isDark = colorScheme.brightness == Brightness.dark;
 
     String colorToHex(Color color) {
       return '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';
@@ -55,10 +54,18 @@ class ThemeInjectorService {
       }
     ''';
 
-    final customCSSContent = await rootBundle.loadString(
-      'assets/css/webview_styles.css',
-    );
-    final scriptTemplate = await rootBundle.loadString('assets/js/theme.js');
+    String customCSSContent = '';
+    String scriptTemplate = '';
+
+    try {
+      customCSSContent = await rootBundle.loadString(
+        'assets/css/webview_styles.css',
+      );
+      scriptTemplate = await rootBundle.loadString('assets/js/theme.js');
+    } catch (e) {
+      debugPrint('Failed to load theme assets: $e');
+      return '''(function() { console.error('Theme assets not found'); })();''';
+    }
 
     return scriptTemplate
         .replaceFirst('%IS_DARK_MODE%', isDark.toString())
