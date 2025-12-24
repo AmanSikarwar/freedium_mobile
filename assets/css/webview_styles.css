@@ -416,6 +416,16 @@ pre,
   line-height: 1.6 !important;
 }
 
+@media (max-width: 480px) {
+  code,
+  pre,
+  .font-mono,
+  .main-content code,
+  .main-content pre {
+    font-size: calc(var(--app-font-size, 18px) * 0.8) !important;
+  }
+}
+
 /* Button text */
 button,
 .btn,
