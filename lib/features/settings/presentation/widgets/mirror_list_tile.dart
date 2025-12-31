@@ -9,7 +9,6 @@ class MirrorListTile extends ConsumerStatefulWidget {
   final bool isSelected;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
-  final VoidCallback onTest;
 
   const MirrorListTile({
     super.key,
@@ -17,7 +16,6 @@ class MirrorListTile extends ConsumerStatefulWidget {
     required this.isSelected,
     this.onEdit,
     this.onDelete,
-    required this.onTest,
   });
 
   @override

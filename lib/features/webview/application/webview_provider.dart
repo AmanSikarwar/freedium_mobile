@@ -157,7 +157,9 @@ class WebviewNotifier extends Notifier<WebviewState> {
   Future<void> _handleLoadError(WebResourceError error) async {
     final settings = ref.read(settingsProvider);
 
-    if (settings.autoSwitchMirror && _retryCount < _maxRetries) {
+    if (settings.autoSwitchMirror &&
+        _retryCount < _maxRetries &&
+        settings.mirrors.isNotEmpty) {
       _retryCount++;
       _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
 
@@ -192,6 +194,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   Future<void> retryWithNextMirror() async {
     final settings = ref.read(settingsProvider);
+    if (settings.mirrors.isEmpty) {
+      debugPrint('No mirrors available to retry');
+      return;
+    }
     _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
     final nextMirror = settings.mirrors[_currentMirrorIndex];
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class AddMirrorDialog extends StatefulWidget {
@@ -74,15 +73,11 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a URL';
                 }
-                final urlRegExp = RegExp(
-                  AppConstants.urlRegExp,
-                  caseSensitive: false,
-                );
-                if (!urlRegExp.hasMatch(value)) {
-                  return 'Please enter a valid URL';
-                }
                 final uri = Uri.tryParse(value);
-                if (uri == null || !uri.hasScheme || !uri.host.isNotEmpty) {
+                if (uri == null ||
+                    !uri.hasScheme ||
+                    uri.host.isEmpty ||
+                    (uri.scheme != 'http' && uri.scheme != 'https')) {
                   return 'Please enter a valid URL';
                 }
                 return null;

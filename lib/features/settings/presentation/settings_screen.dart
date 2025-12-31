@@ -63,7 +63,6 @@ class SettingsScreen extends ConsumerWidget {
                       onDelete: mirror.isCustom
                           ? () => _confirmDeleteMirror(context, ref, mirror)
                           : null,
-                      onTest: () => _testMirror(context, ref, mirror.url),
                     ),
                   )
                   .toList(),
@@ -312,51 +311,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> _testMirror(
-    BuildContext context,
-    WidgetRef ref,
-    String url,
-  ) async {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Row(
-          children: [
-            SizedBox(
-              width: 20,
-              height: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-            SizedBox(width: 16),
-            Text('Testing mirror...'),
-          ],
-        ),
-        duration: Duration(seconds: 10),
-      ),
-    );
-
-    final result = await ref.read(settingsProvider.notifier).testMirror(url);
-
-    if (!context.mounted) return;
-
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
-    if (result.isReachable) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✓ Mirror reachable (${result.responseTimeMs}ms)'),
-          backgroundColor: Colors.green,
-        ),
-      );
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('✗ Mirror unreachable: ${result.error}'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
   void _confirmResetDefaults(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
@@ -374,8 +328,9 @@ class SettingsScreen extends ConsumerWidget {
             onPressed: () {
               HapticFeedback.mediumImpact();
               ref.read(settingsProvider.notifier).resetToDefaults();
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
               Navigator.pop(context);
-              ScaffoldMessenger.of(context).showSnackBar(
+              scaffoldMessenger.showSnackBar(
                 const SnackBar(content: Text('Settings reset to defaults')),
               );
             },
