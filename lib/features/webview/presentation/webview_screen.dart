@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/core/services/freedium_url_service.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
@@ -110,29 +110,95 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     }
 
     final backgroundColor = Theme.of(context).colorScheme.surface;
-    final bool isThemedPage = FreediumUrlService.isFreediumUrl(
+    final freediumUrlService = ref.read(freediumUrlServiceProvider);
+    final bool isThemedPage = freediumUrlService.isFreediumUrl(
       webviewState.currentUrl ?? '',
     );
     final bool showWebView =
         webviewState.isPageLoaded &&
-        (isThemedPage ? webviewState.isThemeApplied : true);
+        (isThemedPage ? webviewState.isThemeApplied : true) &&
+        !webviewState.hasError;
 
     return Scaffold(
       backgroundColor: showWebView ? backgroundColor : null,
       body: SafeArea(
         child: Stack(
           children: [
-            if (_controller != null) WebViewWidget(controller: _controller!),
-            if (!webviewState.isPageLoaded && webviewState.progress < 1.0)
+            if (_controller != null && !webviewState.hasError)
+              WebViewWidget(controller: _controller!),
+            if (!webviewState.isPageLoaded &&
+                webviewState.progress < 1.0 &&
+                !webviewState.hasError)
               LinearProgressIndicator(
                 value: webviewState.progress > 0 ? webviewState.progress : null,
               ),
-            if (!webviewState.isPageLoaded && webviewState.progress < 0.7)
+            if (!webviewState.isPageLoaded &&
+                webviewState.progress < 0.7 &&
+                !webviewState.hasError)
               const ArticleShimmer(),
+            if (webviewState.hasError)
+              _buildErrorWidget(webviewState, webviewNotifier),
           ],
         ),
       ),
       floatingActionButton: showWebView ? _buildActionButtons() : null,
+    );
+  }
+
+  Widget _buildErrorWidget(
+    WebviewState webviewState,
+    WebviewNotifier webviewNotifier,
+  ) {
+    final theme = Theme.of(context);
+
+    return Center(
+      child: Padding(
+        padding: const .all(24.0),
+        child: Column(
+          mainAxisSize: .min,
+          children: [
+            Icon(Icons.cloud_off, size: 80, color: theme.colorScheme.error),
+            const SizedBox(height: 16),
+            Text(
+              'Failed to Load Article',
+              style: theme.textTheme.headlineSmall?.copyWith(fontWeight: .bold),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              webviewState.errorMessage ?? 'An error occurred',
+              textAlign: .center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Current mirror: ${webviewState.activeBaseUrl}',
+              textAlign: .center,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: .center,
+              children: [
+                OutlinedButton.icon(
+                  onPressed: () => webviewNotifier.reload(),
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                ),
+                const SizedBox(width: 16),
+                FilledButton.icon(
+                  onPressed: () => webviewNotifier.retryWithNextMirror(),
+                  icon: const Icon(Icons.swap_horiz),
+                  label: const Text('Try Another Mirror'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 

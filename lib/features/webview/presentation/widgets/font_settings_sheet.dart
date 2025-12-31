@@ -1,5 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+void showFontSettingsSheet(
+  BuildContext context, {
+  required double initialFontSize,
+  required Function(double) onFontSizeChanged,
+}) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    builder: (context) {
+      return FontSettingsSheet(
+        initialFontSize: initialFontSize,
+        onFontSizeChanged: onFontSizeChanged,
+      );
+    },
+  );
+}
 
 class FontSettingsSheet extends ConsumerStatefulWidget {
   final double initialFontSize;
@@ -29,28 +48,26 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
     final theme = Theme.of(context);
 
     return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
+      padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: const .vertical(top: .circular(20)),
       ),
       child: Column(
         mainAxisSize: .min,
         children: [
           Container(
-            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            margin: const .only(top: 12, bottom: 8),
             width: 40,
             height: 4,
             decoration: BoxDecoration(
               color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-              borderRadius: BorderRadius.circular(2),
+              borderRadius: .circular(2),
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const .symmetric(horizontal: 24, vertical: 16),
             child: Row(
               mainAxisAlignment: .spaceBetween,
               children: [
@@ -62,14 +79,17 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
                 ),
                 IconButton(
                   icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    HapticFeedback.lightImpact();
+                    Navigator.pop(context);
+                  },
                 ),
               ],
             ),
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const .symmetric(horizontal: 24),
             child: Row(
               mainAxisAlignment: .spaceBetween,
               children: [
@@ -79,6 +99,7 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
                 ),
                 TextButton.icon(
                   onPressed: () {
+                    HapticFeedback.mediumImpact();
                     setState(() {
                       _currentFontSize = 18.0;
                     });
@@ -92,7 +113,7 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
           ),
 
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 24),
+            padding: const .symmetric(horizontal: 24),
             child: Row(
               children: [
                 const Icon(Icons.text_fields, size: 16),
@@ -104,6 +125,7 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
                     divisions: 14,
                     label: '${_currentFontSize.toInt()}px',
                     onChanged: (value) {
+                      HapticFeedback.selectionClick();
                       setState(() {
                         _currentFontSize = value;
                       });

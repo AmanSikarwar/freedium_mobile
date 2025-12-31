@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
-import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
+import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -40,13 +41,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.brightness_6),
-            onPressed: () => showThemeChooserBottomSheet(context),
-            tooltip: 'Theme',
+            icon: const Icon(Icons.settings),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+              );
+            },
+            tooltip: 'Settings',
           ),
           IconButton(
             icon: const Icon(Icons.info),
-            onPressed: () => showAppAboutDialog(context, ref),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              showAppAboutDialog(context, ref);
+            },
             tooltip: 'About',
           ),
         ],
@@ -97,7 +107,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                         suffixIcon: IconButton(
                           icon: const Icon(Icons.paste),
-                          onPressed: homeNotifier.pasteFromClipboard,
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            homeNotifier.pasteFromClipboard();
+                          },
                         ),
                       ),
                       keyboardType: .url,
@@ -120,7 +133,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   SizedBox(
                     width: double.infinity,
                     child: FilledButton(
-                      onPressed: () => homeNotifier.getArticle(context),
+                      onPressed: () {
+                        HapticFeedback.mediumImpact();
+                        homeNotifier.getArticle(context);
+                      },
                       child: const Text('Get Article'),
                     ),
                   ),

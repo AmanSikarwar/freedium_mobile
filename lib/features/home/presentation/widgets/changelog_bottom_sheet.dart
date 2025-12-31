@@ -21,27 +21,24 @@ class ChangelogBottomSheet extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+            borderRadius: const .vertical(top: .circular(20)),
           ),
           child: Column(
             children: [
               Container(
-                margin: const EdgeInsets.only(top: 12, bottom: 8),
+                margin: const .only(top: 12, bottom: 8),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
                   color: Theme.of(
                     context,
                   ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: .circular(2),
                 ),
               ),
 
               Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
-                ),
+                padding: const .symmetric(horizontal: 24, vertical: 8),
                 child: Row(
                   children: [
                     Expanded(
@@ -80,7 +77,7 @@ class ChangelogBottomSheet extends StatelessWidget {
               Expanded(
                 child: Markdown(
                   controller: scrollController,
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: const .symmetric(horizontal: 24),
                   data: updateInfo.releaseNotes,
                   selectable: true,
                   styleSheet: MarkdownStyleSheet(
@@ -131,7 +128,7 @@ class ChangelogBottomSheet extends StatelessWidget {
                       color: theme.colorScheme.onSurface,
                     ),
                     listIndent: 24,
-                    blockquotePadding: const EdgeInsets.all(12),
+                    blockquotePadding: const .all(12),
                     blockquoteDecoration: BoxDecoration(
                       color: theme.colorScheme.surfaceContainerHighest,
                       border: Border(
@@ -147,14 +144,14 @@ class ChangelogBottomSheet extends StatelessWidget {
                       backgroundColor:
                           theme.colorScheme.surfaceContainerHighest,
                     ),
-                    codeblockPadding: const EdgeInsets.all(12),
+                    codeblockPadding: const .all(12),
                     codeblockDecoration: BoxDecoration(
                       color: theme.colorScheme.surfaceContainerHighest,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: .circular(8),
                     ),
                     a: TextStyle(
                       color: theme.colorScheme.primary,
-                      decoration: TextDecoration.underline,
+                      decoration: .underline,
                     ),
                   ),
                   onTapLink: (text, href, title) {
@@ -166,7 +163,7 @@ class ChangelogBottomSheet extends StatelessWidget {
               ),
 
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: const .all(24),
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   boxShadow: [
