@@ -1,4 +1,33 @@
 (function () {
+  const THEME_MARKER = "data-freedium-theme-applied";
+  if (document.documentElement.hasAttribute(THEME_MARKER)) {
+    console.log("Freedium theme already applied, skipping duplicate injection");
+    try {
+      if (window.themeApplied && window.themeApplied.postMessage) {
+        window.themeApplied.postMessage("done");
+      }
+    } catch (e) {
+      console.warn("Failed to call Flutter handler on skip:", e);
+    }
+    return;
+  }
+  document.documentElement.setAttribute(THEME_MARKER, Date.now().toString());
+
+  document
+    .querySelectorAll("style[data-freedium-injected]")
+    .forEach(function (el) {
+      el.remove();
+    });
+
+  if (window._freediumCopyObserver) {
+    try {
+      window._freediumCopyObserver.disconnect();
+      window._freediumCopyObserver = null;
+    } catch (e) {
+      console.warn("Failed to disconnect previous observer:", e);
+    }
+  }
+
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", applyTheme);
   } else {
@@ -10,6 +39,7 @@
       const isDarkMode = "%IS_DARK_MODE%";
 
       const styleSheet = document.createElement("style");
+      styleSheet.setAttribute("data-freedium-injected", "vars");
       styleSheet.textContent = `%CSS_VARS%`;
       document.head.appendChild(styleSheet);
 
@@ -40,20 +70,34 @@
       }
 
       const customCSS = document.createElement("style");
+      customCSS.setAttribute("data-freedium-injected", "custom");
       customCSS.textContent = `%CUSTOM_CSS_CONTENT%`;
       document.head.appendChild(customCSS);
 
       const desiredHljsTheme = isDarkMode === "true" ? "github-dark" : "github";
+      const hljsThemeUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/${desiredHljsTheme}.min.css`;
       try {
         const existingLink = document.querySelector(
-          'link[href*="highlight.js/styles"]'
+          'link[href*="highlight.js"][href*="styles"]'
         );
         if (existingLink && !existingLink.href.includes(desiredHljsTheme)) {
-          existingLink.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/${desiredHljsTheme}.min.css`;
+          const preloadLink = document.createElement("link");
+          preloadLink.rel = "preload";
+          preloadLink.as = "style";
+          preloadLink.href = hljsThemeUrl;
+          preloadLink.onload = function () {
+            existingLink.href = hljsThemeUrl;
+            preloadLink.remove();
+          };
+          preloadLink.onerror = function () {
+            existingLink.href = hljsThemeUrl;
+            preloadLink.remove();
+          };
+          document.head.appendChild(preloadLink);
         } else if (!existingLink) {
           const link = document.createElement("link");
           link.rel = "stylesheet";
-          link.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/${desiredHljsTheme}.min.css`;
+          link.href = hljsThemeUrl;
           document.head.appendChild(link);
         }
       } catch (e) {
@@ -177,7 +221,10 @@
         // Secondary call to catch any late-loaded elements
         setTimeout(overrideCopyButtons, 1500);
 
-        const observer = new MutationObserver(function (mutations) {
+        // Store observer reference globally to allow cleanup on re-injection
+        window._freediumCopyObserver = new MutationObserver(function (
+          mutations
+        ) {
           mutations.forEach(function (mutation) {
             if (mutation.addedNodes.length > 0) {
               mutation.addedNodes.forEach(function (node) {
@@ -196,13 +243,16 @@
           });
         });
 
-        observer.observe(document.body, {
+        window._freediumCopyObserver.observe(document.body, {
           childList: true,
           subtree: true,
         });
 
-        setTimeout(() => {
-          observer.disconnect();
+        setTimeout(function () {
+          if (window._freediumCopyObserver) {
+            window._freediumCopyObserver.disconnect();
+            window._freediumCopyObserver = null;
+          }
         }, 10000);
       } catch (e) {
         console.warn("Failed to override copy functionality:", e);
