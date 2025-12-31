@@ -42,6 +42,7 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 - **Paywall Bypass** - Read any Medium article without hitting the paywall or needing a subscription
 - **Share Integration** - Share Medium articles directly to Freedium from Chrome, Twitter, or any browser
 - **Clipboard Detection** - Automatically detects Medium URLs in your clipboard for quick access
+- **Configurable Mirrors** - Multiple Freedium server mirrors with automatic failover
 - **Material You Theming** - Dynamic color schemes that adapt to your Android 12+ wallpaper
 - **Dark Mode** - Comfortable reading with automatic or manual theme switching
 - **Font Size Control** - Adjust text size for better readability
@@ -162,6 +163,13 @@ lib/
     │   └── presentation/
     │       ├── home_screen.dart
     │       └── widgets/
+    ├── settings/
+    │   ├── application/
+    │   │   └── settings_provider.dart   # Settings state & mirror management
+    │   ├── domain/
+    │   │   └── settings_state.dart      # Settings & FreediumMirror models
+    │   └── presentation/
+    │       └── settings_screen.dart
     └── webview/
         ├── application/
         │   ├── theme_injector_service.dart  # CSS injection for theming
@@ -177,7 +185,7 @@ lib/
 
 The app follows a **feature-based architecture** with **Riverpod 3.0** for state management:
 
-- **Features** - Organized by functionality (`home`, `webview`)
+- **Features** - Organized by functionality (`home`, `settings`, `webview`)
 - **Application** - Riverpod Notifiers and business logic
 - **Presentation** - UI screens and widgets
 - **Domain** - State classes with `copyWith()`
