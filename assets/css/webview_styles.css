@@ -334,7 +334,6 @@ svg {
 }
 #darkModeToggle {
   display: none !important;
-  visibility: hidden !important;
   pointer-events: none !important;
   width: 0 !important;
   height: 0 !important;
@@ -344,62 +343,36 @@ svg {
   border: none !important;
 }
 
-/* Dynamic font size support - Global typography scale */
-/* Base font size with Minor Third scale (1.2 ratio) */
-:root {
-  --font-scale-ratio: 1.2;
-}
+/* ============================================================
+   TYPOGRAPHY SCALE - Font Size System
+   ============================================================
+   Uses CSS custom property --app-font-size (default 18px) as base.
+   Scale is applied with multipliers for consistent hierarchy.
+   
+   Hierarchy (from largest to smallest):
+   - .main-content h1: 2.0x (article titles)
+   - .main-content h2: 1.728x (major sections)
+   - .main-content h3: 1.44x (subsections)
+   - .main-content h4: 1.2x (minor headings)
+   - body/p/li: 1.05x (body text)
+   - nav/button: 0.95x (UI elements)
+   - small/figcaption: 0.85x (captions)
+   - code/pre: 0.8x (code blocks)
+   ============================================================ */
 
 /* Base body text */
 body,
 p,
 li,
-span,
-div {
+span:not(.hljs-copy):not([class*="text-"]):not([class*="hljs-"]):not(
+    pre span
+  ):not(code span),
+div:not([class]) {
   font-size: calc(var(--app-font-size, 18px) * 1.05) !important;
   line-height: 1.6 !important;
 }
 
-/* Heading scale - using Minor Third (1.2) ratio for tighter scale */
-h1,
-.text-6xl,
-.text-5xl {
-  font-size: calc(var(--app-font-size, 18px) * 1.6) !important;
-  line-height: 1.2 !important;
-}
-
-h2,
-.text-4xl,
-.text-3xl {
-  font-size: calc(var(--app-font-size, 18px) * 1.44) !important;
-  line-height: 1.25 !important;
-}
-
-h3,
-.text-2xl {
-  font-size: calc(var(--app-font-size, 18px) * 1.3) !important;
-  line-height: 1.3 !important;
-}
-
-h4,
-.text-xl {
-  font-size: calc(var(--app-font-size, 18px) * 1.15) !important;
-  line-height: 1.35 !important;
-}
-
-h5,
-.text-lg {
-  font-size: calc(var(--app-font-size, 18px) * 1.1) !important;
-  line-height: 1.4 !important;
-}
-
-h6 {
-  font-size: calc(var(--app-font-size, 18px) * 1.05) !important;
-  line-height: 1.5 !important;
-  font-weight: 600 !important;
-}
-
-/* Small text */
+/* Small text elements */
 .text-sm,
 .text-xs,
 small,
@@ -408,59 +381,65 @@ figcaption {
   line-height: 1.5 !important;
 }
 
-/* Code blocks - slightly smaller */
-code,
-pre,
-.font-mono {
-  font-size: calc(var(--app-font-size, 18px) * 0.6) !important;
-  line-height: 1.6 !important;
-}
-
-/* Button text */
+/* UI elements - buttons and navigation */
 button,
 .btn,
-input[type="submit"] {
-  font-size: calc(var(--app-font-size, 18px) * 0.95) !important;
-}
-
-/* Navigation text */
+input[type="submit"],
 nav a,
 nav li {
   font-size: calc(var(--app-font-size, 18px) * 0.95) !important;
 }
 
-/* Main content specific overrides (article body) */
+/* Code blocks - unified rule for all code elements */
+code,
+pre,
+.font-mono,
+code *,
+pre *,
+.font-mono *,
+[class*="hljs"],
+[class*="hljs"] * {
+  font-size: calc(var(--app-font-size, 18px) * 0.8) !important;
+  line-height: 1.6 !important;
+}
+
+/* Main content area - article body with larger type scale */
 .main-content {
   font-size: calc(var(--app-font-size, 18px) * 1.05) !important;
 }
 
 .main-content h1 {
   font-size: calc(var(--app-font-size, 18px) * 2) !important;
+  line-height: 1.2 !important;
 }
 
 .main-content h2 {
   font-size: calc(var(--app-font-size, 18px) * 1.728) !important;
+  line-height: 1.25 !important;
 }
 
 .main-content h3 {
   font-size: calc(var(--app-font-size, 18px) * 1.44) !important;
+  line-height: 1.3 !important;
 }
 
 .main-content h4 {
   font-size: calc(var(--app-font-size, 18px) * 1.2) !important;
+  line-height: 1.35 !important;
 }
 
-.main-content code,
-.main-content pre {
-  font-size: calc(var(--app-font-size, 18px) * 0.875) !important;
+.main-content h5 {
+  font-size: calc(var(--app-font-size, 18px) * 1.1) !important;
+  line-height: 1.4 !important;
 }
 
-/* Additional code block improvements for main content */
-.main-content pre code {
-  line-height: 1.6 !important;
+.main-content h6 {
+  font-size: calc(var(--app-font-size, 18px) * 1.05) !important;
+  line-height: 1.5 !important;
+  font-weight: 600 !important;
 }
 
-/* Ensure code blocks are distinguishable from content */
+/* Code blocks within main content */
 .main-content pre {
   margin: 1.5em 0 !important;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;

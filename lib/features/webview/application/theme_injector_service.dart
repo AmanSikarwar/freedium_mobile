@@ -64,7 +64,16 @@ class ThemeInjectorService {
       scriptTemplate = await rootBundle.loadString('assets/js/theme.js');
     } catch (e) {
       debugPrint('Failed to load theme assets: $e');
-      return '''(function() { console.error('Theme assets not found'); })();''';
+      return '''(function() {
+        console.error('Theme assets not found');
+        try {
+          if (window.themeApplied && window.themeApplied.postMessage) {
+            window.themeApplied.postMessage('done');
+          }
+        } catch (e) {
+          console.error('Failed to call Flutter handler after asset error:', e);
+        }
+      })();''';
     }
 
     return scriptTemplate
