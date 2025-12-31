@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
-import 'package:freedium_mobile/core/services/freedium_url_service.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -13,14 +13,19 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
   late FontSizeService _fontSizeService;
+  late FreediumUrlService _freediumUrlService;
   BuildContext? _context;
   final String url;
+  int _currentMirrorIndex = 0;
+  int _retryCount = 0;
+  static const int _maxRetries = 3;
 
   WebviewNotifier(this.url);
 
   @override
   WebviewState build() {
     final prefsAsync = ref.watch(sharedPreferencesProvider);
+    _freediumUrlService = ref.read(freediumUrlServiceProvider);
 
     prefsAsync.whenData((prefs) {
       _fontSizeService = FontSizeService(prefs);
@@ -89,7 +94,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
           },
           onPageFinished: (String url) {
             state = state.copyWith(isPageLoaded: true, currentUrl: url);
-            if (FreediumUrlService.isFreediumUrl(url)) {
+            _retryCount = 0;
+            if (_freediumUrlService.isFreediumUrl(url)) {
               _injectTheme();
             } else {
               state = state.copyWith(isThemeApplied: false);
@@ -98,12 +104,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
           },
           onWebResourceError: (WebResourceError error) {
             debugPrint('Error loading page: ${error.description}');
-            state = state.copyWith(
-              isPageLoaded: true,
-              isThemeApplied: false,
-              progress: 1.0,
-            );
-            _updateInitialLoadState();
+            _handleLoadError(error);
           },
           onNavigationRequest: (NavigationRequest request) async {
             final uri = Uri.parse(request.url);
@@ -115,7 +116,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
               }
             }
 
-            if (FreediumUrlService.isFreediumHost(uri.host)) {
+            if (_freediumUrlService.isFreediumHost(uri.host)) {
               return NavigationDecision.navigate;
             }
 
@@ -153,6 +154,63 @@ class WebviewNotifier extends Notifier<WebviewState> {
     return controller;
   }
 
+  Future<void> _handleLoadError(WebResourceError error) async {
+    final settings = ref.read(settingsProvider);
+
+    if (settings.autoSwitchMirror &&
+        _retryCount < _maxRetries &&
+        settings.mirrors.isNotEmpty) {
+      _retryCount++;
+      _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
+
+      final nextMirror = settings.mirrors[_currentMirrorIndex];
+      debugPrint(
+        'Trying fallback mirror: ${nextMirror.url} (attempt $_retryCount)',
+      );
+
+      if (_context != null && _context!.mounted) {
+        ScaffoldMessenger.of(_context!).showSnackBar(
+          SnackBar(
+            content: Text('Trying mirror: ${nextMirror.name}...'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+
+      final newUrl = Uri.parse(nextMirror.url).replace(path: url);
+      state = state.copyWith(activeBaseUrl: nextMirror.url);
+      state.controller?.loadRequest(newUrl);
+    } else {
+      state = state.copyWith(
+        isPageLoaded: true,
+        isThemeApplied: false,
+        progress: 1.0,
+        hasError: true,
+        errorMessage: error.description,
+      );
+      _updateInitialLoadState();
+    }
+  }
+
+  Future<void> retryWithNextMirror() async {
+    final settings = ref.read(settingsProvider);
+    if (settings.mirrors.isEmpty) {
+      debugPrint('No mirrors available to retry');
+      return;
+    }
+    _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
+    final nextMirror = settings.mirrors[_currentMirrorIndex];
+
+    state = WebviewState(
+      controller: state.controller,
+      fontSize: state.fontSize,
+      activeBaseUrl: nextMirror.url,
+    );
+
+    final newUrl = Uri.parse(nextMirror.url).replace(path: url);
+    state.controller?.loadRequest(newUrl);
+  }
+
   Future<void> _injectTheme() async {
     if (_context == null || state.controller == null) return;
     try {
@@ -174,7 +232,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   void _updateInitialLoadState() {
-    final bool isThemedPage = FreediumUrlService.isFreediumUrl(
+    final bool isThemedPage = _freediumUrlService.isFreediumUrl(
       state.currentUrl ?? '',
     );
     if (state.isInitialLoad &&

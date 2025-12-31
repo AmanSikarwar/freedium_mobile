@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -21,7 +22,7 @@ class UpdateCard extends StatelessWidget {
       child: Card(
         color: Theme.of(context).colorScheme.secondaryContainer,
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const .all(16),
           child: Column(
             crossAxisAlignment: .start,
             children: [
@@ -67,8 +68,10 @@ class UpdateCard extends StatelessWidget {
                 mainAxisAlignment: .end,
                 children: [
                   OutlinedButton.icon(
-                    onPressed: () =>
-                        showChangelogBottomSheet(context, updateInfo),
+                    onPressed: () {
+                      HapticFeedback.lightImpact();
+                      showChangelogBottomSheet(context, updateInfo);
+                    },
                     icon: const Icon(Icons.article_outlined, size: 18),
                     label: const Text('View Changelog'),
                     style: OutlinedButton.styleFrom(
@@ -85,8 +88,10 @@ class UpdateCard extends StatelessWidget {
                   ),
                   const SizedBox(width: 8),
                   FilledButton.icon(
-                    onPressed: () =>
-                        launchUrl(Uri.parse(updateInfo.releaseUrl)),
+                    onPressed: () {
+                      HapticFeedback.mediumImpact();
+                      launchUrl(Uri.parse(updateInfo.releaseUrl));
+                    },
                     icon: const Icon(Icons.download, size: 18),
                     label: const Text('Update'),
                     style: FilledButton.styleFrom(

@@ -1,7 +1,7 @@
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/core/services/theme_mode_service.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/theme/util.dart';
 
@@ -12,28 +12,10 @@ class AppThemeProvider {
   AppThemeProvider({required this.lightTheme, required this.darkTheme});
 }
 
-class ThemeModeNotifier extends Notifier<ThemeMode> {
-  late ThemeModeService _themeModeService;
-
-  @override
-  ThemeMode build() {
-    final prefsAsync = ref.watch(sharedPreferencesProvider);
-
-    return prefsAsync.when(
-      data: (prefs) {
-        _themeModeService = ThemeModeService(prefs);
-        return _themeModeService.loadThemeMode();
-      },
-      loading: () => .system,
-      error: (_, _) => .system,
-    );
-  }
-
-  Future<void> setThemeMode(ThemeMode themeMode) async {
-    state = themeMode;
-    await _themeModeService.saveThemeMode(themeMode);
-  }
-}
+final themeModeProvider = Provider<ThemeMode>((ref) {
+  final settings = ref.watch(settingsProvider);
+  return settings.themeMode;
+});
 
 final themeProvider = Provider<AppThemeProvider>((ref) {
   final textTheme = createTextTheme("Roboto", "Roboto");
@@ -69,7 +51,3 @@ final dynamicThemeProvider = FutureProvider<AppThemeProvider>((ref) async {
     darkTheme: appTheme.theme(darkColorScheme),
   );
 });
-
-final themeModeProvider = NotifierProvider<ThemeModeNotifier, ThemeMode>(
-  ThemeModeNotifier.new,
-);

@@ -10,6 +10,8 @@ class WebviewState {
   final double fontSize;
   final String? currentUrl;
   final String activeBaseUrl;
+  final bool hasError;
+  final String? errorMessage;
 
   WebviewState({
     this.progress = 0.0,
@@ -20,6 +22,8 @@ class WebviewState {
     this.fontSize = 18.0,
     this.currentUrl,
     this.activeBaseUrl = AppConstants.freediumUrl,
+    this.hasError = false,
+    this.errorMessage,
   });
 
   WebviewState copyWith({
@@ -31,6 +35,8 @@ class WebviewState {
     double? fontSize,
     String? currentUrl,
     String? activeBaseUrl,
+    bool? hasError,
+    String? errorMessage,
   }) {
     return WebviewState(
       progress: progress ?? this.progress,
@@ -41,6 +47,8 @@ class WebviewState {
       fontSize: fontSize ?? this.fontSize,
       currentUrl: currentUrl ?? this.currentUrl,
       activeBaseUrl: activeBaseUrl ?? this.activeBaseUrl,
+      hasError: hasError ?? this.hasError,
+      errorMessage: errorMessage ?? this.errorMessage,
     );
   }
 }

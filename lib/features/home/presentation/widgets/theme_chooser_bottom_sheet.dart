@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/core/theme/theme_provider.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 
 void showThemeChooserBottomSheet(BuildContext context) {
   showModalBottomSheet(
@@ -14,8 +15,8 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final currentThemeMode = ref.watch(themeModeProvider);
-    final themeModeNotifier = ref.read(themeModeProvider.notifier);
+    final settings = ref.watch(settingsProvider);
+    final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return SafeArea(
       child: Padding(
@@ -36,42 +37,45 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
             ListTile(
               leading: const Icon(Icons.light_mode),
               title: const Text('Light'),
-              trailing: currentThemeMode == .light
+              trailing: settings.themeMode == .light
                   ? Icon(
                       Icons.check,
                       color: Theme.of(context).colorScheme.primary,
                     )
                   : null,
               onTap: () {
-                themeModeNotifier.setThemeMode(.light);
+                HapticFeedback.selectionClick();
+                settingsNotifier.setThemeMode(.light);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.dark_mode),
               title: const Text('Dark'),
-              trailing: currentThemeMode == .dark
+              trailing: settings.themeMode == .dark
                   ? Icon(
                       Icons.check,
                       color: Theme.of(context).colorScheme.primary,
                     )
                   : null,
               onTap: () {
-                themeModeNotifier.setThemeMode(.dark);
+                HapticFeedback.selectionClick();
+                settingsNotifier.setThemeMode(.dark);
                 Navigator.pop(context);
               },
             ),
             ListTile(
               leading: const Icon(Icons.brightness_auto),
               title: const Text('System'),
-              trailing: currentThemeMode == .system
+              trailing: settings.themeMode == .system
                   ? Icon(
                       Icons.check,
                       color: Theme.of(context).colorScheme.primary,
                     )
                   : null,
               onTap: () {
-                themeModeNotifier.setThemeMode(.system);
+                HapticFeedback.selectionClick();
+                settingsNotifier.setThemeMode(.system);
                 Navigator.pop(context);
               },
             ),
