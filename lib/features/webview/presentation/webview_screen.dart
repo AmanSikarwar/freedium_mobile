@@ -239,9 +239,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                   backgroundColor: Colors.transparent,
                   builder: (context) => FontSettingsSheet(
                     initialFontSize: webviewState.fontSize,
-                    onFontSizeChanged: (fontSize) {
-                      webviewNotifier.updateFontSize(fontSize);
-                    },
+                    onFontSizeChanged: webviewNotifier.updateFontSize,
                   ),
                 );
               },
