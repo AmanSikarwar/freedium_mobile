@@ -7,7 +7,7 @@ class AppConstants {
   static const String appSourceUrl = 'https://github.com/amansikarwar/freedium';
   static const String appVersion = .fromEnvironment(
     'APP_VERSION',
-    defaultValue: '0.5.0',
+    defaultValue: '0.7.0',
   );
 
   static const String urlRegExp =
