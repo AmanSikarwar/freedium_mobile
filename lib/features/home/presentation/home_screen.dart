@@ -23,8 +23,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final homeState = ref.watch(homeProvider);
     final homeNotifier = ref.read(homeProvider.notifier);
     final updateAsync = ref.watch(updateCheckProvider);
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: Text(
           AppConstants.appName,
@@ -62,85 +64,90 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: ConstrainedBox(
-            constraints: BoxConstraints(
-              minHeight:
-                  MediaQuery.sizeOf(context).height - kToolbarHeight - 96,
-            ),
-            child: Align(
-              child: Column(
-                spacing: 24,
-                mainAxisAlignment: .center,
-                mainAxisSize: .min,
-                children: [
-                  updateAsync.when(
-                    data: (updateInfo) {
-                      if (updateInfo != null && !_isUpdateCardDismissed) {
-                        return UpdateCard(
-                          updateInfo: updateInfo,
-                          onDismissed: () =>
-                              setState(() => _isUpdateCardDismissed = true),
-                        );
-                      }
-                      return const SizedBox.shrink();
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (err, stack) => const SizedBox.shrink(),
-                  ),
-                  const Text(
-                    AppConstants.appDescription,
-                    textAlign: .center,
-                    style: TextStyle(fontSize: 32, fontWeight: .bold),
-                  ),
-                  Form(
-                    key: homeState.formKey,
-                    autovalidateMode: .onUserInteraction,
-                    child: TextFormField(
-                      controller: homeState.urlController,
-                      decoration: InputDecoration(
-                        hintText: 'Medium URL',
-                        prefixIcon: const Icon(Icons.link),
-                        border: const OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(24)),
-                        ),
-                        suffixIcon: IconButton(
-                          icon: const Icon(Icons.paste),
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            homeNotifier.pasteFromClipboard();
+        padding: const .symmetric(horizontal: 16, vertical: 16),
+        child: AnimatedPadding(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          padding: .only(bottom: keyboardInset),
+          child: LayoutBuilder(
+            builder: (context, constraints) => SingleChildScrollView(
+              keyboardDismissBehavior: .onDrag,
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Align(
+                  child: Column(
+                    spacing: 24,
+                    mainAxisSize: .min,
+                    children: [
+                      updateAsync.when(
+                        data: (updateInfo) {
+                          if (updateInfo != null && !_isUpdateCardDismissed) {
+                            return UpdateCard(
+                              updateInfo: updateInfo,
+                              onDismissed: () =>
+                                  setState(() => _isUpdateCardDismissed = true),
+                            );
+                          }
+                          return const SizedBox.shrink();
+                        },
+                        loading: () => const SizedBox.shrink(),
+                        error: (err, stack) => const SizedBox.shrink(),
+                      ),
+                      const Text(
+                        AppConstants.appDescription,
+                        textAlign: .center,
+                        style: TextStyle(fontSize: 32, fontWeight: .bold),
+                      ),
+                      Form(
+                        key: homeState.formKey,
+                        autovalidateMode: .onUserInteraction,
+                        child: TextFormField(
+                          controller: homeState.urlController,
+                          decoration: InputDecoration(
+                            hintText: 'Medium URL',
+                            prefixIcon: const Icon(Icons.link),
+                            border: const OutlineInputBorder(
+                              borderRadius: .all(.circular(24)),
+                            ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(Icons.paste),
+                              onPressed: () {
+                                HapticFeedback.lightImpact();
+                                homeNotifier.pasteFromClipboard();
+                              },
+                            ),
+                          ),
+                          keyboardType: .url,
+                          textInputAction: .done,
+                          scrollPadding: const .only(bottom: 120),
+                          validator: (value) {
+                            if (value == null || value.isEmpty) {
+                              return 'Please enter a URL';
+                            }
+                            final urlRegExp = RegExp(
+                              AppConstants.urlRegExp,
+                              caseSensitive: false,
+                            );
+                            if (!urlRegExp.hasMatch(value)) {
+                              return 'Please enter a valid URL';
+                            }
+                            return null;
                           },
                         ),
                       ),
-                      keyboardType: .url,
-                      textInputAction: .done,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return 'Please enter a URL';
-                        }
-                        final urlRegExp = RegExp(
-                          AppConstants.urlRegExp,
-                          caseSensitive: false,
-                        );
-                        if (!urlRegExp.hasMatch(value)) {
-                          return 'Please enter a valid URL';
-                        }
-                        return null;
-                      },
-                    ),
+                      SizedBox(
+                        width: .infinity,
+                        child: FilledButton(
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            homeNotifier.getArticle(context);
+                          },
+                          child: const Text('Get Article'),
+                        ),
+                      ),
+                    ],
                   ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton(
-                      onPressed: () {
-                        HapticFeedback.mediumImpact();
-                        homeNotifier.getArticle(context);
-                      },
-                      child: const Text('Get Article'),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           ),
