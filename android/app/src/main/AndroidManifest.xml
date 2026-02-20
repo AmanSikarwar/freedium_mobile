@@ -30,7 +30,8 @@
                 <data android:scheme="http" />
                 <data android:scheme="https" />
                 <data android:host="medium.com" />
-                <data android:host="*.medium.com" />
+                <data android:host="www.medium.com" />
+                <data android:host="m.medium.com" />
                 <data android:host="blog.stackademic.com" />
                 <data android:host="towardsdatascience.com" />
                 <data android:host="uxdesign.cc" />
