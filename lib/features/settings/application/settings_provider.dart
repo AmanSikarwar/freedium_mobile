@@ -10,14 +10,22 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 class SettingsNotifier extends Notifier<SettingsState> {
   SettingsService? _settingsService;
 
-  SettingsService _requireSettingsService() {
-    final service = _settingsService;
-    if (service == null) {
-      throw StateError(
-        'SettingsService is not available. SharedPreferences may still be loading or failed to initialize.',
-      );
+  Future<SettingsService?> _ensureSettingsService() async {
+    final existingService = _settingsService;
+    if (existingService != null) {
+      return existingService;
     }
-    return service;
+
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final service = SettingsService(prefs);
+      _settingsService = service;
+      state = service.loadAllSettings();
+      return service;
+    } catch (e) {
+      debugPrint('SettingsService unavailable: $e');
+      return null;
+    }
   }
 
   @override
@@ -35,19 +43,22 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<void> setThemeMode(ThemeMode themeMode) async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     state = state.copyWith(themeMode: themeMode);
     await service.saveThemeMode(themeMode);
   }
 
   Future<void> setDefaultFontSize(double fontSize) async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     state = state.copyWith(defaultFontSize: fontSize);
     await service.saveDefaultFontSize(fontSize);
   }
 
   Future<void> addMirror(FreediumMirror mirror) async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     final updatedMirrors = [...state.mirrors, mirror];
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
@@ -55,7 +66,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
   Future<void> removeMirror(FreediumMirror mirror) async {
     if (mirror.isDefault) return;
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     final updatedMirrors = state.mirrors.where((m) => m != mirror).toList();
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
@@ -69,7 +81,8 @@ class SettingsNotifier extends Notifier<SettingsState> {
     FreediumMirror oldMirror,
     FreediumMirror newMirror,
   ) async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     final updatedMirrors = state.mirrors.map((m) {
       if (m == oldMirror) return newMirror;
       return m;
@@ -83,26 +96,30 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<void> setSelectedMirror(String url) async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     state = state.copyWith(selectedMirrorUrl: url);
     await service.saveSelectedMirrorUrl(url);
     ref.read(freediumUrlServiceProvider).invalidateCache();
   }
 
   Future<void> setAutoSwitchMirror(bool autoSwitch) async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     state = state.copyWith(autoSwitchMirror: autoSwitch);
     await service.saveAutoSwitchMirror(autoSwitch);
   }
 
   Future<void> setMirrorTimeout(int timeout) async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     state = state.copyWith(mirrorTimeout: timeout);
     await service.saveMirrorTimeout(timeout);
   }
 
   Future<void> resetToDefaults() async {
-    final service = _requireSettingsService();
+    final service = await _ensureSettingsService();
+    if (service == null) return;
     final defaultState = SettingsState(
       mirrors: SettingsState.defaultMirrors,
       selectedMirrorUrl: SettingsState.defaultMirrors.first.url,
@@ -117,6 +134,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<MirrorTestResult> testMirror(String url) async {
+    await _ensureSettingsService();
     final stopwatch = Stopwatch()..start();
     HttpClient? client;
 
@@ -161,6 +179,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   }
 
   Future<String?> findWorkingMirror() async {
+    await _ensureSettingsService();
     for (final mirror in state.mirrors) {
       final result = await testMirror(mirror.url);
       if (result.isReachable) {
