@@ -69,7 +69,7 @@ class SettingsState {
     this.themeMode = .system,
     this.defaultFontSize = 18.0,
     this.mirrors = const [],
-    this.selectedMirrorUrl = AppConstants.freediumUrl,
+    this.selectedMirrorUrl = AppConstants.freediumMirrorUrl,
     this.autoSwitchMirror = true,
     this.mirrorTimeout = 5,
   });
@@ -102,13 +102,13 @@ class SettingsState {
 
   static List<FreediumMirror> get defaultMirrors => [
     const FreediumMirror(
-      name: 'Freedium (Primary)',
-      url: AppConstants.freediumUrl,
+      name: 'Freedium Mirror (Primary)',
+      url: AppConstants.freediumMirrorUrl,
       isDefault: true,
     ),
     const FreediumMirror(
-      name: 'Freedium Mirror',
-      url: AppConstants.freediumMirrorUrl,
+      name: 'Freedium',
+      url: AppConstants.freediumUrl,
       isDefault: true,
     ),
   ];

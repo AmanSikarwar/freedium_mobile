@@ -38,7 +38,7 @@ class _UpdateSectionState extends ConsumerState<UpdateSection> {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(8),
+      padding: const .all(8),
       child: Column(
         children: [
           if (_isLoading)

@@ -156,7 +156,7 @@ class ChangelogBottomSheet extends StatelessWidget {
                   ),
                   onTapLink: (text, href, title) {
                     if (href != null) {
-                      launchUrl(Uri.parse(href));
+                      launchUrl(.parse(href));
                     }
                   },
                 ),
@@ -179,16 +179,16 @@ class ChangelogBottomSheet extends StatelessWidget {
                 child: SafeArea(
                   top: false,
                   child: SizedBox(
-                    width: double.infinity,
+                    width: .infinity,
                     child: FilledButton.icon(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        launchUrl(Uri.parse(updateInfo.releaseUrl));
+                        launchUrl(.parse(updateInfo.releaseUrl));
                       },
                       icon: const Icon(Icons.download),
                       label: const Text('Update Now'),
                       style: FilledButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        padding: const .symmetric(vertical: 16),
                       ),
                     ),
                   ),

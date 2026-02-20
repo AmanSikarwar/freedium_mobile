@@ -6,7 +6,7 @@ class ThemeInjectorService {
     ColorScheme colorScheme, {
     double fontSize = 18.0,
   }) async {
-    final isDark = colorScheme.brightness == Brightness.dark;
+    final isDark = colorScheme.brightness == .dark;
 
     String colorToHex(Color color) {
       return '#${(color.toARGB32() & 0xFFFFFF).toRadixString(16).padLeft(6, '0')}';

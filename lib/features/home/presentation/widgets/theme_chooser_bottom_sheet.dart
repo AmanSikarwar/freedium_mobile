@@ -20,12 +20,12 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16),
+        padding: const .symmetric(vertical: 16),
         child: Column(
           mainAxisSize: .min,
           children: [
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              padding: const .symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 'Choose Theme',
                 style: Theme.of(

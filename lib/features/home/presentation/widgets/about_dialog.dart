@@ -46,7 +46,7 @@ void showAppAboutDialog(BuildContext context, WidgetRef ref) {
         children: [
           const Text('Made with ❤️ by', style: TextStyle(fontSize: 12)),
           TextButton(
-            onPressed: () => launchUri(Uri.https('github.com', 'amansikarwar')),
+            onPressed: () => launchUri(.https('github.com', 'amansikarwar')),
             child: const Text('Aman Sikarwar', style: TextStyle(fontSize: 12)),
           ),
         ],

@@ -18,6 +18,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
   final String url;
   int _currentMirrorIndex = 0;
   int _retryCount = 0;
+  bool _hasSwitchedMirror = false;
+  final Set<String> _articleRequestUrls = <String>{};
   static const int _maxRetries = 3;
 
   WebviewNotifier(this.url);
@@ -58,9 +60,13 @@ class WebviewNotifier extends Notifier<WebviewState> {
   WebViewController createController({String? baseUrl}) {
     final activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
     final initialUrl = Uri.parse(activeBaseUrl).replace(path: url);
+    _hasSwitchedMirror = false;
+    _articleRequestUrls.clear();
+    _rememberArticleRequestUrl(activeBaseUrl);
+    _setCurrentMirrorIndex(activeBaseUrl);
 
     final controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setJavaScriptMode(.unrestricted)
       ..setBackgroundColor(Colors.transparent)
       ..addJavaScriptChannel(
         'themeApplied',
@@ -112,17 +118,17 @@ class WebviewNotifier extends Notifier<WebviewState> {
             if (!["http", "https"].contains(uri.scheme)) {
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri);
-                return NavigationDecision.prevent;
+                return .prevent;
               }
             }
 
             if (_freediumUrlService.isFreediumHost(uri.host)) {
-              return NavigationDecision.navigate;
+              return .navigate;
             }
 
             try {
               if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                await launchUrl(uri, mode: .externalApplication);
               }
             } catch (e) {
               debugPrint('Failed to launch URL: $e');
@@ -135,7 +141,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
               }
             }
 
-            return NavigationDecision.prevent;
+            return .prevent;
           },
         ),
       )
@@ -154,6 +160,36 @@ class WebviewNotifier extends Notifier<WebviewState> {
     return controller;
   }
 
+  void _setCurrentMirrorIndex(String baseUrl) {
+    final mirrors = ref.read(settingsProvider).mirrors;
+    final mirrorIndex = mirrors.indexWhere((mirror) => mirror.url == baseUrl);
+    _currentMirrorIndex = mirrorIndex >= 0 ? mirrorIndex : 0;
+  }
+
+  void _rememberArticleRequestUrl(String baseUrl) {
+    final articleUrl = Uri.parse(baseUrl).replace(path: url).toString();
+    _articleRequestUrls.add(_normalizeUrl(articleUrl));
+  }
+
+  String _normalizeUrl(String value) {
+    try {
+      final uri = Uri.parse(value);
+      final normalizedPath = uri.path.endsWith('/') && uri.path.length > 1
+          ? uri.path.substring(0, uri.path.length - 1)
+          : uri.path;
+      return uri.replace(path: normalizedPath, fragment: '').toString();
+    } catch (_) {
+      return value;
+    }
+  }
+
+  bool shouldUseAppLevelBackNavigation() {
+    if (!_hasSwitchedMirror) return false;
+    final currentUrl = state.currentUrl;
+    if (currentUrl == null || currentUrl.isEmpty) return false;
+    return _articleRequestUrls.contains(_normalizeUrl(currentUrl));
+  }
+
   Future<void> _handleLoadError(WebResourceError error) async {
     final settings = ref.read(settingsProvider);
 
@@ -167,6 +203,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
       debugPrint(
         'Trying fallback mirror: ${nextMirror.url} (attempt $_retryCount)',
       );
+      _hasSwitchedMirror = true;
+      _rememberArticleRequestUrl(nextMirror.url);
 
       if (_context != null && _context!.mounted) {
         ScaffoldMessenger.of(_context!).showSnackBar(
@@ -200,6 +238,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
     }
     _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
     final nextMirror = settings.mirrors[_currentMirrorIndex];
+    _hasSwitchedMirror = true;
+    _rememberArticleRequestUrl(nextMirror.url);
 
     state = WebviewState(
       controller: state.controller,
