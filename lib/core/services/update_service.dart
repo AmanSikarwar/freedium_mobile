@@ -26,7 +26,7 @@ class UpdateService {
 
   Future<UpdateInfo?> checkForUpdate() async {
     try {
-      final response = await http.get(Uri.parse(_apiUrl));
+      final response = await http.get(.parse(_apiUrl));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;

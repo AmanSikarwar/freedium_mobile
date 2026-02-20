@@ -80,7 +80,8 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         }
 
         final navigator = Navigator.of(context);
-        final shouldUseAppBack = webviewNotifier.shouldUseAppLevelBackNavigation();
+        final shouldUseAppBack = webviewNotifier
+            .shouldUseAppLevelBackNavigation();
 
         if (!shouldUseAppBack && await webviewNotifier.canGoBack()) {
           webviewNotifier.goBack();
@@ -228,7 +229,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: .circular(30),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.shadow.withValues(alpha: 0.3),
@@ -238,18 +239,16 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         ],
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: MaterialType.circle,
+            type: .circle,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,
               ),
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(30),
-              ),
+              borderRadius: const .horizontal(left: .circular(30)),
               onTap: () {
                 showModalBottomSheet(
                   context: context,
@@ -262,10 +261,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
+                padding: const .symmetric(horizontal: 12, vertical: 12),
                 child: Icon(
                   Icons.text_fields,
                   color: theme.colorScheme.onPrimaryContainer,
@@ -281,30 +277,25 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
           ),
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: MaterialType.circle,
+            type: .circle,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,
               ),
-              borderRadius: const BorderRadius.horizontal(
-                right: Radius.circular(30),
-              ),
+              borderRadius: const .horizontal(right: .circular(30)),
               onTap: () {
                 SharePlus.instance.share(
                   ShareParams(
                     subject: 'Read this article without Paywall',
                     title: 'Share Freedium link',
-                    uri: Uri.parse(
+                    uri: .parse(
                       webviewState.activeBaseUrl,
                     ).replace(path: widget.url),
                   ),
                 );
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
+                padding: const .symmetric(horizontal: 12, vertical: 12),
                 child: Icon(
                   Icons.share,
                   color: theme.colorScheme.onPrimaryContainer,

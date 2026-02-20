@@ -68,7 +68,7 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
                 hintText: 'https://freedium.example.com',
                 prefixIcon: Icon(Icons.link),
               ),
-              keyboardType: TextInputType.url,
+              keyboardType: .url,
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter a URL';

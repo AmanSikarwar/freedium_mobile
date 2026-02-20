@@ -73,12 +73,7 @@ Future<_MirrorProbeResult> _probeMirrorUrl(
     return headResult;
   }
 
-  final getResult = await _sendProbeRequest(
-    client,
-    uri,
-    timeout,
-    useGet: true,
-  );
+  final getResult = await _sendProbeRequest(client, uri, timeout, useGet: true);
 
   if (getResult.isReachable) {
     return getResult;

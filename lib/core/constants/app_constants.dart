@@ -5,7 +5,7 @@ class AppConstants {
   static const String appDescription = 'Your paywall breakthrough for Medium!';
   static const String appPackageName = 'com.amansikarwar.freedium';
   static const String appSourceUrl = 'https://github.com/amansikarwar/freedium';
-  static const String appVersion = String.fromEnvironment(
+  static const String appVersion = .fromEnvironment(
     'APP_VERSION',
     defaultValue: '0.5.0',
   );

@@ -4,10 +4,8 @@ import 'package:shimmer/shimmer.dart';
 class ArticleShimmer extends StatelessWidget {
   const ArticleShimmer({super.key});
 
-  static BoxDecoration _roundedBox(double radius) => BoxDecoration(
-    color: Colors.white,
-    borderRadius: BorderRadius.circular(radius),
-  );
+  static BoxDecoration _roundedBox(double radius) =>
+      BoxDecoration(color: Colors.white, borderRadius: .circular(radius));
 
   static const _circleDecoration = BoxDecoration(
     color: Colors.white,

@@ -66,7 +66,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _setCurrentMirrorIndex(activeBaseUrl);
 
     final controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setJavaScriptMode(.unrestricted)
       ..setBackgroundColor(Colors.transparent)
       ..addJavaScriptChannel(
         'themeApplied',
@@ -118,17 +118,17 @@ class WebviewNotifier extends Notifier<WebviewState> {
             if (!["http", "https"].contains(uri.scheme)) {
               if (await canLaunchUrl(uri)) {
                 await launchUrl(uri);
-                return NavigationDecision.prevent;
+                return .prevent;
               }
             }
 
             if (_freediumUrlService.isFreediumHost(uri.host)) {
-              return NavigationDecision.navigate;
+              return .navigate;
             }
 
             try {
               if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: LaunchMode.externalApplication);
+                await launchUrl(uri, mode: .externalApplication);
               }
             } catch (e) {
               debugPrint('Failed to launch URL: $e');
@@ -141,7 +141,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
               }
             }
 
-            return NavigationDecision.prevent;
+            return .prevent;
           },
         ),
       )
@@ -174,8 +174,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   String _normalizeUrl(String value) {
     try {
       final uri = Uri.parse(value);
-      final normalizedPath =
-          uri.path.endsWith('/') && uri.path.length > 1
+      final normalizedPath = uri.path.endsWith('/') && uri.path.length > 1
           ? uri.path.substring(0, uri.path.length - 1)
           : uri.path;
       return uri.replace(path: normalizedPath, fragment: '').toString();

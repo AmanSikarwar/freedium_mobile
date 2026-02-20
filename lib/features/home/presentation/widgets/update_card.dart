@@ -90,7 +90,7 @@ class UpdateCard extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      launchUrl(Uri.parse(updateInfo.releaseUrl));
+                      launchUrl(.parse(updateInfo.releaseUrl));
                     },
                     icon: const Icon(Icons.download, size: 18),
                     label: const Text('Update'),

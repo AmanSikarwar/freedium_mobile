@@ -39,7 +39,7 @@ final dynamicThemeProvider = FutureProvider<AppThemeProvider>((ref) async {
   if (lightDynamic != null) {
     lightColorScheme = lightDynamic.toColorScheme().harmonized();
     darkColorScheme = lightDynamic
-        .toColorScheme(brightness: Brightness.dark)
+        .toColorScheme(brightness: .dark)
         .harmonized();
   } else {
     lightColorScheme = appTheme.light().colorScheme;
