@@ -7,6 +7,90 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
+class _MirrorProbeResult {
+  final bool isReachable;
+  final int? statusCode;
+  final String? error;
+
+  const _MirrorProbeResult({
+    required this.isReachable,
+    this.statusCode,
+    this.error,
+  });
+}
+
+bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 400;
+
+Future<_MirrorProbeResult> _sendProbeRequest(
+  HttpClient client,
+  Uri uri,
+  Duration timeout, {
+  required bool useGet,
+}) async {
+  try {
+    final request = useGet
+        ? await client.getUrl(uri).timeout(timeout)
+        : await client.headUrl(uri).timeout(timeout);
+
+    if (useGet) {
+      request.headers.set(HttpHeaders.rangeHeader, 'bytes=0-0');
+    }
+
+    final response = await request.close().timeout(timeout);
+    final statusCode = response.statusCode;
+    final isReachable = _isSuccessStatus(statusCode);
+
+    return _MirrorProbeResult(
+      isReachable: isReachable,
+      statusCode: statusCode,
+      error: isReachable ? null : 'HTTP $statusCode',
+    );
+  } catch (e) {
+    return _MirrorProbeResult(isReachable: false, error: e.toString());
+  }
+}
+
+Future<_MirrorProbeResult> _probeMirrorUrl(
+  HttpClient client,
+  Uri uri,
+  Duration timeout,
+) async {
+  final headResult = await _sendProbeRequest(
+    client,
+    uri,
+    timeout,
+    useGet: false,
+  );
+
+  if (headResult.isReachable) {
+    return headResult;
+  }
+
+  final shouldFallbackToGet =
+      headResult.statusCode == null || headResult.statusCode! >= 400;
+
+  if (!shouldFallbackToGet) {
+    return headResult;
+  }
+
+  final getResult = await _sendProbeRequest(
+    client,
+    uri,
+    timeout,
+    useGet: true,
+  );
+
+  if (getResult.isReachable) {
+    return getResult;
+  }
+
+  if (getResult.statusCode != null || getResult.error != null) {
+    return getResult;
+  }
+
+  return headResult;
+}
+
 class SettingsNotifier extends Notifier<SettingsState> {
   SettingsService? _settingsService;
 
@@ -140,32 +224,20 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
     try {
       final uri = Uri.parse(url);
+      final timeout = Duration(seconds: state.mirrorTimeout);
       client = HttpClient();
-      client.connectionTimeout = Duration(seconds: state.mirrorTimeout);
+      client.connectionTimeout = timeout;
 
-      final request = await client
-          .headUrl(uri)
-          .timeout(Duration(seconds: state.mirrorTimeout));
-      final response = await request.close().timeout(
-        Duration(seconds: state.mirrorTimeout),
-      );
+      final probeResult = await _probeMirrorUrl(client, uri, timeout);
 
       stopwatch.stop();
 
-      if (response.statusCode >= 200 && response.statusCode < 400) {
-        return MirrorTestResult(
-          isReachable: true,
-          responseTimeMs: stopwatch.elapsedMilliseconds,
-          statusCode: response.statusCode,
-        );
-      } else {
-        return MirrorTestResult(
-          isReachable: false,
-          responseTimeMs: stopwatch.elapsedMilliseconds,
-          statusCode: response.statusCode,
-          error: 'HTTP ${response.statusCode}',
-        );
-      }
+      return MirrorTestResult(
+        isReachable: probeResult.isReachable,
+        responseTimeMs: stopwatch.elapsedMilliseconds,
+        statusCode: probeResult.statusCode,
+        error: probeResult.error,
+      );
     } catch (e) {
       stopwatch.stop();
       return MirrorTestResult(
@@ -235,7 +307,16 @@ class FreediumUrlService {
       return _cachedWorkingUrl!;
     }
 
-    for (final mirror in settings.mirrors) {
+    final mirrors = settings.mirrors;
+    final selectedMirrorIndex = mirrors.indexWhere(
+      (mirror) => mirror.url == settings.selectedMirrorUrl,
+    );
+    final mirrorsToCheck = [
+      if (selectedMirrorIndex >= 0) mirrors[selectedMirrorIndex],
+      ...mirrors.where((mirror) => mirror.url != settings.selectedMirrorUrl),
+    ];
+
+    for (final mirror in mirrorsToCheck) {
       if (await _isUrlReachable(mirror.url)) {
         _cachedWorkingUrl = mirror.url;
         _lastCheckTime = DateTime.now();
@@ -258,11 +339,8 @@ class FreediumUrlService {
       final uri = Uri.parse(url);
       client = HttpClient();
       client.connectionTimeout = _checkTimeout;
-
-      final request = await client.headUrl(uri).timeout(_checkTimeout);
-      final response = await request.close().timeout(_checkTimeout);
-
-      return response.statusCode >= 200 && response.statusCode < 400;
+      final probeResult = await _probeMirrorUrl(client, uri, _checkTimeout);
+      return probeResult.isReachable;
     } catch (e) {
       debugPrint('URL reachability check failed for $url: $e');
       return false;

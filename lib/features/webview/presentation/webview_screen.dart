@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
@@ -36,12 +38,27 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final themeInjector = ref.read(themeInjectorServiceProvider);
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
+    final settings = ref.read(settingsProvider);
 
     webviewNotifier.setThemeInjector(themeInjector, context);
+    _controller = webviewNotifier.createController(
+      baseUrl: settings.selectedMirrorUrl,
+    );
+    if (mounted) {
+      setState(() {});
+    }
 
-    final activeUrl = await freediumUrlService.getActiveUrl();
-    _controller = webviewNotifier.createController(baseUrl: activeUrl);
-    setState(() {});
+    if (settings.autoSwitchMirror) {
+      unawaited(_warmMirrorCache(freediumUrlService));
+    }
+  }
+
+  Future<void> _warmMirrorCache(FreediumUrlService freediumUrlService) async {
+    try {
+      await freediumUrlService.getActiveUrl();
+    } catch (e) {
+      debugPrint('Mirror warm-up failed: $e');
+    }
   }
 
   @override

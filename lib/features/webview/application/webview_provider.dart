@@ -58,6 +58,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   WebViewController createController({String? baseUrl}) {
     final activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
     final initialUrl = Uri.parse(activeBaseUrl).replace(path: url);
+    _setCurrentMirrorIndex(activeBaseUrl);
 
     final controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
@@ -152,6 +153,12 @@ class WebviewNotifier extends Notifier<WebviewState> {
       activeBaseUrl: activeBaseUrl,
     );
     return controller;
+  }
+
+  void _setCurrentMirrorIndex(String baseUrl) {
+    final mirrors = ref.read(settingsProvider).mirrors;
+    final mirrorIndex = mirrors.indexWhere((mirror) => mirror.url == baseUrl);
+    _currentMirrorIndex = mirrorIndex >= 0 ? mirrorIndex : 0;
   }
 
   Future<void> _handleLoadError(WebResourceError error) async {
