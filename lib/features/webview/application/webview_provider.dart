@@ -18,6 +18,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
   final String url;
   int _currentMirrorIndex = 0;
   int _retryCount = 0;
+  bool _hasSwitchedMirror = false;
+  final Set<String> _articleRequestUrls = <String>{};
   static const int _maxRetries = 3;
 
   WebviewNotifier(this.url);
@@ -58,6 +60,9 @@ class WebviewNotifier extends Notifier<WebviewState> {
   WebViewController createController({String? baseUrl}) {
     final activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
     final initialUrl = Uri.parse(activeBaseUrl).replace(path: url);
+    _hasSwitchedMirror = false;
+    _articleRequestUrls.clear();
+    _rememberArticleRequestUrl(activeBaseUrl);
     _setCurrentMirrorIndex(activeBaseUrl);
 
     final controller = WebViewController()
@@ -161,6 +166,31 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _currentMirrorIndex = mirrorIndex >= 0 ? mirrorIndex : 0;
   }
 
+  void _rememberArticleRequestUrl(String baseUrl) {
+    final articleUrl = Uri.parse(baseUrl).replace(path: url).toString();
+    _articleRequestUrls.add(_normalizeUrl(articleUrl));
+  }
+
+  String _normalizeUrl(String value) {
+    try {
+      final uri = Uri.parse(value);
+      final normalizedPath =
+          uri.path.endsWith('/') && uri.path.length > 1
+          ? uri.path.substring(0, uri.path.length - 1)
+          : uri.path;
+      return uri.replace(path: normalizedPath, fragment: '').toString();
+    } catch (_) {
+      return value;
+    }
+  }
+
+  bool shouldUseAppLevelBackNavigation() {
+    if (!_hasSwitchedMirror) return false;
+    final currentUrl = state.currentUrl;
+    if (currentUrl == null || currentUrl.isEmpty) return false;
+    return _articleRequestUrls.contains(_normalizeUrl(currentUrl));
+  }
+
   Future<void> _handleLoadError(WebResourceError error) async {
     final settings = ref.read(settingsProvider);
 
@@ -174,6 +204,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
       debugPrint(
         'Trying fallback mirror: ${nextMirror.url} (attempt $_retryCount)',
       );
+      _hasSwitchedMirror = true;
+      _rememberArticleRequestUrl(nextMirror.url);
 
       if (_context != null && _context!.mounted) {
         ScaffoldMessenger.of(_context!).showSnackBar(
@@ -207,6 +239,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
     }
     _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
     final nextMirror = settings.mirrors[_currentMirrorIndex];
+    _hasSwitchedMirror = true;
+    _rememberArticleRequestUrl(nextMirror.url);
 
     state = WebviewState(
       controller: state.controller,

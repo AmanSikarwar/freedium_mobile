@@ -80,8 +80,9 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         }
 
         final navigator = Navigator.of(context);
+        final shouldUseAppBack = webviewNotifier.shouldUseAppLevelBackNavigation();
 
-        if (await webviewNotifier.canGoBack()) {
+        if (!shouldUseAppBack && await webviewNotifier.canGoBack()) {
           webviewNotifier.goBack();
           return;
         }
