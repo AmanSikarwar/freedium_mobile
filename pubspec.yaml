@@ -11,7 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   webview_flutter: ^4.13.1
-  webview_flutter_android: ^4.10.11
+  webview_flutter_android: ^4.10.13
   flutter_markdown_plus: ^1.0.7
   flutter_riverpod: ^3.2.1
   http: ^1.6.0
