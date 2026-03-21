@@ -28,11 +28,27 @@ class HistoryService {
   }
 
   Future<void> saveHistory(List<ReadingHistory> history) async {
-    final historyJson = history.map((e) => jsonEncode(e.toJson())).toList();
-    await _prefs.setStringList(_historyKey, historyJson);
+    try {
+      final historyJson = history.map((e) => jsonEncode(e.toJson())).toList();
+      final success = await _prefs.setStringList(_historyKey, historyJson);
+      if (!success) {
+        throw Exception('setStringList returned false for key "$_historyKey"');
+      }
+    } catch (e) {
+      debugPrint('Failed to save history to "$_historyKey": $e');
+      rethrow;
+    }
   }
 
   Future<void> clearHistory() async {
-    await _prefs.remove(_historyKey);
+    try {
+      final success = await _prefs.remove(_historyKey);
+      if (!success) {
+        throw Exception('remove returned false for key "$_historyKey"');
+      }
+    } catch (e) {
+      debugPrint('Failed to clear history key "$_historyKey": $e');
+      rethrow;
+    }
   }
 }

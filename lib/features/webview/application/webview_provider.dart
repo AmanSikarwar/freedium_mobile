@@ -257,12 +257,16 @@ class WebviewNotifier extends Notifier<WebviewState> {
       }
       final queryStr = uri.hasQuery ? '?${uri.query}' : '';
       if (uri.path.startsWith('/http')) {
+        // Mirror URL explicitly encodes the original URL in its path.
         return '${uri.path.substring(1)}$queryStr';
       } else {
-        return 'https://medium.com${uri.path}$queryStr';
+        // Fall back to the original user-entered article URL, which is
+        // preserved on this notifier instance and works for any domain
+        // (not just medium.com).
+        return url;
       }
     } catch (e) {
-      return fullUrl;
+      return url;
     }
   }
 

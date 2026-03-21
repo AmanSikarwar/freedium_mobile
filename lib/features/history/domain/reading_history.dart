@@ -16,7 +16,7 @@ class ReadingHistory {
     return {
       'url': url,
       'title': title,
-      'timestamp': timestamp.toIso8601String(),
+      'timestamp': timestamp.toUtc().toIso8601String(),
     };
   }
 
@@ -24,7 +24,7 @@ class ReadingHistory {
     return ReadingHistory(
       url: json['url'] as String,
       title: json['title'] as String,
-      timestamp: DateTime.parse(json['timestamp'] as String),
+      timestamp: DateTime.parse(json['timestamp'] as String).toLocal(),
     );
   }
 
