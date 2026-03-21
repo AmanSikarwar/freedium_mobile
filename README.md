@@ -40,6 +40,7 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 ## Features
 
 - **Paywall Bypass** - Read any Medium article without hitting the paywall or needing a subscription
+- **Local Reading History** - Keep track of articles you've read, with offline storage and easy history management
 - **Share Integration** - Share Medium articles directly to Freedium from Chrome, Twitter, or any browser
 - **Clipboard Detection** - Automatically detects Medium URLs in your clipboard for quick access
 - **Configurable Mirrors** - Multiple Freedium server mirrors with automatic failover
@@ -157,6 +158,14 @@ lib/
 │       ├── theme_provider.dart       # Dynamic color provider
 │       └── util.dart                 # Theme utilities
 └── features/
+    ├── history/
+    │   ├── application/
+    │   │   ├── history_provider.dart
+    │   │   └── history_service.dart
+    │   ├── domain/
+    │   │   └── reading_history.dart
+    │   └── presentation/
+    │       └── history_screen.dart
     ├── home/
     │   ├── application/
     │   │   └── home_provider.dart    # Home state management
