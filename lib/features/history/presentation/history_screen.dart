@@ -40,7 +40,9 @@ class HistoryScreen extends ConsumerWidget {
               itemBuilder: (context, index) {
                 final item = history[index];
                 return Dismissible(
-                  key: ValueKey(item.url),
+                  key: ValueKey(
+                    '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
+                  ),
                   direction: .endToStart,
                   background: Container(
                     color: Colors.red,

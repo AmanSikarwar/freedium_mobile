@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 
@@ -12,18 +13,18 @@ class HistoryService {
     final historyJson = _prefs.getStringList(_historyKey);
     if (historyJson == null) return [];
 
-    try {
-      return historyJson
-          .map(
-            (json) => ReadingHistory.fromJson(
-              jsonDecode(json) as Map<String, dynamic>,
-            ),
-          )
-          .toList()
-        ..sort((a, b) => b.timestamp.compareTo(a.timestamp));
-    } catch (e) {
-      return [];
+    final List<ReadingHistory> history = [];
+    for (final json in historyJson) {
+      try {
+        final decoded = jsonDecode(json) as Map<String, dynamic>;
+        history.add(ReadingHistory.fromJson(decoded));
+      } catch (e) {
+        debugPrint('Failed to parse history entry: $e');
+      }
     }
+
+    history.sort((a, b) => b.timestamp.compareTo(a.timestamp));
+    return history;
   }
 
   Future<void> saveHistory(List<ReadingHistory> history) async {

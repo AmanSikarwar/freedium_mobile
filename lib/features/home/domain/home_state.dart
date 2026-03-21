@@ -1,9 +1,9 @@
-import 'package:flutter/material.dart';
-
-@immutable
 class HomeState {
-  final TextEditingController urlController;
-  final GlobalKey<FormState> formKey;
+  final String url;
 
-  const HomeState({required this.urlController, required this.formKey});
+  const HomeState({this.url = ''});
+
+  HomeState copyWith({String? url}) {
+    return HomeState(url: url ?? this.url);
+  }
 }

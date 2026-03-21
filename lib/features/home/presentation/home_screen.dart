@@ -19,10 +19,23 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isUpdateCardDismissed = false;
+  late final TextEditingController _urlController;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final homeState = ref.watch(homeProvider);
     final homeNotifier = ref.read(homeProvider.notifier);
     final updateAsync = ref.watch(updateCheckProvider);
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -112,10 +125,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: TextStyle(fontSize: 32, fontWeight: .bold),
                       ),
                       Form(
-                        key: homeState.formKey,
+                        key: _formKey,
                         autovalidateMode: .onUserInteraction,
                         child: TextFormField(
-                          controller: homeState.urlController,
+                          controller: _urlController,
                           decoration: InputDecoration(
                             hintText: 'Medium URL',
                             prefixIcon: const Icon(Icons.link),
@@ -126,7 +139,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               icon: const Icon(Icons.paste),
                               onPressed: () {
                                 HapticFeedback.lightImpact();
-                                homeNotifier.pasteFromClipboard();
+                                homeNotifier.pasteFromClipboard((text) {
+                                  _urlController.text = text;
+                                });
                               },
                             ),
                           ),
@@ -153,8 +168,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: FilledButton(
                           onPressed: () {
                             HapticFeedback.mediumImpact();
-                            final url = homeNotifier.getValidatedUrl();
-                            if (url != null) {
+                            if (_formKey.currentState!.validate()) {
+                              final url = _urlController.text;
+                              homeNotifier.setUrl(url);
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (context) => WebviewScreen(url: url),

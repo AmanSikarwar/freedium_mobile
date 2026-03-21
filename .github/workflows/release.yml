@@ -49,12 +49,11 @@ jobs:
           sed -i.bak -e "s/^version: .*/version: ${{ github.event.inputs.version_name }}+${{ github.run_number }}/" pubspec.yaml
           rm pubspec.yaml.bak
 
-      - name: Commit Version Bump
+      - name: Commit Version Bump (local only)
         run: |
           git config --local user.email "action@github.com"
           git config --local user.name "GitHub Action"
           git commit -am "chore: bump version to ${{ github.event.inputs.version_name }}+${{ github.run_number }} [skip ci]"
-          git push
 
       - name: Decode Keystore
         run: |
@@ -75,6 +74,9 @@ jobs:
             --build-number=${{ github.run_number }} \
             -t lib/main.dart \
             --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
+
+      - name: Push Version Bump Commit
+        run: git push
 
       - name: Upload debug symbols
         uses: actions/upload-artifact@v4

@@ -102,12 +102,16 @@ class WebviewNotifier extends Notifier<WebviewState> {
           onPageFinished: (String url) async {
             state = state.copyWith(isPageLoaded: true, currentUrl: url);
             if (_freediumUrlService.isFreediumUrl(url)) {
+              _retryCount = 0;
               _injectTheme();
               try {
                 if (state.controller != null) {
                   final title = await state.controller!.getTitle() ?? '';
                   if (title.isNotEmpty) {
-                    ref.read(historyProvider.notifier).addHistory(url, title);
+                    final originalUrl = _extractOriginalUrl(url);
+                    await ref
+                        .read(historyProvider.notifier)
+                        .addHistory(originalUrl, title);
                   }
                 }
               } catch (e) {
@@ -242,6 +246,23 @@ class WebviewNotifier extends Notifier<WebviewState> {
         errorMessage: _getUserFriendlyErrorMessage(error),
       );
       _updateInitialLoadState();
+    }
+  }
+
+  String _extractOriginalUrl(String fullUrl) {
+    try {
+      final uri = Uri.parse(fullUrl);
+      if (!_freediumUrlService.isFreediumHost(uri.host)) {
+        return fullUrl;
+      }
+      final queryStr = uri.hasQuery ? '?${uri.query}' : '';
+      if (uri.path.startsWith('/http')) {
+        return '${uri.path.substring(1)}$queryStr';
+      } else {
+        return 'https://medium.com${uri.path}$queryStr';
+      }
+    } catch (e) {
+      return fullUrl;
     }
   }
 

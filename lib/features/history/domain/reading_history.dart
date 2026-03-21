@@ -31,11 +31,11 @@ class ReadingHistory {
   @override
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
-  
+
     return other is ReadingHistory &&
-      other.url == url &&
-      other.title == title &&
-      other.timestamp == timestamp;
+        other.url == url &&
+        other.title == title &&
+        other.timestamp == timestamp;
   }
 
   @override
