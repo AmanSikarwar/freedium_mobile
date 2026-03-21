@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
+import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -17,10 +19,23 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   bool _isUpdateCardDismissed = false;
+  late final TextEditingController _urlController;
+  final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    _urlController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _urlController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    final homeState = ref.watch(homeProvider);
     final homeNotifier = ref.read(homeProvider.notifier);
     final updateAsync = ref.watch(updateCheckProvider);
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
@@ -42,6 +57,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           fontWeight: .bold,
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
+            tooltip: 'History',
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -99,10 +125,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: TextStyle(fontSize: 32, fontWeight: .bold),
                       ),
                       Form(
-                        key: homeState.formKey,
+                        key: _formKey,
                         autovalidateMode: .onUserInteraction,
                         child: TextFormField(
-                          controller: homeState.urlController,
+                          controller: _urlController,
                           decoration: InputDecoration(
                             hintText: 'Medium URL',
                             prefixIcon: const Icon(Icons.link),
@@ -113,7 +139,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               icon: const Icon(Icons.paste),
                               onPressed: () {
                                 HapticFeedback.lightImpact();
-                                homeNotifier.pasteFromClipboard();
+                                homeNotifier.pasteFromClipboard((text) {
+                                  _urlController.text = text;
+                                });
                               },
                             ),
                           ),
@@ -140,7 +168,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: FilledButton(
                           onPressed: () {
                             HapticFeedback.mediumImpact();
-                            homeNotifier.getArticle(context);
+                            if (_formKey.currentState!.validate()) {
+                              final url = _urlController.text;
+                              homeNotifier.setUrl(url);
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => WebviewScreen(url: url),
+                                ),
+                              );
+                            }
                           },
                           child: const Text('Get Article'),
                         ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 
+@immutable
 class FreediumMirror {
   final String name;
   final String url;
@@ -57,6 +58,7 @@ class FreediumMirror {
   int get hashCode => url.hashCode;
 }
 
+@immutable
 class SettingsState {
   final ThemeMode themeMode;
   final double defaultFontSize;

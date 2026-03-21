@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
@@ -98,19 +99,37 @@ class WebviewNotifier extends Notifier<WebviewState> {
               currentUrl: url,
             );
           },
-          onPageFinished: (String url) {
+          onPageFinished: (String url) async {
             state = state.copyWith(isPageLoaded: true, currentUrl: url);
-            _retryCount = 0;
             if (_freediumUrlService.isFreediumUrl(url)) {
+              _retryCount = 0;
               _injectTheme();
+              try {
+                if (state.controller != null) {
+                  final title = await state.controller!.getTitle() ?? '';
+                  if (title.isNotEmpty) {
+                    final originalUrl = _extractOriginalUrl(url);
+                    await ref
+                        .read(historyProvider.notifier)
+                        .addHistory(originalUrl, title);
+                  }
+                }
+              } catch (e) {
+                debugPrint('Failed to get page title for history: $e');
+              }
             } else {
               state = state.copyWith(isThemeApplied: false);
             }
             _updateInitialLoadState();
           },
           onWebResourceError: (WebResourceError error) {
-            debugPrint('Error loading page: ${error.description}');
-            _handleLoadError(error);
+            final isMainFrame = error.isForMainFrame ?? true;
+            if (isMainFrame) {
+              debugPrint('Error loading page: ${error.description}');
+              _handleLoadError(error);
+            } else {
+              debugPrint('Resource error ignored: ${error.description}');
+            }
           },
           onNavigationRequest: (NavigationRequest request) async {
             final uri = Uri.parse(request.url);
@@ -224,10 +243,71 @@ class WebviewNotifier extends Notifier<WebviewState> {
         isThemeApplied: false,
         progress: 1.0,
         hasError: true,
-        errorMessage: error.description,
+        errorMessage: _getUserFriendlyErrorMessage(error),
       );
       _updateInitialLoadState();
     }
+  }
+
+  String _extractOriginalUrl(String fullUrl) {
+    try {
+      final uri = Uri.parse(fullUrl);
+      if (!_freediumUrlService.isFreediumHost(uri.host)) {
+        return fullUrl;
+      }
+      final queryStr = uri.hasQuery ? '?${uri.query}' : '';
+      if (uri.path.startsWith('/http')) {
+        // Mirror URL explicitly encodes the original URL in its path.
+        return '${uri.path.substring(1)}$queryStr';
+      } else {
+        // Fall back to the original user-entered article URL, which is
+        // preserved on this notifier instance and works for any domain
+        // (not just medium.com).
+        return url;
+      }
+    } catch (e) {
+      return url;
+    }
+  }
+
+  String _getUserFriendlyErrorMessage(WebResourceError error) {
+    final rawDescription = error.description.toLowerCase();
+
+    // Android (Chromium) errors
+    if (rawDescription.contains('err_internet_disconnected')) {
+      return 'No internet connection. Please check your network and try again.';
+    } else if (rawDescription.contains('err_name_not_resolved') ||
+        rawDescription.contains('err_connection_refused') ||
+        rawDescription.contains('err_connection_timed_out') ||
+        rawDescription.contains('err_connection_reset')) {
+      return 'Could not connect to the server. The current mirror might be down or blocked.';
+    } else if (rawDescription.contains('err_cert_') ||
+        rawDescription.contains('ssl')) {
+      return 'Security certificate issue with the server. Connection might not be secure.';
+    }
+
+    // iOS (WebKit) errors
+    if (rawDescription.contains('nsurlerrordomain') ||
+        rawDescription.contains('webkit')) {
+      if (rawDescription.contains('-1009')) {
+        return 'No internet connection. Please check your network and try again.';
+      } else if (rawDescription.contains('-1001') ||
+          rawDescription.contains('-1003') ||
+          rawDescription.contains('-1004')) {
+        return 'Could not connect to the server. The current mirror might be down or timed out.';
+      } else if (rawDescription.contains('-1200') ||
+          rawDescription.contains('-1202')) {
+        return 'A secure connection could not be established with the server.';
+      }
+    }
+
+    // Default formatting if it doesn't match known patterns
+    if (error.errorType != null) {
+      final typeString = error.errorType.toString().split('.').last;
+      return 'Connection failed: $typeString\n\nPlease try another mirror.';
+    }
+
+    return 'Failed to load page.\n\nPlease try another mirror or check your connection.';
   }
 
   Future<void> retryWithNextMirror() async {
