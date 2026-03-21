@@ -1,14 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
-import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
+import 'package:freedium_mobile/features/home/domain/home_state.dart';
 
-class HomeState {
-  final TextEditingController urlController;
-  final GlobalKey<FormState> formKey;
-
-  HomeState({required this.urlController, required this.formKey});
-}
+export 'package:freedium_mobile/features/home/domain/home_state.dart';
 
 class HomeNotifier extends Notifier<HomeState> {
   @override
@@ -30,14 +25,11 @@ class HomeNotifier extends Notifier<HomeState> {
     }
   }
 
-  void getArticle(BuildContext context) {
+  String? getValidatedUrl() {
     if (state.formKey.currentState!.validate()) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (context) => WebviewScreen(url: state.urlController.text),
-        ),
-      );
+      return state.urlController.text;
     }
+    return null;
   }
 }
 

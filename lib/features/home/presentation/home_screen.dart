@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
+import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -42,6 +44,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           fontWeight: .bold,
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+              );
+            },
+            tooltip: 'History',
+          ),
           IconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
@@ -140,7 +153,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         child: FilledButton(
                           onPressed: () {
                             HapticFeedback.mediumImpact();
-                            homeNotifier.getArticle(context);
+                            final url = homeNotifier.getValidatedUrl();
+                            if (url != null) {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => WebviewScreen(url: url),
+                                ),
+                              );
+                            }
                           },
                           child: const Text('Get Article'),
                         ),
