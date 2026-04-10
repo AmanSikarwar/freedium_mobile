@@ -201,6 +201,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  ffi_leak_tracker:
+    dependency: transitive
+    description:
+      name: ffi_leak_tracker
+      sha256: "25a58eeab3f50c90b5c8ee734a816af8021777246e3272db296d1d724cc63188"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1"
   file:
     dependency: transitive
     description:
@@ -428,10 +436,10 @@ packages:
     dependency: transitive
     description:
       name: meta
-      sha256: "1741988757a65eb6b36abe716829688cf01910bbf91c34354ff7ec1c3de2b349"
+      sha256: "23f08335362185a5ea2ad3a4e597f1375e78bce8a040df5c600c8d3552ef2394"
       url: "https://pub.dev"
     source: hosted
-    version: "1.18.0"
+    version: "1.17.0"
   mime:
     dependency: transitive
     description:
@@ -604,18 +612,18 @@ packages:
     dependency: "direct main"
     description:
       name: share_plus
-      sha256: "14c8860d4de93d3a7e53af51bff479598c4e999605290756bbbe45cf65b37840"
+      sha256: ad3e91cabb7dc3c7687e0f4bdaf24fb192141d11bfbf9ddea7c26f3d4e8bfb5d
       url: "https://pub.dev"
     source: hosted
-    version: "12.0.1"
+    version: "13.0.0"
   share_plus_platform_interface:
     dependency: transitive
     description:
       name: share_plus_platform_interface
-      sha256: "88023e53a13429bd65d8e85e11a9b484f49d4c190abbd96c7932b74d6927cc9a"
+      sha256: ccf360f79b95993b083259d8f37baf20a47bcf8e2551ccebdc4f781b4d15e734
       url: "https://pub.dev"
     source: hosted
-    version: "6.1.0"
+    version: "7.0.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -993,10 +1001,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: d7cb55e04cd34096cd3a79b3330245f54cb96a370a1c27adb3c84b917de8b08e
+      sha256: e7489db51886360dad710b3bc177108267f0554644dd04102dcb35f23b71c738
       url: "https://pub.dev"
     source: hosted
-    version: "5.15.0"
+    version: "6.0.0"
   xdg_directories:
     dependency: transitive
     description:
