@@ -18,7 +18,7 @@ dependencies:
   listen_sharing_intent: ^1.9.2
   pub_semver: ^2.2.0
   share_plus: ^13.0.0
-  shared_preferences: ^2.5.4
+  shared_preferences: ^2.5.5
   shimmer: ^3.0.0
   url_launcher: ^6.3.2
   timeago: ^3.7.1
