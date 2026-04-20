@@ -69,17 +69,24 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            // App icon header — consistent across all pages
+            Padding(
+              padding: const EdgeInsets.only(top: 48, bottom: 8),
+              child: Image.asset('assets/icon/icon.png', width: 88, height: 88),
+            ),
+
             // Skip button
             Align(
               alignment: Alignment.topRight,
               child: Padding(
-                padding: const EdgeInsets.only(top: 8, right: 8),
+                padding: const EdgeInsets.only(right: 8),
                 child: TextButton(
                   onPressed: _finish,
                   child: const Text('Skip'),
                 ),
               ),
             ),
+
             // Pages
             Expanded(
               child: PageView.builder(
@@ -89,6 +96,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 itemBuilder: (_, i) => _buildPage(_pages[i], theme),
               ),
             ),
+
             // Dots + Next/Finish
             Padding(
               padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -132,20 +140,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          // Feature icon
           Container(
-            width: 120,
-            height: 120,
+            width: 80,
+            height: 80,
             decoration: BoxDecoration(
               color: theme.colorScheme.primaryContainer,
               shape: BoxShape.circle,
             ),
             child: Icon(
               page.icon,
-              size: 60,
+              size: 40,
               color: theme.colorScheme.onPrimaryContainer,
             ),
           ),
-          const SizedBox(height: 40),
+          const SizedBox(height: 32),
           Text(
             page.title,
             style: theme.textTheme.headlineSmall?.copyWith(
