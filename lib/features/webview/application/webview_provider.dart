@@ -122,6 +122,18 @@ class WebviewNotifier extends Notifier<WebviewState> {
               currentUrl: url,
               clearArticleMeta: true,
             );
+            // Inject the pre-theme script as early as possible so the page's
+            // own inline scripts read the correct localStorage.theme value and
+            // the 'dark' class is already present on <html> on first render.
+            if (_colorScheme != null &&
+                _freediumUrlService.isFreediumUrl(url)) {
+              final preScript = _themeInjector.getPreThemeScript(_colorScheme!);
+              state.controller
+                  ?.runJavaScript(preScript)
+                  .catchError(
+                    (e) => debugPrint('Pre-theme injection failed: $e'),
+                  );
+            }
           },
           onPageFinished: (String url) async {
             state = state.copyWith(isPageLoaded: true, currentUrl: url);

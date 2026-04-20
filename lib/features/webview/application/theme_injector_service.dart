@@ -88,6 +88,34 @@ class ThemeInjectorService {
         );
   }
 
+  /// Returns a minimal synchronous script to be injected on [onPageStarted].
+  ///
+  /// Sets [localStorage.theme] and applies/removes the Tailwind `dark` class
+  /// on `<html>` immediately — before the page's own inline scripts run —
+  /// so Freedium's class-based dark mode activates on the first render pass
+  /// rather than after [onPageFinished].
+  ///
+  /// No asset loading needed; the script is fully self-contained.
+  String getPreThemeScript(ColorScheme colorScheme) {
+    final isDark = colorScheme.brightness == Brightness.dark;
+    final themeValue = isDark ? 'dark' : 'light';
+    return '''
+(function () {
+  try {
+    localStorage.setItem("theme", "$themeValue");
+    var root = document.documentElement;
+    if ($isDark) {
+      root.classList.add("dark");
+    } else {
+      root.classList.remove("dark");
+    }
+  } catch (e) {
+    // localStorage may be unavailable — silently ignore
+  }
+})();
+''';
+  }
+
   String getFontSizeUpdateScript(double fontSize) {
     return '''
       (function() {
