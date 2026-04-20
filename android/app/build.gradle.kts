@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
@@ -16,8 +15,8 @@ if (keystorePropertiesFile.exists()) {
 
 android {
     namespace = "io.github.amansikarwar.freedium_mobile"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdk = 36
+    ndkVersion = "30.0.14904198 rc1"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -55,11 +54,13 @@ android {
             )
         }
     }
+    buildToolsVersion = "37.0.0"
+    compileSdkMinor = 1
 }
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 

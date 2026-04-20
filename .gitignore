@@ -45,3 +45,5 @@ app.*.map.json
 /android/app/release
 keystore.base64
 android/build/reports/problems/problems-report.html
+
+.planning/
