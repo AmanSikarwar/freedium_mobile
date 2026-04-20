@@ -5,6 +5,8 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
+import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
+import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
@@ -51,6 +53,8 @@ class App extends ConsumerWidget {
     final themeAsync = ref.watch(dynamicThemeProvider);
     final themeMode = ref.watch(themeModeProvider);
     final hasHandledInitialIntent = ref.watch(initialIntentHandledProvider);
+    final onboarding = ref.watch(onboardingProvider);
+    final hasSeenOnboarding = onboarding.hasSeenOnboarding;
 
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {
       next.whenData((url) {
@@ -96,7 +100,7 @@ class App extends ConsumerWidget {
         theme: theme.lightTheme,
         darkTheme: theme.darkTheme,
         themeMode: themeMode,
-        home: const HomeScreen(),
+        home: hasSeenOnboarding ? const HomeScreen() : const OnboardingScreen(),
       ),
       loading: () => const MaterialApp(
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
