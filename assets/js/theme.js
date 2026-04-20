@@ -265,6 +265,56 @@
       } catch (e) {
         console.warn("Failed to call Flutter handler:", e);
       }
+
+      // Article metadata extraction — best-effort, does not affect reading experience
+      setTimeout(function () {
+        try {
+          var title =
+            (document.querySelector("h1") || {}).innerText ||
+            document.title ||
+            "";
+          title = title.trim();
+
+          // Freedium renders Medium's author name in these selectors (best-effort)
+          var authorEl =
+            document.querySelector('[data-testid="authorName"]') ||
+            document.querySelector(".au") ||
+            document.querySelector('a[rel="author"]') ||
+            document.querySelector(".author-name");
+          var author = authorEl ? authorEl.innerText.trim() : "";
+
+          // Read-time element
+          var rtEl =
+            document.querySelector('[data-testid="storyReadTime"]') ||
+            document.querySelector(".read-time") ||
+            document.querySelector('[aria-label*="read"]');
+          var readTime = rtEl ? rtEl.innerText.trim() : "";
+
+          // Hero image — first substantial image in article body
+          var heroImg = "";
+          var imgEls = document.querySelectorAll("article img, figure img, .postArticleContent img");
+          for (var i = 0; i < imgEls.length; i++) {
+            var src = imgEls[i].src || "";
+            if (src && !src.includes("data:") && imgEls[i].naturalWidth > 100) {
+              heroImg = src;
+              break;
+            }
+          }
+
+          if (window.ArticleMeta && window.ArticleMeta.postMessage) {
+            window.ArticleMeta.postMessage(
+              JSON.stringify({
+                title: title,
+                author: author,
+                readTime: readTime,
+                heroImageUrl: heroImg,
+              })
+            );
+          }
+        } catch (e) {
+          console.warn("ArticleMeta extraction failed:", e);
+        }
+      }, 800);
     } catch (e) {
       console.error("Theme application failed:", e);
       try {

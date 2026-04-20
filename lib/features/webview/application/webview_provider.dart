@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,6 +91,24 @@ class WebviewNotifier extends Notifier<WebviewState> {
           state = state.copyWith(userMessage: message.message);
         },
       )
+      ..addJavaScriptChannel(
+        'ArticleMeta',
+        onMessageReceived: (JavaScriptMessage message) {
+          try {
+            final data = jsonDecode(message.message) as Map<String, dynamic>;
+            state = state.copyWith(
+              articleMeta: ArticleMeta(
+                title: (data['title'] as String? ?? '').trim(),
+                author: (data['author'] as String? ?? '').trim(),
+                readTime: (data['readTime'] as String? ?? '').trim(),
+                heroImageUrl: (data['heroImageUrl'] as String? ?? '').trim(),
+              ),
+            );
+          } catch (e) {
+            debugPrint('Failed to parse ArticleMeta: $e');
+          }
+        },
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
@@ -101,6 +120,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
               isPageLoaded: false,
               progress: 0,
               currentUrl: url,
+              clearArticleMeta: true,
             );
           },
           onPageFinished: (String url) async {
@@ -110,12 +130,16 @@ class WebviewNotifier extends Notifier<WebviewState> {
               _injectTheme();
               try {
                 if (state.controller != null) {
-                  final title = await state.controller!.getTitle() ?? '';
-                  if (title.isNotEmpty) {
+                  // Prefer JS-extracted title (richer); fall back to WebView title
+                  final extractedTitle = state.articleMeta?.title ?? '';
+                  final webTitle = extractedTitle.isNotEmpty
+                      ? extractedTitle
+                      : (await state.controller!.getTitle() ?? '');
+                  if (webTitle.isNotEmpty) {
                     final originalUrl = _extractOriginalUrl(url);
                     await ref
                         .read(historyProvider.notifier)
-                        .addHistory(originalUrl, title);
+                        .addHistory(originalUrl, webTitle);
                   }
                 }
               } catch (e) {
