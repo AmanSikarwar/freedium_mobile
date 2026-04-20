@@ -5,7 +5,6 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
-import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -39,7 +38,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
     final settings = ref.read(settingsProvider);
 
-    webviewNotifier.setThemeInjector(themeInjector, context);
+    webviewNotifier.setThemeInjector(themeInjector);
     _controller = webviewNotifier.createController(
       baseUrl: settings.selectedMirrorUrl,
     );
@@ -70,6 +69,26 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   Widget build(BuildContext context) {
     final webviewState = ref.watch(webviewProvider(widget.url));
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
+
+    // Keep the notifier's color scheme in sync without storing a BuildContext.
+    final colorScheme = Theme.of(context).colorScheme;
+    WidgetsBinding.instance.addPostFrameCallback(
+      (_) => webviewNotifier.updateColorScheme(colorScheme),
+    );
+
+    // Listen for one-shot user messages and display them as SnackBars.
+    ref.listen<WebviewState>(webviewProvider(widget.url), (previous, next) {
+      if (next.userMessage != null &&
+          next.userMessage != previous?.userMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.userMessage!),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        webviewNotifier.clearUserMessage();
+      }
+    });
 
     return PopScope(
       canPop: false,
@@ -308,5 +327,3 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     );
   }
 }
-
-final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());

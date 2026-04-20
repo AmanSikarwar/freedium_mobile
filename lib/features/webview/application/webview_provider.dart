@@ -1,5 +1,5 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -15,7 +15,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
   late FontSizeService _fontSizeService;
   late FreediumUrlService _freediumUrlService;
-  BuildContext? _context;
+  ColorScheme? _colorScheme;
   final String url;
   int _currentMirrorIndex = 0;
   int _retryCount = 0;
@@ -50,12 +50,20 @@ class WebviewNotifier extends Notifier<WebviewState> {
     return WebviewState();
   }
 
-  void setThemeInjector(
-    ThemeInjectorService themeInjector,
-    BuildContext context,
-  ) {
+  void setThemeInjector(ThemeInjectorService themeInjector) {
     _themeInjector = themeInjector;
-    _context = context;
+  }
+
+  /// Called from the screen's build method to keep the color scheme in sync
+  /// without storing a BuildContext in the notifier.
+  void updateColorScheme(ColorScheme colorScheme) {
+    _colorScheme = colorScheme;
+  }
+
+  /// Clears the one-shot [WebviewState.userMessage] after the screen has
+  /// displayed it as a SnackBar.
+  void clearUserMessage() {
+    state = state.copyWith(clearUserMessage: true);
   }
 
   WebViewController createController({String? baseUrl}) {
@@ -79,11 +87,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
       ..addJavaScriptChannel(
         'Toaster',
         onMessageReceived: (JavaScriptMessage message) {
-          if (_context != null && _context!.mounted) {
-            ScaffoldMessenger.of(
-              _context!,
-            ).showSnackBar(SnackBar(content: Text(message.message)));
-          }
+          state = state.copyWith(userMessage: message.message);
         },
       )
       ..setNavigationDelegate(
@@ -151,13 +155,9 @@ class WebviewNotifier extends Notifier<WebviewState> {
               }
             } catch (e) {
               debugPrint('Failed to launch URL: $e');
-              if (_context != null && _context!.mounted) {
-                ScaffoldMessenger.of(_context!).showSnackBar(
-                  SnackBar(
-                    content: Text('Could not open link: ${uri.toString()}'),
-                  ),
-                );
-              }
+              state = state.copyWith(
+                userMessage: 'Could not open link: ${uri.toString()}',
+              );
             }
 
             return .prevent;
@@ -225,14 +225,9 @@ class WebviewNotifier extends Notifier<WebviewState> {
       _hasSwitchedMirror = true;
       _rememberArticleRequestUrl(nextMirror.url);
 
-      if (_context != null && _context!.mounted) {
-        ScaffoldMessenger.of(_context!).showSnackBar(
-          SnackBar(
-            content: Text('Trying mirror: ${nextMirror.name}...'),
-            duration: const Duration(seconds: 2),
-          ),
-        );
-      }
+      state = state.copyWith(
+        userMessage: 'Trying mirror: ${nextMirror.name}...',
+      );
 
       final newUrl = Uri.parse(nextMirror.url).replace(path: url);
       state = state.copyWith(activeBaseUrl: nextMirror.url);
@@ -332,11 +327,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   Future<void> _injectTheme() async {
-    if (_context == null || state.controller == null) return;
+    if (_colorScheme == null || state.controller == null) return;
     try {
-      final colorScheme = Theme.of(_context!).colorScheme;
       final script = await _themeInjector.getThemeInjectionScript(
-        colorScheme,
+        _colorScheme!,
         fontSize: state.fontSize,
       );
 
@@ -389,3 +383,5 @@ final webviewProvider =
     NotifierProvider.family<WebviewNotifier, WebviewState, String>(
       WebviewNotifier.new,
     );
+
+final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
