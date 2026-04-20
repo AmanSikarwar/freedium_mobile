@@ -16,7 +16,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   static const _pages = [
     _OnboardingPage(
-      icon: Icons.auto_stories,
+      imagePath: 'assets/icon/icon.png',
       title: 'Welcome to Freedium',
       body:
           'Read any Medium article for free. Paste a link or share one from your browser to get started.',
@@ -69,17 +69,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // App icon header — consistent across all pages
-            Padding(
-              padding: const EdgeInsets.only(top: 48, bottom: 8),
-              child: Image.asset('assets/icon/icon.png', width: 88, height: 88),
-            ),
-
             // Skip button
             Align(
               alignment: Alignment.topRight,
               child: Padding(
-                padding: const EdgeInsets.only(right: 8),
+                padding: const EdgeInsets.only(top: 8, right: 8),
                 child: TextButton(
                   onPressed: _finish,
                   child: const Text('Skip'),
@@ -140,20 +134,23 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          // Feature icon
-          Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer,
-              shape: BoxShape.circle,
+          // App icon asset OR generic feature icon
+          if (page.imagePath != null)
+            Image.asset(page.imagePath!, width: 120, height: 120)
+          else
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primaryContainer,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                page.icon!,
+                size: 40,
+                color: theme.colorScheme.onPrimaryContainer,
+              ),
             ),
-            child: Icon(
-              page.icon,
-              size: 40,
-              color: theme.colorScheme.onPrimaryContainer,
-            ),
-          ),
           const SizedBox(height: 32),
           Text(
             page.title,
@@ -177,13 +174,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 }
 
 class _OnboardingPage {
-  final IconData icon;
+  final IconData? icon;
+  final String? imagePath;
   final String title;
   final String body;
 
   const _OnboardingPage({
-    required this.icon,
+    this.icon,
+    this.imagePath,
     required this.title,
     required this.body,
-  });
+  }) : assert(
+         icon != null || imagePath != null,
+         'Either icon or imagePath must be provided',
+       );
 }
