@@ -7,7 +7,6 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
-import 'package:freedium_mobile/features/webview/presentation/widgets/article_meta_bar.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -25,7 +24,6 @@ class WebviewScreen extends ConsumerStatefulWidget {
 
 class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
-  bool _showMetaBar = true;
   WebViewController? _controller;
 
   @override
@@ -91,10 +89,6 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
           ),
         );
         webviewNotifier.clearUserMessage();
-      }
-      // Reset meta bar visibility on each new page load
-      if (next.currentUrl != previous?.currentUrl && !next.isPageLoaded) {
-        setState(() => _showMetaBar = true);
       }
     });
 
@@ -183,19 +177,6 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
               const ArticleShimmer(),
             if (webviewState.hasError)
               _buildErrorWidget(webviewState, webviewNotifier),
-            // Article metadata bar — shown at bottom when metadata is available
-            if (showWebView &&
-                _showMetaBar &&
-                (webviewState.articleMeta?.hasContent ?? false))
-              Positioned(
-                bottom: 8,
-                left: 0,
-                right: 0,
-                child: ArticleMetaBar(
-                  meta: webviewState.articleMeta!,
-                  onDismiss: () => setState(() => _showMetaBar = false),
-                ),
-              ),
           ],
         ),
       ),
