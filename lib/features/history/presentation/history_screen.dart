@@ -27,14 +27,15 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   @override
   Widget build(BuildContext context) {
     final history = ref.watch(historyProvider);
+    final lowercaseQuery = _query.toLowerCase();
 
     final filtered = _query.isEmpty
         ? history
         : history
               .where(
                 (item) =>
-                    item.title.toLowerCase().contains(_query.toLowerCase()) ||
-                    item.url.toLowerCase().contains(_query.toLowerCase()),
+                    item.title.toLowerCase().contains(lowercaseQuery) ||
+                    item.url.toLowerCase().contains(lowercaseQuery),
               )
               .toList();
 

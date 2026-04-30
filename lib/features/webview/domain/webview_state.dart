@@ -27,6 +27,7 @@ class ArticleMeta {
 /// once per notifier instance and must be held here so both the notifier and
 /// screen widget share the same reference without re-creating it on every state
 /// rebuild. It is never replaced after initial creation.
+@immutable
 class WebviewState {
   final double progress;
   final bool isPageLoaded;
@@ -47,7 +48,7 @@ class WebviewState {
   /// Article metadata extracted from the Freedium DOM (Phase 3).
   final ArticleMeta? articleMeta;
 
-  WebviewState({
+  const WebviewState({
     this.progress = 0.0,
     this.isPageLoaded = false,
     this.isThemeApplied = false,

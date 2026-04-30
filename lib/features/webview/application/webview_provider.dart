@@ -44,6 +44,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
       if (controller != null) {
         controller.removeJavaScriptChannel('themeApplied');
         controller.removeJavaScriptChannel('Toaster');
+        controller.removeJavaScriptChannel('ArticleMeta');
         controller.clearCache();
       }
     });

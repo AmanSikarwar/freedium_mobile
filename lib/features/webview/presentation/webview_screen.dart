@@ -25,6 +25,7 @@ class WebviewScreen extends ConsumerStatefulWidget {
 class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
   WebViewController? _controller;
+  ColorScheme? _prevColorScheme;
 
   @override
   void initState() {
@@ -62,6 +63,17 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
+    final colorScheme = Theme.of(context).colorScheme;
+    if (_prevColorScheme != colorScheme) {
+      webviewNotifier.updateColorScheme(colorScheme);
+      _prevColorScheme = colorScheme;
+    }
+  }
+
+  @override
   void dispose() {
     ReceiveSharingIntent.instance.reset();
     super.dispose();
@@ -71,12 +83,6 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   Widget build(BuildContext context) {
     final webviewState = ref.watch(webviewProvider(widget.url));
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
-
-    // Keep the notifier's color scheme in sync without storing a BuildContext.
-    final colorScheme = Theme.of(context).colorScheme;
-    WidgetsBinding.instance.addPostFrameCallback(
-      (_) => webviewNotifier.updateColorScheme(colorScheme),
-    );
 
     // Listen for one-shot user messages and display them as SnackBars.
     ref.listen<WebviewState>(webviewProvider(widget.url), (previous, next) {
@@ -309,7 +315,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
           // Bookmark toggle button
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: MaterialType.circle,
+            type: MaterialType.button,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,

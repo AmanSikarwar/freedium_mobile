@@ -16,7 +16,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "io.github.amansikarwar.freedium_mobile"
     compileSdk = 36
-    ndkVersion = "30.0.14904198 rc1"
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -54,7 +54,6 @@ android {
             )
         }
     }
-    buildToolsVersion = "37.0.0"
     compileSdkMinor = 1
 }
 

@@ -46,9 +46,9 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
   bool isBookmarked(String url) => state.any((b) => b.url == url);
 
   Future<void> addBookmark(String url, String title) async {
-    if (isBookmarked(url)) return; // already saved
     final service = await _ensureService();
     if (service == null) return;
+    if (isBookmarked(url)) return; // already saved
 
     final prevState = state;
     final newList = List<BookmarkedArticle>.from(state);
@@ -92,6 +92,8 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
 
   /// Toggles the bookmark state for [url]. Adds if absent, removes if present.
   Future<void> toggleBookmark(String url, String title) async {
+    if (await _ensureService() == null) return;
+
     if (isBookmarked(url)) {
       final item = state.firstWhere((b) => b.url == url);
       await removeBookmark(item);

@@ -1,5 +1,6 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:flutter/scheduler.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
@@ -26,6 +27,24 @@ final initialIntentHandledProvider =
       InitialIntentHandledNotifier.new,
     );
 
+class PendingIntentUrlNotifier extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  void stash(String url) {
+    state = url;
+  }
+
+  void clear() {
+    state = null;
+  }
+}
+
+final pendingIntentUrlProvider =
+    NotifierProvider<PendingIntentUrlNotifier, String?>(
+      PendingIntentUrlNotifier.new,
+    );
+
 class App extends ConsumerWidget {
   const App({super.key});
 
@@ -48,6 +67,30 @@ class App extends ConsumerWidget {
     }
   }
 
+  void _handleIncomingIntent(WidgetRef ref, String url) {
+    if (url.isEmpty) return;
+
+    final onboarding = ref.read(onboardingProvider);
+    if (onboarding.isLoading || !onboarding.hasSeenOnboarding) {
+      ref.read(pendingIntentUrlProvider.notifier).stash(url);
+      return;
+    }
+
+    _navigateToWebview(url);
+    ReceiveSharingIntent.instance.reset();
+  }
+
+  Future<void> _processInitialIntent(WidgetRef ref) async {
+    await Future<void>.delayed(const Duration(milliseconds: 400));
+    final value = await ref.read(intentServiceProvider).getInitialIntent();
+    if (value.isEmpty) return;
+
+    final url = value.first.path;
+    if (url.isEmpty) return;
+
+    _handleIncomingIntent(ref, url);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeAsync = ref.watch(dynamicThemeProvider);
@@ -56,40 +99,27 @@ class App extends ConsumerWidget {
     final onboarding = ref.watch(onboardingProvider);
     final hasSeenOnboarding = onboarding.hasSeenOnboarding;
 
+    ref.listen<OnboardingState>(onboardingProvider, (previous, next) {
+      if (next.isLoading || !next.hasSeenOnboarding) return;
+
+      final pendingUrl = ref.read(pendingIntentUrlProvider);
+      if (pendingUrl == null || pendingUrl.isEmpty) return;
+
+      ref.read(pendingIntentUrlProvider.notifier).clear();
+      _navigateToWebview(pendingUrl);
+      ReceiveSharingIntent.instance.reset();
+    });
+
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {
       next.whenData((url) {
-        if (url.isNotEmpty) {
-          final navigator = navigatorKey.currentState;
-          if (navigator != null && navigator.context.mounted) {
-            final currentRoute = ModalRoute.of(navigator.context);
-            final isCurrentlyOnWebview =
-                currentRoute?.settings.name?.startsWith('/webview/') ?? false;
-
-            if (!isCurrentlyOnWebview) {
-              _navigateToWebview(url);
-              ReceiveSharingIntent.instance.reset();
-            }
-          }
-        }
+        _handleIncomingIntent(ref, url);
       });
     });
 
     if (!hasHandledInitialIntent) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(initialIntentHandledProvider.notifier).setHandled();
-        ref.read(intentServiceProvider).getInitialIntent().then((value) {
-          if (value.isNotEmpty) {
-            final url = value.first.path;
-            if (url.isNotEmpty) {
-              SchedulerBinding.instance.addPostFrameCallback((_) {
-                Future.delayed(const Duration(milliseconds: 200), () {
-                  _navigateToWebview(url);
-                  ReceiveSharingIntent.instance.reset();
-                });
-              });
-            }
-          }
-        });
+        unawaited(_processInitialIntent(ref));
       });
     }
 
@@ -100,7 +130,11 @@ class App extends ConsumerWidget {
         theme: theme.lightTheme,
         darkTheme: theme.darkTheme,
         themeMode: themeMode,
-        home: hasSeenOnboarding ? const HomeScreen() : const OnboardingScreen(),
+        home: onboarding.isLoading
+            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+            : hasSeenOnboarding
+            ? const HomeScreen()
+            : const OnboardingScreen(),
       ),
       loading: () => const MaterialApp(
         home: Scaffold(body: Center(child: CircularProgressIndicator())),
