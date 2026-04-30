@@ -76,7 +76,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _rememberArticleRequestUrl(activeBaseUrl);
     _setCurrentMirrorIndex(activeBaseUrl);
 
-    final controller = WebViewController()
+    final controller = WebViewController();
+    controller
       ..setJavaScriptMode(.unrestricted)
       ..setBackgroundColor(Colors.transparent)
       ..addJavaScriptChannel(
@@ -129,8 +130,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
             if (_colorScheme != null &&
                 _freediumUrlService.isFreediumUrl(url)) {
               final preScript = _themeInjector.getPreThemeScript(_colorScheme!);
-              state.controller
-                  ?.runJavaScript(preScript)
+              controller
+                  .runJavaScript(preScript)
                   .catchError(
                     (e) => debugPrint('Pre-theme injection failed: $e'),
                   );

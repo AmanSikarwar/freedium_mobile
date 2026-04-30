@@ -27,7 +27,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
     );
   }
 
-  Future<void> completeOnboarding() async {
+  Future<bool> completeOnboarding() async {
     try {
       final prefs = await ref.read(sharedPreferencesProvider.future);
       final success = await prefs.setBool(_key, true);
@@ -35,8 +35,10 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
         throw Exception('setBool returned false for key "$_key"');
       }
       state = const OnboardingState(hasSeenOnboarding: true);
+      return true;
     } catch (e) {
       debugPrint('Failed to persist onboarding completion: $e');
+      return false;
     }
   }
 }

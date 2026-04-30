@@ -30,7 +30,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     final lowercaseQuery = _query.toLowerCase();
 
     final filtered = _query.isEmpty
-        ? history
+        ? List<ReadingHistory>.from(history)
         : history
               .where(
                 (item) =>
@@ -38,6 +38,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                     item.url.toLowerCase().contains(lowercaseQuery),
               )
               .toList();
+    filtered.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
     final grouped = du.buildGroupedList<ReadingHistory>(
       items: filtered,
@@ -148,21 +149,21 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   void _confirmClear(BuildContext context) {
     showDialog(
       context: context,
-      builder: (_) => AlertDialog(
+      builder: (dialogContext) => AlertDialog(
         title: const Text('Clear History'),
         content: const Text(
           'Are you sure you want to clear all reading history?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
               ref.read(historyProvider.notifier).clearHistory();
-              Navigator.pop(context);
+              Navigator.pop(dialogContext);
             },
             child: const Text('Clear'),
           ),

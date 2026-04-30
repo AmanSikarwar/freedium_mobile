@@ -53,8 +53,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _finish() async {
-    await ref.read(onboardingProvider.notifier).completeOnboarding();
+    final didComplete = await ref
+        .read(onboardingProvider.notifier)
+        .completeOnboarding();
     if (!mounted) return;
+    if (!didComplete) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Could not save onboarding progress. Please try again.',
+          ),
+        ),
+      );
+      return;
+    }
     Navigator.of(
       context,
     ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
