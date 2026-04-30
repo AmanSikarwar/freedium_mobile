@@ -74,32 +74,24 @@
       customCSS.textContent = `%CUSTOM_CSS_CONTENT%`;
       document.head.appendChild(customCSS);
 
+      // Use the same HLJS version (11.9.0) that Freedium loads in its <head>.
+      // Pointing to a different version would load a second HLJS script and
+      // cause the stylesheet URL to be replaced with an unmatched version.
       const desiredHljsTheme = isDarkMode === "true" ? "github-dark" : "github";
-      const hljsThemeUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.11.1/styles/${desiredHljsTheme}.min.css`;
+      const hljsThemeUrl = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${desiredHljsTheme}.min.css`;
       try {
-        const existingLink = document.querySelector(
-          'link[href*="highlight.js"][href*="styles"]'
-        );
-        if (existingLink && !existingLink.href.includes(desiredHljsTheme)) {
-          const preloadLink = document.createElement("link");
-          preloadLink.rel = "preload";
-          preloadLink.as = "style";
-          preloadLink.href = hljsThemeUrl;
-          preloadLink.onload = function () {
-            existingLink.href = hljsThemeUrl;
-            preloadLink.remove();
-          };
-          preloadLink.onerror = function () {
-            existingLink.href = hljsThemeUrl;
-            preloadLink.remove();
-          };
-          document.head.appendChild(preloadLink);
-        } else if (!existingLink) {
-          const link = document.createElement("link");
-          link.rel = "stylesheet";
-          link.href = hljsThemeUrl;
-          document.head.appendChild(link);
-        }
+        // Freedium's page script already loaded a highlight.js stylesheet.
+        // We swap its href so the correct light/dark theme is applied.
+        // Remove ALL existing HLJS style links first to avoid duplicates.
+        document
+          .querySelectorAll('link[href*="highlight.js"][href*="styles"]')
+          .forEach(function (el) {
+            el.remove();
+          });
+        const link = document.createElement("link");
+        link.rel = "stylesheet";
+        link.href = hljsThemeUrl;
+        document.head.appendChild(link);
       } catch (e) {
         console.warn("Failed to set HLJS theme:", e);
       }
@@ -265,6 +257,70 @@
       } catch (e) {
         console.warn("Failed to call Flutter handler:", e);
       }
+
+      // Article metadata extraction — best-effort, does not affect reading experience.
+      // Selectors verified against the actual Freedium HTML structure.
+      setTimeout(function () {
+        try {
+          // ── Title ──────────────────────────────────────────────────────────
+          // Prefer the <h1> inside the .font-sans wrapper (the article header).
+          // Fall back to <title>, stripping Freedium's suffix.
+          var titleEl = document.querySelector("div.font-sans > h1") ||
+                        document.querySelector("h1");
+          var title = titleEl
+            ? titleEl.innerText.trim()
+            : document.title
+                .replace(/ [|\-–] Freedium$/i, "")
+                .replace(/ by .+ - Freedium$/i, "")
+                .trim();
+
+          // ── Author ─────────────────────────────────────────────────────────
+          // The author card: div.bg-gray-100 > div.flex > div.flex-grow > a
+          // Specifically the first <a> linking to medium.com inside .flex-grow.
+          var authorEl =
+            document.querySelector("div.flex-grow > a[href*='medium.com']");
+          var author = authorEl ? authorEl.innerText.trim() : "";
+
+          // ── Read time ──────────────────────────────────────────────────────
+          // Freedium renders read time as a plain <span> containing "min read".
+          // There is no data-testid or class that uniquely identifies it.
+          var readTime = "";
+          var spans = document.querySelectorAll(
+            "div.flex.flex-wrap.items-center span"
+          );
+          for (var i = 0; i < spans.length; i++) {
+            var txt = spans[i].innerText || "";
+            if (txt.includes("min read")) {
+              readTime = txt.trim();
+              break;
+            }
+          }
+
+          // ── Hero image ─────────────────────────────────────────────────────
+          // Freedium places a preview image with alt="Preview image" near the top.
+          // Fall back to the first non-data image inside the .font-sans wrapper.
+          var heroImg = "";
+          var heroEl =
+            document.querySelector("img[alt='Preview image']") ||
+            document.querySelector("div.font-sans img");
+          if (heroEl && heroEl.src && !heroEl.src.startsWith("data:")) {
+            heroImg = heroEl.src;
+          }
+
+          if (window.ArticleMeta && window.ArticleMeta.postMessage) {
+            window.ArticleMeta.postMessage(
+              JSON.stringify({
+                title: title,
+                author: author,
+                readTime: readTime,
+                heroImageUrl: heroImg,
+              })
+            );
+          }
+        } catch (e) {
+          console.warn("ArticleMeta extraction failed:", e);
+        }
+      }, 800);
     } catch (e) {
       console.error("Theme application failed:", e);
       try {

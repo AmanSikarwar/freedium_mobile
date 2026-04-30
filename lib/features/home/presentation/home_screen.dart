@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
@@ -57,6 +58,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           fontWeight: .bold,
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.bookmark_border),
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const BookmarksScreen(),
+                ),
+              );
+            },
+            tooltip: 'Bookmarks',
+          ),
           IconButton(
             icon: const Icon(Icons.history),
             onPressed: () {

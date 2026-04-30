@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/features/history/application/history_provider.dart';
-import 'package:freedium_mobile/features/history/domain/reading_history.dart';
+import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
-class HistoryScreen extends ConsumerStatefulWidget {
-  const HistoryScreen({super.key});
+class BookmarksScreen extends ConsumerStatefulWidget {
+  const BookmarksScreen({super.key});
 
   @override
-  ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
+  ConsumerState<BookmarksScreen> createState() => _BookmarksScreenState();
 }
 
-class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
   String _query = '';
   final _searchController = TextEditingController();
 
@@ -26,52 +25,42 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final history = ref.watch(historyProvider);
-    final lowercaseQuery = _query.toLowerCase();
-    const searchBarHeight = 56.0;
-    const searchBarBottomPadding = 8.0;
-    const searchAreaHeight = searchBarHeight + searchBarBottomPadding;
+    final bookmarks = ref.watch(bookmarksProvider);
 
     final filtered = _query.isEmpty
-        ? List<ReadingHistory>.from(history)
-        : history
+        ? bookmarks
+        : bookmarks
               .where(
                 (item) =>
-                    item.title.toLowerCase().contains(lowercaseQuery) ||
-                    item.url.toLowerCase().contains(lowercaseQuery),
+                    item.title.toLowerCase().contains(_query.toLowerCase()) ||
+                    item.url.toLowerCase().contains(_query.toLowerCase()),
               )
               .toList();
-    filtered.sort((a, b) => b.timestamp.compareTo(a.timestamp));
 
-    final grouped = du.buildGroupedList<ReadingHistory>(
+    final grouped = du.buildGroupedList<BookmarkedArticle>(
       items: filtered,
-      dateOf: (item) => item.timestamp,
+      dateOf: (item) => item.savedAt,
     );
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('History'),
+        title: const Text('Bookmarks'),
         actions: [
-          if (history.isNotEmpty)
+          if (bookmarks.isNotEmpty)
             IconButton(
               icon: const Icon(Icons.delete_sweep),
-              tooltip: 'Clear History',
+              tooltip: 'Clear Bookmarks',
               onPressed: () => _confirmClear(context),
             ),
         ],
-        bottom: history.isNotEmpty
+        bottom: bookmarks.isNotEmpty
             ? PreferredSize(
-                preferredSize: Size.fromHeight(searchAreaHeight),
+                preferredSize: const Size.fromHeight(56),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    12,
-                    0,
-                    12,
-                    searchBarBottomPadding,
-                  ),
+                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
                   child: SearchBar(
                     controller: _searchController,
-                    hintText: 'Search history…',
+                    hintText: 'Search bookmarks…',
                     leading: const Icon(Icons.search),
                     trailing: [
                       if (_query.isNotEmpty)
@@ -96,7 +85,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(
-                    _query.isNotEmpty ? Icons.search_off : Icons.history,
+                    _query.isNotEmpty
+                        ? Icons.search_off
+                        : Icons.bookmark_border,
                     size: 64,
                     color: Theme.of(context).colorScheme.outlineVariant,
                   ),
@@ -104,8 +95,18 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   Text(
                     _query.isNotEmpty
                         ? 'No results for "$_query"'
-                        : 'No reading history yet.',
+                        : 'No saved articles yet.',
                   ),
+                  if (_query.isEmpty) ...[
+                    const SizedBox(height: 8),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 40),
+                      child: Text(
+                        'Tap the bookmark icon while reading to save articles.',
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             )
@@ -118,10 +119,10 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   return DateGroupHeader(label: entry);
                 }
 
-                final item = entry as ReadingHistory;
+                final item = entry as BookmarkedArticle;
                 return Dismissible(
                   key: ValueKey(
-                    '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
+                    '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
                   ),
                   direction: DismissDirection.endToStart,
                   background: Container(
@@ -133,19 +134,27 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ),
-                  onDismissed: (_) {
+                  confirmDismiss: (_) async {
                     HapticFeedback.lightImpact();
-                    ref.read(historyProvider.notifier).removeHistory(item);
+                    await ref
+                        .read(bookmarksProvider.notifier)
+                        .removeBookmark(item);
+                    return true;
                   },
                   child: ArticleCard(
                     title: item.title,
-                    subtitle: du.relativeTime(item.timestamp),
+                    subtitle: du.relativeTime(item.savedAt),
                     url: item.url,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (_) => WebviewScreen(url: item.url),
                       ),
+                    ),
+                    trailingIcon: Icon(
+                      Icons.bookmark,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
                     ),
                   ),
                 );
@@ -157,21 +166,21 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   void _confirmClear(BuildContext context) {
     showDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Clear History'),
+      builder: (_) => AlertDialog(
+        title: const Text('Clear Bookmarks'),
         content: const Text(
-          'Are you sure you want to clear all reading history?',
+          'Are you sure you want to remove all saved articles?',
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
           FilledButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
-              ref.read(historyProvider.notifier).clearHistory();
-              Navigator.pop(dialogContext);
+              ref.read(bookmarksProvider.notifier).clearBookmarks();
+              Navigator.pop(context);
             },
             child: const Text('Clear'),
           ),

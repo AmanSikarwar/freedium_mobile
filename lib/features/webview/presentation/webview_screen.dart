@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
-import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -24,6 +25,7 @@ class WebviewScreen extends ConsumerStatefulWidget {
 class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
   WebViewController? _controller;
+  ColorScheme? _prevColorScheme;
 
   @override
   void initState() {
@@ -39,7 +41,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
     final settings = ref.read(settingsProvider);
 
-    webviewNotifier.setThemeInjector(themeInjector, context);
+    webviewNotifier.setThemeInjector(themeInjector);
     _controller = webviewNotifier.createController(
       baseUrl: settings.selectedMirrorUrl,
     );
@@ -61,6 +63,17 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
+    final colorScheme = Theme.of(context).colorScheme;
+    if (_prevColorScheme != colorScheme) {
+      unawaited(webviewNotifier.updateColorScheme(colorScheme));
+      _prevColorScheme = colorScheme;
+    }
+  }
+
+  @override
   void dispose() {
     ReceiveSharingIntent.instance.reset();
     super.dispose();
@@ -70,6 +83,20 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   Widget build(BuildContext context) {
     final webviewState = ref.watch(webviewProvider(widget.url));
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
+
+    // Listen for one-shot user messages and display them as SnackBars.
+    ref.listen<WebviewState>(webviewProvider(widget.url), (previous, next) {
+      if (next.userMessage != null &&
+          next.userMessage != previous?.userMessage) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(next.userMessage!),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+        webviewNotifier.clearUserMessage();
+      }
+    });
 
     return PopScope(
       canPop: false,
@@ -224,11 +251,20 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final theme = Theme.of(context);
     final webviewState = ref.watch(webviewProvider(widget.url));
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
+    final bookmarksNotifier = ref.read(bookmarksProvider.notifier);
+    final isBookmarked = ref.watch(
+      bookmarksProvider.select((list) => list.any((b) => b.url == widget.url)),
+    );
+    final divider = Container(
+      width: 1,
+      height: 24,
+      color: theme.colorScheme.outline.withValues(alpha: 0.3),
+    );
 
     return Container(
       decoration: BoxDecoration(
         color: theme.colorScheme.primaryContainer,
-        borderRadius: .circular(30),
+        borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
             color: theme.colorScheme.shadow.withValues(alpha: 0.3),
@@ -238,16 +274,19 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         ],
       ),
       child: Row(
-        mainAxisSize: .min,
+        mainAxisSize: MainAxisSize.min,
         children: [
+          // Font size button
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: .circle,
+            type: MaterialType.circle,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,
               ),
-              borderRadius: const .horizontal(left: .circular(30)),
+              borderRadius: const BorderRadius.horizontal(
+                left: Radius.circular(30),
+              ),
               onTap: () {
                 showModalBottomSheet(
                   context: context,
@@ -260,7 +299,10 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                 );
               },
               child: Container(
-                padding: const .symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 child: Icon(
                   Icons.text_fields,
                   color: theme.colorScheme.onPrimaryContainer,
@@ -269,32 +311,64 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
               ),
             ),
           ),
-          Container(
-            width: 1,
-            height: 24,
-            color: theme.colorScheme.outline.withValues(alpha: 0.3),
-          ),
+          divider,
+          // Bookmark toggle button
           Material(
             color: theme.colorScheme.primaryContainer,
-            type: .circle,
+            type: MaterialType.button,
             child: InkWell(
               splashColor: theme.colorScheme.onPrimaryContainer.withValues(
                 alpha: 0.1,
               ),
-              borderRadius: const .horizontal(right: .circular(30)),
+              borderRadius: BorderRadius.zero,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                bookmarksNotifier.toggleBookmark(
+                  widget.url,
+                  webviewState.articleMeta?.title ?? '',
+                );
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
+                child: Icon(
+                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                  color: theme.colorScheme.onPrimaryContainer,
+                  size: 24,
+                ),
+              ),
+            ),
+          ),
+          divider,
+          // Share button
+          Material(
+            color: theme.colorScheme.primaryContainer,
+            type: MaterialType.circle,
+            child: InkWell(
+              splashColor: theme.colorScheme.onPrimaryContainer.withValues(
+                alpha: 0.1,
+              ),
+              borderRadius: const BorderRadius.horizontal(
+                right: Radius.circular(30),
+              ),
               onTap: () {
                 SharePlus.instance.share(
                   ShareParams(
                     subject: 'Read this article without Paywall',
                     title: 'Share Freedium link',
-                    uri: .parse(
+                    uri: Uri.parse(
                       webviewState.activeBaseUrl,
                     ).replace(path: widget.url),
                   ),
                 );
               },
               child: Container(
-                padding: const .symmetric(horizontal: 12, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 12,
+                ),
                 child: Icon(
                   Icons.share,
                   color: theme.colorScheme.onPrimaryContainer,
@@ -308,5 +382,3 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     );
   }
 }
-
-final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
