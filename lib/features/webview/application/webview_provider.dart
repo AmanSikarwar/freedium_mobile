@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show ColorScheme, Colors;
@@ -22,6 +23,9 @@ class WebviewNotifier extends Notifier<WebviewState> {
   int _retryCount = 0;
   bool _hasSwitchedMirror = false;
   final Set<String> _articleRequestUrls = <String>{};
+  int _historyRecordToken = 0;
+  bool _hasRecordedHistoryForCurrentPage = false;
+  static const Duration _articleMetaWaitDuration = Duration(milliseconds: 900);
   static const int _maxRetries = 3;
 
   WebviewNotifier(this.url);
@@ -58,8 +62,18 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   /// Called from the screen's build method to keep the color scheme in sync
   /// without storing a BuildContext in the notifier.
-  void updateColorScheme(ColorScheme colorScheme) {
+  Future<void> updateColorScheme(ColorScheme colorScheme) async {
     _colorScheme = colorScheme;
+
+    final currentUrl = state.currentUrl;
+    if (!ref.mounted ||
+        state.controller == null ||
+        currentUrl == null ||
+        !_freediumUrlService.isFreediumUrl(currentUrl)) {
+      return;
+    }
+
+    await _injectTheme();
   }
 
   /// Clears the one-shot [WebviewState.userMessage] after the screen has
@@ -106,6 +120,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
                 heroImageUrl: (data['heroImageUrl'] as String? ?? '').trim(),
               ),
             );
+            final currentUrl = state.currentUrl;
+            if (currentUrl != null && currentUrl.isNotEmpty) {
+              unawaited(_recordHistoryWhenReady(currentUrl));
+            }
           } catch (e) {
             debugPrint('Failed to parse ArticleMeta: $e');
           }
@@ -117,6 +135,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
             state = state.copyWith(progress: progress / 100.0);
           },
           onPageStarted: (String url) {
+            _historyRecordToken++;
+            _hasRecordedHistoryForCurrentPage = false;
             state = state.copyWith(
               isThemeApplied: false,
               isPageLoaded: false,
@@ -141,24 +161,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
             state = state.copyWith(isPageLoaded: true, currentUrl: url);
             if (_freediumUrlService.isFreediumUrl(url)) {
               _retryCount = 0;
-              _injectTheme();
-              try {
-                if (state.controller != null) {
-                  // Prefer JS-extracted title (richer); fall back to WebView title
-                  final extractedTitle = state.articleMeta?.title ?? '';
-                  final webTitle = extractedTitle.isNotEmpty
-                      ? extractedTitle
-                      : (await state.controller!.getTitle() ?? '');
-                  if (webTitle.isNotEmpty) {
-                    final originalUrl = _extractOriginalUrl(url);
-                    await ref
-                        .read(historyProvider.notifier)
-                        .addHistory(originalUrl, webTitle);
-                  }
-                }
-              } catch (e) {
-                debugPrint('Failed to get page title for history: $e');
-              }
+              await _injectTheme();
+              await _recordHistoryWhenReady(url);
             } else {
               state = state.copyWith(isThemeApplied: false);
             }
@@ -279,6 +283,47 @@ class WebviewNotifier extends Notifier<WebviewState> {
         errorMessage: _getUserFriendlyErrorMessage(error),
       );
       _updateInitialLoadState();
+    }
+  }
+
+  Future<void> _recordHistoryWhenReady(String currentUrl) async {
+    final controller = state.controller;
+    if (controller == null || !_freediumUrlService.isFreediumUrl(currentUrl)) {
+      return;
+    }
+
+    final originalUrl = _extractOriginalUrl(currentUrl);
+    final token = _historyRecordToken;
+    if (_hasRecordedHistoryForCurrentPage) return;
+
+    final initialMetaTitle = state.articleMeta?.title.trim() ?? '';
+    if (initialMetaTitle.isEmpty) {
+      await Future<void>.delayed(_articleMetaWaitDuration);
+      if (!ref.mounted ||
+          token != _historyRecordToken ||
+          _hasRecordedHistoryForCurrentPage) {
+        return;
+      }
+    }
+
+    final metaTitle = state.articleMeta?.title.trim() ?? '';
+    final title = metaTitle.isNotEmpty
+        ? metaTitle
+        : ((await controller.getTitle()) ?? '').trim();
+
+    if (!ref.mounted ||
+        token != _historyRecordToken ||
+        _hasRecordedHistoryForCurrentPage ||
+        title.isEmpty) {
+      return;
+    }
+
+    _hasRecordedHistoryForCurrentPage = true;
+    try {
+      await ref.read(historyProvider.notifier).addHistory(originalUrl, title);
+    } catch (e) {
+      debugPrint('Failed to save history entry: $e');
+      _hasRecordedHistoryForCurrentPage = false;
     }
   }
 

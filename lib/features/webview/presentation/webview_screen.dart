@@ -68,7 +68,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final colorScheme = Theme.of(context).colorScheme;
     if (_prevColorScheme != colorScheme) {
-      webviewNotifier.updateColorScheme(colorScheme);
+      unawaited(webviewNotifier.updateColorScheme(colorScheme));
       _prevColorScheme = colorScheme;
     }
   }

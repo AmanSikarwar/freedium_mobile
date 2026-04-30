@@ -28,6 +28,9 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
   Widget build(BuildContext context) {
     final history = ref.watch(historyProvider);
     final lowercaseQuery = _query.toLowerCase();
+    const searchBarHeight = 56.0;
+    const searchBarBottomPadding = 8.0;
+    const searchAreaHeight = searchBarHeight + searchBarBottomPadding;
 
     final filtered = _query.isEmpty
         ? List<ReadingHistory>.from(history)
@@ -58,9 +61,14 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
         ],
         bottom: history.isNotEmpty
             ? PreferredSize(
-                preferredSize: const Size.fromHeight(56),
+                preferredSize: Size.fromHeight(searchAreaHeight),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  padding: const EdgeInsets.fromLTRB(
+                    12,
+                    0,
+                    12,
+                    searchBarBottomPadding,
+                  ),
                   child: SearchBar(
                     controller: _searchController,
                     hintText: 'Search history…',
