@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -208,7 +209,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
       )
       ..loadRequest(initialUrl);
 
-    if (kDebugMode) {
+    if (kDebugMode && Platform.isAndroid) {
       if (controller.platform is AndroidWebViewController) {
         AndroidWebViewController.enableDebugging(true);
       }
