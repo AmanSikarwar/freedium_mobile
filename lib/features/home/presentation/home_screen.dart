@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -119,20 +120,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     spacing: 24,
                     mainAxisSize: .min,
                     children: [
-                      updateAsync.when(
-                        data: (updateInfo) {
-                          if (updateInfo != null && !_isUpdateCardDismissed) {
-                            return UpdateCard(
-                              updateInfo: updateInfo,
-                              onDismissed: () =>
-                                  setState(() => _isUpdateCardDismissed = true),
-                            );
-                          }
-                          return const SizedBox.shrink();
-                        },
-                        loading: () => const SizedBox.shrink(),
-                        error: (err, stack) => const SizedBox.shrink(),
-                      ),
+                      if (Platform.isAndroid)
+                        updateAsync.when(
+                          data: (updateInfo) {
+                            if (updateInfo != null && !_isUpdateCardDismissed) {
+                              return UpdateCard(
+                                updateInfo: updateInfo,
+                                onDismissed: () => setState(
+                                  () => _isUpdateCardDismissed = true,
+                                ),
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                          loading: () => const SizedBox.shrink(),
+                          error: (err, stack) => const SizedBox.shrink(),
+                        ),
                       const Text(
                         AppConstants.appDescription,
                         textAlign: .center,
