@@ -39,11 +39,8 @@ jobs:
           java-version: "17"
           cache: "gradle"
 
-      - name: Flutter Pub Get
+      - name: Install dependencies
         run: flutter pub get
-
-      - name: Flutter Pub Upgrade
-        run: flutter pub upgrade
 
       - name: Update Version in pubspec.yaml
         run: |
