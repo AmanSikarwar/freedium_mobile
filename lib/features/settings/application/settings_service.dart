@@ -48,17 +48,19 @@ class SettingsService {
     if (mirrorsJson == null || mirrorsJson.isEmpty) {
       return SettingsState.defaultMirrors;
     }
-    try {
-      return mirrorsJson
-          .map(
-            (json) => FreediumMirror.fromJson(
-              jsonDecode(json) as Map<String, dynamic>,
-            ),
-          )
-          .toList();
-    } catch (_) {
-      return SettingsState.defaultMirrors;
+
+    final mirrors = <FreediumMirror>[];
+    for (final entry in mirrorsJson) {
+      try {
+        mirrors.add(
+          FreediumMirror.fromJson(jsonDecode(entry) as Map<String, dynamic>),
+        );
+      } catch (_) {
+        continue;
+      }
     }
+
+    return mirrors.isEmpty ? SettingsState.defaultMirrors : mirrors;
   }
 
   Future<void> saveSelectedMirrorUrl(String url) async {
