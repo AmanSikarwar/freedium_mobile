@@ -86,6 +86,51 @@ Future<_MirrorProbeResult> _probeMirrorUrl(
   return headResult;
 }
 
+bool isFreediumMirrorUrl(String url, Iterable<FreediumMirror> mirrors) {
+  final uri = Uri.tryParse(url);
+  if (uri == null || !_isHttpUri(uri)) {
+    return false;
+  }
+
+  for (final mirror in mirrors) {
+    final mirrorUri = Uri.tryParse(mirror.url);
+    if (mirrorUri == null || !_isHttpUri(mirrorUri)) {
+      continue;
+    }
+
+    if (_hasSameOrigin(uri, mirrorUri) &&
+        _hasMirrorPathPrefix(uri.path, mirrorUri.path)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool _isHttpUri(Uri uri) {
+  final scheme = uri.scheme.toLowerCase();
+  return (scheme == 'http' || scheme == 'https') && uri.host.isNotEmpty;
+}
+
+bool _hasSameOrigin(Uri url, Uri mirror) {
+  return url.scheme.toLowerCase() == mirror.scheme.toLowerCase() &&
+      url.host.toLowerCase() == mirror.host.toLowerCase() &&
+      url.port == mirror.port;
+}
+
+bool _hasMirrorPathPrefix(String path, String mirrorPath) {
+  final normalizedMirrorPath = mirrorPath.endsWith('/')
+      ? mirrorPath.substring(0, mirrorPath.length - 1)
+      : mirrorPath;
+
+  if (normalizedMirrorPath.isEmpty) {
+    return true;
+  }
+
+  return path == normalizedMirrorPath ||
+      path.startsWith('$normalizedMirrorPath/');
+}
+
 class SettingsNotifier extends Notifier<SettingsState> {
   SettingsService? _settingsService;
 
@@ -351,12 +396,7 @@ class FreediumUrlService {
 
   bool isFreediumUrl(String url) {
     final settings = _ref.read(settingsProvider);
-    for (final mirror in settings.mirrors) {
-      if (url.startsWith(mirror.url)) {
-        return true;
-      }
-    }
-    return false;
+    return isFreediumMirrorUrl(url, settings.mirrors);
   }
 
   bool isFreediumHost(String host) {
