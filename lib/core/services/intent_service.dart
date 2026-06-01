@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 class IntentService {
@@ -20,8 +21,8 @@ final intentStreamProvider = StreamProvider<String>((ref) {
 
   final sub = intentService.intentStream.listen((value) {
     if (value.isNotEmpty) {
-      final url = value.first.path;
-      if (url.isNotEmpty) {
+      final url = extractArticleUrl(value.first.path);
+      if (url != null) {
         controller.add(url);
         ReceiveSharingIntent.instance.reset();
       }

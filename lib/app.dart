@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
+import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
@@ -67,8 +68,9 @@ class App extends ConsumerWidget {
     }
   }
 
-  void _handleIncomingIntent(WidgetRef ref, String url) {
-    if (url.isEmpty) return;
+  void _handleIncomingIntent(WidgetRef ref, String value) {
+    final url = extractArticleUrl(value);
+    if (url == null) return;
 
     final onboarding = ref.read(onboardingProvider);
     if (onboarding.isLoading || !onboarding.hasSeenOnboarding) {
@@ -85,10 +87,7 @@ class App extends ConsumerWidget {
     final value = await ref.read(intentServiceProvider).getInitialIntent();
     if (value.isEmpty) return;
 
-    final url = value.first.path;
-    if (url.isEmpty) return;
-
-    _handleIncomingIntent(ref, url);
+    _handleIncomingIntent(ref, value.first.path);
   }
 
   @override
