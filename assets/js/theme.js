@@ -1,15 +1,7 @@
 (function () {
   const THEME_MARKER = "data-freedium-theme-applied";
   if (document.documentElement.hasAttribute(THEME_MARKER)) {
-    console.log("Freedium theme already applied, skipping duplicate injection");
-    try {
-      if (window.themeApplied && window.themeApplied.postMessage) {
-        window.themeApplied.postMessage("done");
-      }
-    } catch (e) {
-      console.warn("Failed to call Flutter handler on skip:", e);
-    }
-    return;
+    console.log("Freedium theme already applied, reapplying");
   }
   document.documentElement.setAttribute(THEME_MARKER, Date.now().toString());
 
@@ -29,7 +21,7 @@
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyTheme);
+    document.addEventListener("DOMContentLoaded", applyTheme, { once: true });
   } else {
     applyTheme();
   }
