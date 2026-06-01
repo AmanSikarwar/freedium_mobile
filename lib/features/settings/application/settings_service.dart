@@ -89,11 +89,18 @@ class SettingsService {
   }
 
   SettingsState loadAllSettings() {
+    final mirrors = loadMirrors();
+    final selectedMirrorUrl = loadSelectedMirrorUrl();
+    final resolvedSelectedMirrorUrl =
+        mirrors.any((mirror) => mirror.url == selectedMirrorUrl)
+        ? selectedMirrorUrl
+        : mirrors.first.url;
+
     return SettingsState(
       themeMode: loadThemeMode(),
       defaultFontSize: loadDefaultFontSize(),
-      mirrors: loadMirrors(),
-      selectedMirrorUrl: loadSelectedMirrorUrl(),
+      mirrors: mirrors,
+      selectedMirrorUrl: resolvedSelectedMirrorUrl,
       autoSwitchMirror: loadAutoSwitchMirror(),
       mirrorTimeout: loadMirrorTimeout(),
     );

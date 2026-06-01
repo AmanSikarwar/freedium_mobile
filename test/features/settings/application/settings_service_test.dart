@@ -39,5 +39,30 @@ void main() {
         expect(service.loadMirrors(), SettingsState.defaultMirrors);
       },
     );
+
+    test(
+      'loadAllSettings falls back when selected mirror is missing',
+      () async {
+        const customMirror = FreediumMirror(
+          name: 'Custom',
+          url: 'https://custom.example',
+          isCustom: true,
+        );
+        SharedPreferences.setMockInitialValues({
+          'freedium_mirrors': [jsonEncode(customMirror.toJson())],
+          'selected_mirror_url': 'https://missing.example',
+          'auto_switch_mirror': false,
+        });
+
+        final prefs = await SharedPreferences.getInstance();
+        final service = SettingsService(prefs);
+
+        final settings = service.loadAllSettings();
+
+        expect(settings.mirrors, [customMirror]);
+        expect(settings.selectedMirrorUrl, customMirror.url);
+        expect(settings.autoSwitchMirror, isFalse);
+      },
+    );
   });
 }
