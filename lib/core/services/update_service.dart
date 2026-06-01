@@ -19,6 +19,10 @@ class UpdateInfo {
 }
 
 class UpdateService {
+  final http.Client _client;
+
+  UpdateService({http.Client? client}) : _client = client ?? http.Client();
+
   static const String _repoOwner = 'AmanSikarwar';
   static const String _repoName = 'freedium_mobile';
   static const String _apiUrl =
@@ -26,14 +30,17 @@ class UpdateService {
 
   Future<UpdateInfo?> checkForUpdate() async {
     try {
-      final response = await http.get(.parse(_apiUrl));
+      final response = await _client.get(.parse(_apiUrl));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final latestVersionStr = (data['tag_name'] as String).replaceAll(
-          'v',
-          '',
-        );
+        final tagName = data['tag_name'];
+        final releaseUrl = data['html_url'];
+        if (tagName is! String || releaseUrl is! String) {
+          return null;
+        }
+
+        final latestVersionStr = tagName.replaceFirst(RegExp('^v'), '');
         const currentVersionStr = AppConstants.appVersion;
 
         final latestVersion = Version.parse(latestVersionStr);
@@ -42,8 +49,8 @@ class UpdateService {
         if (latestVersion > currentVersion) {
           return UpdateInfo(
             latestVersion: 'v$latestVersionStr',
-            releaseUrl: data['html_url'] as String,
-            releaseNotes: data['body'] as String,
+            releaseUrl: releaseUrl,
+            releaseNotes: data['body'] as String? ?? '',
           );
         }
       }
