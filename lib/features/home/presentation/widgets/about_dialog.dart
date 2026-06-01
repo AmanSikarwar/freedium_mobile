@@ -31,8 +31,7 @@ void showAppAboutDialog(BuildContext context, WidgetRef ref) {
         children: [
           const Text('Source code available on '),
           GestureDetector(
-            onTap: () =>
-                launchUri(Uri.https('github.com', 'amansikarwar/freedium')),
+            onTap: () => launchUri(Uri.parse(AppConstants.appSourceUrl)),
             child: Text(
               'GitHub',
               style: TextStyle(color: Theme.of(context).colorScheme.primary),
