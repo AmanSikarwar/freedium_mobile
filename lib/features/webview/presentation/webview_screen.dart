@@ -7,6 +7,7 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
+import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -40,26 +41,16 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final themeInjector = ref.read(themeInjectorServiceProvider);
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
     final settings = ref.read(settingsProvider);
-
-    webviewNotifier.setThemeInjector(themeInjector);
-    _controller = webviewNotifier.createController(
-      baseUrl: settings.selectedMirrorUrl,
+    final initialMirrorUrl = await resolveInitialMirrorUrl(
+      autoSwitchMirror: settings.autoSwitchMirror,
+      selectedMirrorUrl: settings.selectedMirrorUrl,
+      getActiveUrl: freediumUrlService.getActiveUrl,
     );
-    if (mounted) {
-      setState(() {});
-    }
 
-    if (settings.autoSwitchMirror) {
-      unawaited(_warmMirrorCache(freediumUrlService));
-    }
-  }
-
-  Future<void> _warmMirrorCache(FreediumUrlService freediumUrlService) async {
-    try {
-      await freediumUrlService.getActiveUrl();
-    } catch (e) {
-      debugPrint('Mirror warm-up failed: $e');
-    }
+    if (!mounted) return;
+    webviewNotifier.setThemeInjector(themeInjector);
+    _controller = webviewNotifier.createController(baseUrl: initialMirrorUrl);
+    setState(() {});
   }
 
   @override
