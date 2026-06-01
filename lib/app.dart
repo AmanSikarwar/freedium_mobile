@@ -85,9 +85,10 @@ class App extends ConsumerWidget {
   Future<void> _processInitialIntent(WidgetRef ref) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
     final value = await ref.read(intentServiceProvider).getInitialIntent();
-    if (value.isEmpty) return;
+    final url = extractFirstArticleUrl(value.map((item) => item.path));
+    if (url == null) return;
 
-    _handleIncomingIntent(ref, value.first.path);
+    _handleIncomingIntent(ref, url);
   }
 
   @override

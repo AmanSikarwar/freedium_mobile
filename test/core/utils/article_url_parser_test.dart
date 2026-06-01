@@ -34,4 +34,24 @@ void main() {
       expect(extractArticleUrl('not an article link'), isNull);
     });
   });
+
+  group('extractFirstArticleUrl', () {
+    test('returns the first valid URL across shared values', () {
+      expect(
+        extractFirstArticleUrl([
+          'plain text without a link',
+          'Read https://medium.com/example/story',
+          'https://towardsdatascience.com/other',
+        ]),
+        'https://medium.com/example/story',
+      );
+    });
+
+    test('returns null when no shared value contains a URL', () {
+      expect(
+        extractFirstArticleUrl(['plain text', 'ftp://medium.com/story']),
+        isNull,
+      );
+    });
+  });
 }

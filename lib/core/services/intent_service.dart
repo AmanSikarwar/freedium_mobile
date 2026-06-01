@@ -20,12 +20,10 @@ final intentStreamProvider = StreamProvider<String>((ref) {
   final controller = StreamController<String>();
 
   final sub = intentService.intentStream.listen((value) {
-    if (value.isNotEmpty) {
-      final url = extractArticleUrl(value.first.path);
-      if (url != null) {
-        controller.add(url);
-        ReceiveSharingIntent.instance.reset();
-      }
+    final url = extractFirstArticleUrl(value.map((item) => item.path));
+    if (url != null) {
+      controller.add(url);
+      ReceiveSharingIntent.instance.reset();
     }
   });
 

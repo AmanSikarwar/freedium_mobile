@@ -14,6 +14,15 @@ String? extractArticleUrl(String input) {
   return _validHttpUrl(match.group(0)!);
 }
 
+String? extractFirstArticleUrl(Iterable<String> inputs) {
+  for (final input in inputs) {
+    final url = extractArticleUrl(input);
+    if (url != null) return url;
+  }
+
+  return null;
+}
+
 String? _validHttpUrl(String value) {
   final cleaned = _stripTrailingPunctuation(value);
   final uri = Uri.tryParse(cleaned);
