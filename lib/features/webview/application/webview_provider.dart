@@ -147,6 +147,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
               isPageLoaded: false,
               progress: 0,
               currentUrl: url,
+              hasError: false,
+              clearErrorMessage: true,
               clearArticleMeta: true,
             );
             // Inject the pre-theme script as early as possible so the page's
