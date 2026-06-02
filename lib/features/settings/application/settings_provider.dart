@@ -199,6 +199,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (mirror.isDefault) return;
     final service = await _ensureSettingsService();
     if (service == null) return;
+    if (!state.mirrors.contains(mirror)) return;
     final selectedMirrorUrl = state.selectedMirrorUrl;
     final remainingMirrors = state.mirrors.where((m) => m != mirror).toList();
     final updatedMirrors = remainingMirrors.isEmpty
@@ -219,6 +220,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   ) async {
     final service = await _ensureSettingsService();
     if (service == null) return;
+    if (!state.mirrors.contains(oldMirror)) return;
     final normalizedMirror = _normalizeMirror(newMirror);
     if (normalizedMirror == null ||
         state.mirrors.any(

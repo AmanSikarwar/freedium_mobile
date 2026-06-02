@@ -272,6 +272,49 @@ void main() {
       expect(prefs.getString('selected_mirror_url'), isNull);
     });
 
+    test('ignores stale mirror remove and update requests', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      late _RecordingFreediumUrlService freediumUrlService;
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith((ref) {
+            freediumUrlService = _RecordingFreediumUrlService(ref);
+            return freediumUrlService;
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+      freediumUrlService =
+          container.read(freediumUrlServiceProvider)
+              as _RecordingFreediumUrlService;
+
+      const staleMirror = FreediumMirror(
+        name: 'Stale',
+        url: 'https://stale.example',
+        isCustom: true,
+      );
+      final notifier = container.read(settingsProvider.notifier);
+
+      await notifier.removeMirror(staleMirror);
+      await notifier.updateMirror(
+        staleMirror,
+        const FreediumMirror(
+          name: 'Updated',
+          url: 'https://updated.example',
+          isCustom: true,
+        ),
+      );
+
+      expect(
+        container.read(settingsProvider).mirrors,
+        SettingsState.defaultMirrors,
+      );
+      expect(freediumUrlService.invalidateCount, 0);
+      expect(prefs.getStringList('freedium_mirrors'), isNull);
+    });
+
     test(
       'falls back to default mirrors after removing last custom mirror',
       () async {
