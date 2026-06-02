@@ -4,7 +4,8 @@ publish_to: "none"
 version: 0.10.0+10
 
 environment:
-  sdk: ^3.11.0
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
 
 dependencies:
   dynamic_color: ^1.8.1
