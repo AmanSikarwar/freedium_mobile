@@ -8,6 +8,7 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -85,7 +86,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   WebViewController createController({String? baseUrl}) {
     final activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
-    final initialUrl = Uri.parse(activeBaseUrl).replace(path: url);
+    final initialUrl = buildFreediumArticleUri(
+      mirrorUrl: activeBaseUrl,
+      articleUrl: url,
+    );
     _hasSwitchedMirror = false;
     _articleRequestUrls.clear();
     _rememberArticleRequestUrl(activeBaseUrl);
@@ -229,7 +233,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   void _rememberArticleRequestUrl(String baseUrl) {
-    final articleUrl = Uri.parse(baseUrl).replace(path: url).toString();
+    final articleUrl = buildFreediumArticleUri(
+      mirrorUrl: baseUrl,
+      articleUrl: url,
+    ).toString();
     _articleRequestUrls.add(_normalizeUrl(articleUrl));
   }
 
@@ -272,7 +279,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
         userMessage: 'Trying mirror: ${nextMirror.name}...',
       );
 
-      final newUrl = Uri.parse(nextMirror.url).replace(path: url);
+      final newUrl = buildFreediumArticleUri(
+        mirrorUrl: nextMirror.url,
+        articleUrl: url,
+      );
       state = state.copyWith(activeBaseUrl: nextMirror.url);
       state.controller?.loadRequest(newUrl);
     } else {
@@ -406,7 +416,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
       activeBaseUrl: nextMirror.url,
     );
 
-    final newUrl = Uri.parse(nextMirror.url).replace(path: url);
+    final newUrl = buildFreediumArticleUri(
+      mirrorUrl: nextMirror.url,
+      articleUrl: url,
+    );
     state.controller?.loadRequest(newUrl);
   }
 

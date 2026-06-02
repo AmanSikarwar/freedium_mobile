@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
@@ -349,9 +350,10 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                   ShareParams(
                     subject: 'Read this article without Paywall',
                     title: 'Share Freedium link',
-                    uri: Uri.parse(
-                      webviewState.activeBaseUrl,
-                    ).replace(path: widget.url),
+                    uri: buildFreediumArticleUri(
+                      mirrorUrl: webviewState.activeBaseUrl,
+                      articleUrl: widget.url,
+                    ),
                   ),
                 );
               },
