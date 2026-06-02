@@ -176,8 +176,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> setDefaultFontSize(double fontSize) async {
     final service = await _ensureSettingsService();
     if (service == null) return;
-    state = state.copyWith(defaultFontSize: fontSize);
-    await service.saveDefaultFontSize(fontSize);
+    final normalizedFontSize = SettingsState.normalizeDefaultFontSize(fontSize);
+    state = state.copyWith(defaultFontSize: normalizedFontSize);
+    await service.saveDefaultFontSize(normalizedFontSize);
   }
 
   Future<void> addMirror(FreediumMirror mirror) async {
@@ -245,8 +246,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> setMirrorTimeout(int timeout) async {
     final service = await _ensureSettingsService();
     if (service == null) return;
-    state = state.copyWith(mirrorTimeout: timeout);
-    await service.saveMirrorTimeout(timeout);
+    final normalizedTimeout = SettingsState.normalizeMirrorTimeout(timeout);
+    state = state.copyWith(mirrorTimeout: normalizedTimeout);
+    await service.saveMirrorTimeout(normalizedTimeout);
     ref.read(freediumUrlServiceProvider).invalidateCache();
   }
 

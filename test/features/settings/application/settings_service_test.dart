@@ -89,5 +89,35 @@ void main() {
         expect(settings.autoSwitchMirror, isFalse);
       },
     );
+
+    test('loadAllSettings clamps persisted numeric preferences', () async {
+      SharedPreferences.setMockInitialValues({
+        'default_font_size': 100.0,
+        'mirror_timeout': 0,
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final service = SettingsService(prefs);
+
+      final settings = service.loadAllSettings();
+
+      expect(settings.defaultFontSize, SettingsState.maxDefaultFontSize);
+      expect(settings.mirrorTimeout, SettingsState.minMirrorTimeout);
+    });
+
+    test('save numeric preferences clamps out-of-range values', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final service = SettingsService(prefs);
+
+      await service.saveDefaultFontSize(1);
+      await service.saveMirrorTimeout(100);
+
+      expect(
+        prefs.getDouble('default_font_size'),
+        SettingsState.minDefaultFontSize,
+      );
+      expect(prefs.getInt('mirror_timeout'), SettingsState.maxMirrorTimeout);
+    });
   });
 }

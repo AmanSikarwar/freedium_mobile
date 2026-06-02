@@ -209,7 +209,7 @@ class SettingsScreen extends ConsumerWidget {
     SettingsState settings,
     SettingsNotifier notifier,
   ) {
-    int timeout = settings.mirrorTimeout;
+    int timeout = SettingsState.normalizeMirrorTimeout(settings.mirrorTimeout);
 
     showDialog(
       context: context,
@@ -225,9 +225,11 @@ class SettingsScreen extends ConsumerWidget {
               ),
               Slider(
                 value: timeout.toDouble(),
-                min: 2,
-                max: 15,
-                divisions: 13,
+                min: SettingsState.minMirrorTimeout.toDouble(),
+                max: SettingsState.maxMirrorTimeout.toDouble(),
+                divisions:
+                    SettingsState.maxMirrorTimeout -
+                    SettingsState.minMirrorTimeout,
                 onChanged: (value) {
                   HapticFeedback.selectionClick();
                   setState(() => timeout = value.toInt());

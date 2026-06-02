@@ -138,6 +138,31 @@ void main() {
       expect(freediumUrlService.invalidateCount, 2);
     });
 
+    test('clamps numeric setting updates to supported bounds', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(settingsProvider.notifier);
+
+      await notifier.setDefaultFontSize(100);
+      await notifier.setMirrorTimeout(0);
+
+      final settings = container.read(settingsProvider);
+      expect(settings.defaultFontSize, SettingsState.maxDefaultFontSize);
+      expect(settings.mirrorTimeout, SettingsState.minMirrorTimeout);
+      expect(
+        prefs.getDouble('default_font_size'),
+        SettingsState.maxDefaultFontSize,
+      );
+      expect(prefs.getInt('mirror_timeout'), SettingsState.minMirrorTimeout);
+    });
+
     test(
       'falls back to default mirrors after removing last custom mirror',
       () async {

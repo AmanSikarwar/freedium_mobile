@@ -60,6 +60,13 @@ class FreediumMirror {
 
 @immutable
 class SettingsState {
+  static const double minDefaultFontSize = 14.0;
+  static const double maxDefaultFontSize = 28.0;
+  static const double defaultDefaultFontSize = 18.0;
+  static const int minMirrorTimeout = 2;
+  static const int maxMirrorTimeout = 15;
+  static const int defaultMirrorTimeout = 5;
+
   final ThemeMode themeMode;
   final double defaultFontSize;
   final List<FreediumMirror> mirrors;
@@ -69,12 +76,21 @@ class SettingsState {
 
   const SettingsState({
     this.themeMode = .system,
-    this.defaultFontSize = 18.0,
+    this.defaultFontSize = defaultDefaultFontSize,
     this.mirrors = const [],
     this.selectedMirrorUrl = AppConstants.freediumMirrorUrl,
     this.autoSwitchMirror = true,
-    this.mirrorTimeout = 5,
+    this.mirrorTimeout = defaultMirrorTimeout,
   });
+
+  static double normalizeDefaultFontSize(double fontSize) {
+    if (!fontSize.isFinite) return defaultDefaultFontSize;
+    return fontSize.clamp(minDefaultFontSize, maxDefaultFontSize).toDouble();
+  }
+
+  static int normalizeMirrorTimeout(int timeout) {
+    return timeout.clamp(minMirrorTimeout, maxMirrorTimeout).toInt();
+  }
 
   SettingsState copyWith({
     ThemeMode? themeMode,

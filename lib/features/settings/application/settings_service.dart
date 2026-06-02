@@ -31,11 +31,17 @@ class SettingsService {
   }
 
   Future<void> saveDefaultFontSize(double fontSize) async {
-    await _prefs.setDouble(_defaultFontSizeKey, fontSize);
+    await _prefs.setDouble(
+      _defaultFontSizeKey,
+      SettingsState.normalizeDefaultFontSize(fontSize),
+    );
   }
 
   double loadDefaultFontSize() {
-    return _prefs.getDouble(_defaultFontSizeKey) ?? 18.0;
+    return SettingsState.normalizeDefaultFontSize(
+      _prefs.getDouble(_defaultFontSizeKey) ??
+          SettingsState.defaultDefaultFontSize,
+    );
   }
 
   Future<void> saveMirrors(List<FreediumMirror> mirrors) async {
@@ -93,11 +99,16 @@ class SettingsService {
   }
 
   Future<void> saveMirrorTimeout(int timeout) async {
-    await _prefs.setInt(_mirrorTimeoutKey, timeout);
+    await _prefs.setInt(
+      _mirrorTimeoutKey,
+      SettingsState.normalizeMirrorTimeout(timeout),
+    );
   }
 
   int loadMirrorTimeout() {
-    return _prefs.getInt(_mirrorTimeoutKey) ?? 5;
+    return SettingsState.normalizeMirrorTimeout(
+      _prefs.getInt(_mirrorTimeoutKey) ?? SettingsState.defaultMirrorTimeout,
+    );
   }
 
   SettingsState loadAllSettings() {
