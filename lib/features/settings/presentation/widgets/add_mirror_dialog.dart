@@ -54,7 +54,7 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
                 prefixIcon: Icon(Icons.label),
               ),
               validator: (value) {
-                if (value == null || value.isEmpty) {
+                if (value == null || value.trim().isEmpty) {
                   return 'Please enter a name';
                 }
                 return null;
@@ -70,14 +70,16 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
               ),
               keyboardType: .url,
               validator: (value) {
-                if (value == null || value.isEmpty) {
+                final url = value?.trim();
+                if (url == null || url.isEmpty) {
                   return 'Please enter a URL';
                 }
-                final uri = Uri.tryParse(value);
+                final uri = Uri.tryParse(url);
+                final scheme = uri?.scheme.toLowerCase();
                 if (uri == null ||
                     !uri.hasScheme ||
                     uri.host.isEmpty ||
-                    (uri.scheme != 'http' && uri.scheme != 'https')) {
+                    (scheme != 'http' && scheme != 'https')) {
                   return 'Please enter a valid URL';
                 }
                 return null;
