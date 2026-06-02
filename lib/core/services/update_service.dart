@@ -39,8 +39,15 @@ class UpdateService {
         if (tagName is! String || releaseUrl is! String) {
           return null;
         }
+        final normalizedReleaseUrl = _normalizeReleaseUrl(releaseUrl);
+        if (normalizedReleaseUrl == null) {
+          return null;
+        }
 
-        final latestVersionStr = tagName.replaceFirst(RegExp('^v'), '');
+        final latestVersionStr = tagName.trim().replaceFirst(
+          RegExp('^v', caseSensitive: false),
+          '',
+        );
         const currentVersionStr = AppConstants.appVersion;
 
         final latestVersion = Version.parse(latestVersionStr);
@@ -49,8 +56,8 @@ class UpdateService {
         if (latestVersion > currentVersion) {
           return UpdateInfo(
             latestVersion: 'v$latestVersionStr',
-            releaseUrl: releaseUrl,
-            releaseNotes: data['body'] as String? ?? '',
+            releaseUrl: normalizedReleaseUrl,
+            releaseNotes: data['body'] is String ? data['body'] as String : '',
           );
         }
       }
@@ -60,6 +67,18 @@ class UpdateService {
       return null;
     }
   }
+}
+
+String? _normalizeReleaseUrl(String value) {
+  final url = value.trim();
+  final uri = Uri.tryParse(url);
+  final scheme = uri?.scheme.toLowerCase();
+  if (uri == null ||
+      uri.host.isEmpty ||
+      (scheme != 'http' && scheme != 'https')) {
+    return null;
+  }
+  return url;
 }
 
 final updateServiceProvider = Provider((ref) => UpdateService());

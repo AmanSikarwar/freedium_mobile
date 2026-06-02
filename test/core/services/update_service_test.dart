@@ -36,6 +36,47 @@ void main() {
       expect(updateInfo.releaseNotes, isEmpty);
     });
 
+    test('normalizes release metadata from latest release payload', () async {
+      final client = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'tag_name': ' V0.11.0 ',
+            'html_url':
+                ' https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0 ',
+            'body': ['not a string'],
+          }),
+          200,
+        );
+      });
+
+      final updateInfo = await UpdateService(client: client).checkForUpdate();
+
+      expect(updateInfo, isNotNull);
+      expect(updateInfo!.latestVersion, 'v0.11.0');
+      expect(
+        updateInfo.releaseUrl,
+        'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
+      );
+      expect(updateInfo.releaseNotes, isEmpty);
+    });
+
+    test('returns null when latest release URL is invalid', () async {
+      final client = MockClient((request) async {
+        return http.Response(
+          jsonEncode({
+            'tag_name': 'v0.11.0',
+            'html_url': 'not a url',
+            'body': 'Release notes',
+          }),
+          200,
+        );
+      });
+
+      final updateInfo = await UpdateService(client: client).checkForUpdate();
+
+      expect(updateInfo, isNull);
+    });
+
     test('returns null when latest release is not newer', () async {
       final client = MockClient((request) async {
         return http.Response(
