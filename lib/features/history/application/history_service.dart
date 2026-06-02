@@ -14,10 +14,28 @@ class HistoryService {
     if (historyJson == null) return [];
 
     final List<ReadingHistory> history = [];
+    final seenUrls = <String>{};
     for (final json in historyJson) {
       try {
         final decoded = jsonDecode(json) as Map<String, dynamic>;
-        history.add(ReadingHistory.fromJson(decoded));
+        final item = ReadingHistory.fromJson(decoded);
+        final url = item.url.trim();
+        final uri = Uri.tryParse(url);
+        final scheme = uri?.scheme.toLowerCase();
+        if (uri == null ||
+            uri.host.isEmpty ||
+            (scheme != 'http' && scheme != 'https') ||
+            !seenUrls.add(url)) {
+          continue;
+        }
+        final title = item.title.trim();
+        history.add(
+          ReadingHistory(
+            url: url,
+            title: title.isNotEmpty ? title : url,
+            timestamp: item.timestamp,
+          ),
+        );
       } catch (e) {
         debugPrint('Failed to parse history entry: $e');
       }
