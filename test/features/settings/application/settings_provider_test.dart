@@ -224,7 +224,7 @@ void main() {
       await notifier.addMirror(
         const FreediumMirror(
           name: 'Duplicate',
-          url: 'https://freedium.cfd/',
+          url: ' HTTPS://Freedium.CFD/ ',
           isCustom: true,
         ),
       );

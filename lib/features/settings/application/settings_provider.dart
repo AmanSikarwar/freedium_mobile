@@ -341,18 +341,27 @@ FreediumMirror? _normalizeMirror(FreediumMirror mirror) {
 }
 
 String? _normalizeMirrorUrl(String value) {
-  var url = value.trim();
-  if (url.endsWith('/')) {
-    url = url.substring(0, url.length - 1);
-  }
-  final uri = Uri.tryParse(url);
+  final uri = Uri.tryParse(value.trim());
   final scheme = uri?.scheme.toLowerCase();
   if (uri == null ||
+      !uri.hasScheme ||
       uri.host.isEmpty ||
       (scheme != 'http' && scheme != 'https')) {
     return null;
   }
-  return url;
+
+  final path = _trimTrailingSlash(uri.path);
+  return uri
+      .replace(scheme: scheme, host: uri.host.toLowerCase(), path: path)
+      .toString();
+}
+
+String _trimTrailingSlash(String value) {
+  if (value == '/' || !value.endsWith('/')) {
+    return value == '/' ? '' : value;
+  }
+
+  return value.substring(0, value.length - 1);
 }
 
 class MirrorTestResult {

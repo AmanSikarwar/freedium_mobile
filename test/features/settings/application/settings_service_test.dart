@@ -51,12 +51,12 @@ void main() {
       expect(service.loadMirrors(), [customMirror]);
     });
 
-    test('loadMirrors trims mirror names and trailing URL slashes', () async {
+    test('loadMirrors normalizes mirror names and URL origins', () async {
       SharedPreferences.setMockInitialValues({
         'freedium_mirrors': [
           jsonEncode({
             'name': ' Custom ',
-            'url': ' https://custom.example/ ',
+            'url': ' HTTPS://Custom.Example/ ',
             'isCustom': true,
           }),
         ],
@@ -72,6 +72,26 @@ void main() {
           isCustom: true,
         ),
       ]);
+    });
+
+    test('loadAllSettings normalizes persisted selected mirror URL', () async {
+      const customMirror = FreediumMirror(
+        name: 'Custom',
+        url: 'https://custom.example',
+        isCustom: true,
+      );
+      SharedPreferences.setMockInitialValues({
+        'freedium_mirrors': [jsonEncode(customMirror.toJson())],
+        'selected_mirror_url': ' HTTPS://Custom.Example/ ',
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final service = SettingsService(prefs);
+
+      final settings = service.loadAllSettings();
+
+      expect(settings.mirrors, [customMirror]);
+      expect(settings.selectedMirrorUrl, customMirror.url);
     });
 
     test(

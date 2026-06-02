@@ -63,17 +63,8 @@ class SettingsService {
           jsonDecode(entry) as Map<String, dynamic>,
         );
         final name = mirror.name.trim();
-        var url = mirror.url.trim();
-        if (url.endsWith('/')) {
-          url = url.substring(0, url.length - 1);
-        }
-        final uri = Uri.tryParse(url);
-        final scheme = uri?.scheme.toLowerCase();
-        if (name.isEmpty ||
-            uri == null ||
-            uri.host.isEmpty ||
-            (scheme != 'http' && scheme != 'https') ||
-            !seenUrls.add(url)) {
+        final url = _normalizeMirrorUrl(mirror.url);
+        if (name.isEmpty || url == null || !seenUrls.add(url)) {
           continue;
         }
         mirrors.add(mirror.copyWith(name: name, url: url));
@@ -90,8 +81,11 @@ class SettingsService {
   }
 
   String loadSelectedMirrorUrl() {
-    return _prefs.getString(_selectedMirrorUrlKey) ??
-        SettingsState.defaultMirrors.first.url;
+    final selectedMirrorUrl = _prefs.getString(_selectedMirrorUrlKey);
+    return selectedMirrorUrl == null
+        ? SettingsState.defaultMirrors.first.url
+        : _normalizeMirrorUrl(selectedMirrorUrl) ??
+              SettingsState.defaultMirrors.first.url;
   }
 
   Future<void> saveAutoSwitchMirror(bool autoSwitch) async {
@@ -132,4 +126,28 @@ class SettingsService {
       mirrorTimeout: loadMirrorTimeout(),
     );
   }
+}
+
+String? _normalizeMirrorUrl(String value) {
+  final uri = Uri.tryParse(value.trim());
+  final scheme = uri?.scheme.toLowerCase();
+  if (uri == null ||
+      !uri.hasScheme ||
+      uri.host.isEmpty ||
+      (scheme != 'http' && scheme != 'https')) {
+    return null;
+  }
+
+  final path = _trimTrailingSlash(uri.path);
+  return uri
+      .replace(scheme: scheme, host: uri.host.toLowerCase(), path: path)
+      .toString();
+}
+
+String _trimTrailingSlash(String value) {
+  if (value == '/' || !value.endsWith('/')) {
+    return value == '/' ? '' : value;
+  }
+
+  return value.substring(0, value.length - 1);
 }
