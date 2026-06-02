@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -135,5 +137,38 @@ void main() {
       await notifier.setMirrorTimeout(12);
       expect(freediumUrlService.invalidateCount, 2);
     });
+
+    test(
+      'falls back to default mirrors after removing last custom mirror',
+      () async {
+        const customMirror = FreediumMirror(
+          name: 'Custom',
+          url: 'https://custom.example',
+          isCustom: true,
+        );
+        SharedPreferences.setMockInitialValues({
+          'freedium_mirrors': [jsonEncode(customMirror.toJson())],
+          'selected_mirror_url': customMirror.url,
+        });
+        final prefs = await SharedPreferences.getInstance();
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await container
+            .read(settingsProvider.notifier)
+            .removeMirror(customMirror);
+
+        final settings = container.read(settingsProvider);
+        expect(settings.mirrors, SettingsState.defaultMirrors);
+        expect(
+          settings.selectedMirrorUrl,
+          SettingsState.defaultMirrors.first.url,
+        );
+      },
+    );
   });
 }

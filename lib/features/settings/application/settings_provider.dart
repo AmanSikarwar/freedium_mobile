@@ -193,12 +193,16 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (mirror.isDefault) return;
     final service = await _ensureSettingsService();
     if (service == null) return;
-    final updatedMirrors = state.mirrors.where((m) => m != mirror).toList();
+    final selectedMirrorUrl = state.selectedMirrorUrl;
+    final remainingMirrors = state.mirrors.where((m) => m != mirror).toList();
+    final updatedMirrors = remainingMirrors.isEmpty
+        ? SettingsState.defaultMirrors
+        : remainingMirrors;
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
     ref.read(freediumUrlServiceProvider).invalidateCache();
 
-    if (state.selectedMirrorUrl == mirror.url && updatedMirrors.isNotEmpty) {
+    if (selectedMirrorUrl == mirror.url) {
       await setSelectedMirror(updatedMirrors.first.url);
     }
   }
