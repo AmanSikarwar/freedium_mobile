@@ -14,10 +14,24 @@ class BookmarksService {
     if (json == null) return [];
 
     final List<BookmarkedArticle> bookmarks = [];
+    final seenUrls = <String>{};
     for (final entry in json) {
       try {
         final decoded = jsonDecode(entry) as Map<String, dynamic>;
-        bookmarks.add(BookmarkedArticle.fromJson(decoded));
+        final bookmark = BookmarkedArticle.fromJson(decoded);
+        final url = bookmark.url.trim();
+        final uri = Uri.tryParse(url);
+        final scheme = uri?.scheme.toLowerCase();
+        if (uri == null ||
+            uri.host.isEmpty ||
+            (scheme != 'http' && scheme != 'https') ||
+            !seenUrls.add(url)) {
+          continue;
+        }
+        final title = bookmark.title.trim();
+        bookmarks.add(
+          bookmark.copyWith(url: url, title: title.isNotEmpty ? title : url),
+        );
       } catch (e) {
         debugPrint('Failed to parse bookmark entry: $e');
       }
