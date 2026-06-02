@@ -43,20 +43,29 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
   }
 
   /// Returns true if the given [url] is already bookmarked.
-  bool isBookmarked(String url) => state.any((b) => b.url == url);
+  bool isBookmarked(String url) {
+    final normalizedUrl = _normalizeBookmarkUrl(url);
+    if (normalizedUrl == null) return false;
+    return state.any((b) => b.url == normalizedUrl);
+  }
 
   Future<void> addBookmark(String url, String title) async {
     final service = await _ensureService();
     if (service == null) return;
-    if (isBookmarked(url)) return; // already saved
+    final normalizedUrl = _normalizeBookmarkUrl(url);
+    if (normalizedUrl == null) return;
+    if (isBookmarked(normalizedUrl)) return; // already saved
+    final normalizedTitle = title.trim().isNotEmpty
+        ? title.trim()
+        : normalizedUrl;
 
     final prevState = state;
     final newList = List<BookmarkedArticle>.from(state);
     newList.insert(
       0,
       BookmarkedArticle(
-        url: url,
-        title: title.isNotEmpty ? title : url,
+        url: normalizedUrl,
+        title: normalizedTitle,
         savedAt: DateTime.now(),
       ),
     );
@@ -94,11 +103,14 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
   Future<void> toggleBookmark(String url, String title) async {
     if (await _ensureService() == null) return;
 
-    if (isBookmarked(url)) {
-      final item = state.firstWhere((b) => b.url == url);
+    final normalizedUrl = _normalizeBookmarkUrl(url);
+    if (normalizedUrl == null) return;
+
+    if (isBookmarked(normalizedUrl)) {
+      final item = state.firstWhere((b) => b.url == normalizedUrl);
       await removeBookmark(item);
     } else {
-      await addBookmark(url, title);
+      await addBookmark(normalizedUrl, title);
     }
   }
 
@@ -115,6 +127,18 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
       state = prevState;
     }
   }
+}
+
+String? _normalizeBookmarkUrl(String value) {
+  final url = value.trim();
+  final uri = Uri.tryParse(url);
+  final scheme = uri?.scheme.toLowerCase();
+  if (uri == null ||
+      uri.host.isEmpty ||
+      (scheme != 'http' && scheme != 'https')) {
+    return null;
+  }
+  return url;
 }
 
 final bookmarksProvider =
