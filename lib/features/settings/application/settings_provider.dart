@@ -398,17 +398,6 @@ class FreediumUrlService {
     final settings = _ref.read(settingsProvider);
     return isFreediumMirrorUrl(url, settings.mirrors);
   }
-
-  bool isFreediumHost(String host) {
-    final settings = _ref.read(settingsProvider);
-    for (final mirror in settings.mirrors) {
-      final mirrorHost = Uri.parse(mirror.url).host;
-      if (host == mirrorHost) {
-        return true;
-      }
-    }
-    return false;
-  }
 }
 
 final freediumUrlServiceProvider = Provider(FreediumUrlService.new);

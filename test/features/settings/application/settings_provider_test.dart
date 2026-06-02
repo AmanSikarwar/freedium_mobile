@@ -24,6 +24,23 @@ void main() {
       );
     });
 
+    test('rejects URLs that do not match the mirror origin', () {
+      expect(
+        isFreediumMirrorUrl(
+          'http://freedium.cfd/https://medium.com/story',
+          SettingsState.defaultMirrors,
+        ),
+        isFalse,
+      );
+      expect(
+        isFreediumMirrorUrl(
+          'https://freedium.cfd:8443/https://medium.com/story',
+          SettingsState.defaultMirrors,
+        ),
+        isFalse,
+      );
+    });
+
     test('respects custom mirror path boundaries', () {
       const mirrors = [
         FreediumMirror(name: 'Path mirror', url: 'https://mirror.example/base'),

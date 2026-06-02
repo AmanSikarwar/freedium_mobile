@@ -188,7 +188,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
               }
             }
 
-            if (_freediumUrlService.isFreediumHost(uri.host)) {
+            if (_freediumUrlService.isFreediumUrl(request.url)) {
               return .navigate;
             }
 
@@ -331,7 +331,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   String _extractOriginalUrl(String fullUrl) {
     try {
       final uri = Uri.parse(fullUrl);
-      if (!_freediumUrlService.isFreediumHost(uri.host)) {
+      if (!_freediumUrlService.isFreediumUrl(fullUrl)) {
         return fullUrl;
       }
       final queryStr = uri.hasQuery ? '?${uri.query}' : '';
