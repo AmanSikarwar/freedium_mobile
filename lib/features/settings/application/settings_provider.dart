@@ -184,7 +184,12 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<void> addMirror(FreediumMirror mirror) async {
     final service = await _ensureSettingsService();
     if (service == null) return;
-    final updatedMirrors = [...state.mirrors, mirror];
+    final normalizedMirror = _normalizeMirror(mirror);
+    if (normalizedMirror == null ||
+        state.mirrors.any((m) => m.url == normalizedMirror.url)) {
+      return;
+    }
+    final updatedMirrors = [...state.mirrors, normalizedMirror];
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
     ref.read(freediumUrlServiceProvider).invalidateCache();
@@ -214,8 +219,15 @@ class SettingsNotifier extends Notifier<SettingsState> {
   ) async {
     final service = await _ensureSettingsService();
     if (service == null) return;
+    final normalizedMirror = _normalizeMirror(newMirror);
+    if (normalizedMirror == null ||
+        state.mirrors.any(
+          (m) => m != oldMirror && m.url == normalizedMirror.url,
+        )) {
+      return;
+    }
     final updatedMirrors = state.mirrors.map((m) {
-      if (m == oldMirror) return newMirror;
+      if (m == oldMirror) return normalizedMirror;
       return m;
     }).toList();
     state = state.copyWith(mirrors: updatedMirrors);
@@ -223,15 +235,20 @@ class SettingsNotifier extends Notifier<SettingsState> {
     ref.read(freediumUrlServiceProvider).invalidateCache();
 
     if (state.selectedMirrorUrl == oldMirror.url) {
-      await setSelectedMirror(newMirror.url);
+      await setSelectedMirror(normalizedMirror.url);
     }
   }
 
   Future<void> setSelectedMirror(String url) async {
     final service = await _ensureSettingsService();
     if (service == null) return;
-    state = state.copyWith(selectedMirrorUrl: url);
-    await service.saveSelectedMirrorUrl(url);
+    final normalizedUrl = _normalizeMirrorUrl(url);
+    if (normalizedUrl == null ||
+        !state.mirrors.any((mirror) => mirror.url == normalizedUrl)) {
+      return;
+    }
+    state = state.copyWith(selectedMirrorUrl: normalizedUrl);
+    await service.saveSelectedMirrorUrl(normalizedUrl);
     ref.read(freediumUrlServiceProvider).invalidateCache();
   }
 
@@ -312,6 +329,28 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
     return null;
   }
+}
+
+FreediumMirror? _normalizeMirror(FreediumMirror mirror) {
+  final name = mirror.name.trim();
+  final url = _normalizeMirrorUrl(mirror.url);
+  if (name.isEmpty || url == null) return null;
+  return mirror.copyWith(name: name, url: url);
+}
+
+String? _normalizeMirrorUrl(String value) {
+  var url = value.trim();
+  if (url.endsWith('/')) {
+    url = url.substring(0, url.length - 1);
+  }
+  final uri = Uri.tryParse(url);
+  final scheme = uri?.scheme.toLowerCase();
+  if (uri == null ||
+      uri.host.isEmpty ||
+      (scheme != 'http' && scheme != 'https')) {
+    return null;
+  }
+  return url;
 }
 
 class MirrorTestResult {

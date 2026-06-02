@@ -51,6 +51,29 @@ void main() {
       expect(service.loadMirrors(), [customMirror]);
     });
 
+    test('loadMirrors trims mirror names and trailing URL slashes', () async {
+      SharedPreferences.setMockInitialValues({
+        'freedium_mirrors': [
+          jsonEncode({
+            'name': ' Custom ',
+            'url': ' https://custom.example/ ',
+            'isCustom': true,
+          }),
+        ],
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final service = SettingsService(prefs);
+
+      expect(service.loadMirrors(), [
+        const FreediumMirror(
+          name: 'Custom',
+          url: 'https://custom.example',
+          isCustom: true,
+        ),
+      ]);
+    });
+
     test(
       'loadMirrors falls back to defaults when every entry is invalid',
       () async {

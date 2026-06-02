@@ -163,6 +163,115 @@ void main() {
       expect(prefs.getInt('mirror_timeout'), SettingsState.minMirrorTimeout);
     });
 
+    test('normalizes custom mirrors before saving live state', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      late _RecordingFreediumUrlService freediumUrlService;
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith((ref) {
+            freediumUrlService = _RecordingFreediumUrlService(ref);
+            return freediumUrlService;
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+      freediumUrlService =
+          container.read(freediumUrlServiceProvider)
+              as _RecordingFreediumUrlService;
+
+      await container
+          .read(settingsProvider.notifier)
+          .addMirror(
+            const FreediumMirror(
+              name: ' Custom ',
+              url: ' https://custom.example/ ',
+              isCustom: true,
+            ),
+          );
+
+      final mirror = container.read(settingsProvider).mirrors.last;
+      expect(mirror.name, 'Custom');
+      expect(mirror.url, 'https://custom.example');
+      expect(freediumUrlService.invalidateCount, 1);
+
+      final savedMirrors = prefs.getStringList('freedium_mirrors')!;
+      final savedMirror = jsonDecode(savedMirrors.last) as Map<String, dynamic>;
+      expect(savedMirror['name'], 'Custom');
+      expect(savedMirror['url'], 'https://custom.example');
+    });
+
+    test('rejects invalid and duplicate custom mirrors', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      late _RecordingFreediumUrlService freediumUrlService;
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith((ref) {
+            freediumUrlService = _RecordingFreediumUrlService(ref);
+            return freediumUrlService;
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+      freediumUrlService =
+          container.read(freediumUrlServiceProvider)
+              as _RecordingFreediumUrlService;
+
+      final notifier = container.read(settingsProvider.notifier);
+      await notifier.addMirror(
+        const FreediumMirror(
+          name: 'Duplicate',
+          url: 'https://freedium.cfd/',
+          isCustom: true,
+        ),
+      );
+      await notifier.addMirror(
+        const FreediumMirror(
+          name: 'Unsupported',
+          url: 'ftp://custom.example',
+          isCustom: true,
+        ),
+      );
+
+      final settings = container.read(settingsProvider);
+      expect(settings.mirrors, SettingsState.defaultMirrors);
+      expect(freediumUrlService.invalidateCount, 0);
+      expect(prefs.getStringList('freedium_mirrors'), isNull);
+    });
+
+    test('ignores selected mirror URLs outside current mirrors', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      late _RecordingFreediumUrlService freediumUrlService;
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith((ref) {
+            freediumUrlService = _RecordingFreediumUrlService(ref);
+            return freediumUrlService;
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+      freediumUrlService =
+          container.read(freediumUrlServiceProvider)
+              as _RecordingFreediumUrlService;
+
+      await container
+          .read(settingsProvider.notifier)
+          .setSelectedMirror('https://missing.example');
+
+      expect(
+        container.read(settingsProvider).selectedMirrorUrl,
+        SettingsState.defaultMirrors.first.url,
+      );
+      expect(freediumUrlService.invalidateCount, 0);
+      expect(prefs.getString('selected_mirror_url'), isNull);
+    });
+
     test(
       'falls back to default mirrors after removing last custom mirror',
       () async {
