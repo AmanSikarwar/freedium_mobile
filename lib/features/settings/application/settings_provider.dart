@@ -235,6 +235,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (service == null) return;
     state = state.copyWith(autoSwitchMirror: autoSwitch);
     await service.saveAutoSwitchMirror(autoSwitch);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
   }
 
   Future<void> setMirrorTimeout(int timeout) async {
@@ -242,6 +243,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (service == null) return;
     state = state.copyWith(mirrorTimeout: timeout);
     await service.saveMirrorTimeout(timeout);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
   }
 
   Future<void> resetToDefaults() async {

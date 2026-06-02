@@ -111,5 +111,29 @@ void main() {
       await notifier.resetToDefaults();
       expect(freediumUrlService.invalidateCount, 4);
     });
+
+    test('invalidates active URL cache when mirror policy changes', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      late _RecordingFreediumUrlService freediumUrlService;
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith((ref) {
+            freediumUrlService = _RecordingFreediumUrlService(ref);
+            return freediumUrlService;
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final notifier = container.read(settingsProvider.notifier);
+
+      await notifier.setAutoSwitchMirror(false);
+      expect(freediumUrlService.invalidateCount, 1);
+
+      await notifier.setMirrorTimeout(12);
+      expect(freediumUrlService.invalidateCount, 2);
+    });
   });
 }
