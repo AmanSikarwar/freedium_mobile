@@ -45,13 +45,22 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
   Future<void> addHistory(String url, String title) async {
     final service = await _ensureHistoryService();
     if (service == null) return;
+    final normalizedUrl = _normalizeHistoryUrl(url);
+    if (normalizedUrl == null) return;
+    final normalizedTitle = title.trim().isNotEmpty
+        ? title.trim()
+        : normalizedUrl;
 
     final prevState = state;
-    final newList = state.where((item) => item.url != url).toList();
+    final newList = state.where((item) => item.url != normalizedUrl).toList();
 
     newList.insert(
       0,
-      ReadingHistory(url: url, title: title, timestamp: DateTime.now()),
+      ReadingHistory(
+        url: normalizedUrl,
+        title: normalizedTitle,
+        timestamp: DateTime.now(),
+      ),
     );
 
     if (newList.length > 100) {
@@ -97,6 +106,18 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
       state = prevState;
     }
   }
+}
+
+String? _normalizeHistoryUrl(String value) {
+  final url = value.trim();
+  final uri = Uri.tryParse(url);
+  final scheme = uri?.scheme.toLowerCase();
+  if (uri == null ||
+      uri.host.isEmpty ||
+      (scheme != 'http' && scheme != 'https')) {
+    return null;
+  }
+  return url;
 }
 
 final historyProvider = NotifierProvider<HistoryNotifier, List<ReadingHistory>>(
