@@ -33,6 +33,16 @@ void main() {
       );
     });
 
+    test('drops mirror query and fragment when building article URL', () {
+      expect(
+        buildFreediumArticleUri(
+          mirrorUrl: 'https://mirror.example/base?ref=home#top',
+          articleUrl: 'https://medium.com/example/story',
+        ).toString(),
+        'https://mirror.example/base/https://medium.com/example/story',
+      );
+    });
+
     test('encodes article query and fragment inside mirror path', () {
       expect(
         buildFreediumArticleUri(

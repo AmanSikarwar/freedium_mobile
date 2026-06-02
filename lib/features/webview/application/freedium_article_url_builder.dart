@@ -9,7 +9,13 @@ Uri buildFreediumArticleUri({
       : articleUrl;
   final path = mirrorPath.isEmpty ? articlePath : '$mirrorPath/$articlePath';
 
-  return mirrorUri.replace(path: path);
+  return Uri(
+    scheme: mirrorUri.scheme,
+    userInfo: mirrorUri.userInfo,
+    host: mirrorUri.host,
+    port: mirrorUri.hasPort ? mirrorUri.port : null,
+    path: path,
+  );
 }
 
 String _trimTrailingSlash(String value) {
