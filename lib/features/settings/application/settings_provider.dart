@@ -186,6 +186,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final updatedMirrors = [...state.mirrors, mirror];
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
   }
 
   Future<void> removeMirror(FreediumMirror mirror) async {
@@ -195,6 +196,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     final updatedMirrors = state.mirrors.where((m) => m != mirror).toList();
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
 
     if (state.selectedMirrorUrl == mirror.url && updatedMirrors.isNotEmpty) {
       await setSelectedMirror(updatedMirrors.first.url);
@@ -213,6 +215,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }).toList();
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
 
     if (state.selectedMirrorUrl == oldMirror.url) {
       await setSelectedMirror(newMirror.url);
@@ -255,6 +258,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await service.saveSelectedMirrorUrl(defaultState.selectedMirrorUrl);
     await service.saveAutoSwitchMirror(defaultState.autoSwitchMirror);
     await service.saveMirrorTimeout(defaultState.mirrorTimeout);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
   }
 
   Future<MirrorTestResult> testMirror(String url) async {
