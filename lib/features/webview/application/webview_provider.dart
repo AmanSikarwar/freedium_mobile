@@ -17,8 +17,9 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
-  late FontSizeService _fontSizeService;
+  FontSizeService? _fontSizeService;
   late FreediumUrlService _freediumUrlService;
+  WebViewController? _controller;
   ColorScheme? _colorScheme;
   final String url;
   int _currentMirrorIndex = 0;
@@ -37,16 +38,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
     final prefsAsync = ref.watch(sharedPreferencesProvider);
     _freediumUrlService = ref.read(freediumUrlServiceProvider);
 
-    prefsAsync.whenData((prefs) {
-      _fontSizeService = FontSizeService(prefs);
-      final savedFontSize = _fontSizeService.loadFontSize();
-      if (ref.mounted) {
-        state = state.copyWith(fontSize: savedFontSize);
-      }
-    });
-
     ref.onDispose(() {
-      final controller = state.controller;
+      final controller = _controller;
       if (controller != null) {
         controller.removeJavaScriptChannel('themeApplied');
         controller.removeJavaScriptChannel('Toaster');
@@ -55,7 +48,33 @@ class WebviewNotifier extends Notifier<WebviewState> {
       }
     });
 
-    return WebviewState();
+    return prefsAsync.when(
+      data: (prefs) {
+        final service = FontSizeService(prefs);
+        _fontSizeService = service;
+        return WebviewState(fontSize: service.loadFontSize());
+      },
+      loading: WebviewState.new,
+      error: (e, _) {
+        debugPrint('Failed to load SharedPreferences for WebView: $e');
+        return WebviewState();
+      },
+    );
+  }
+
+  Future<FontSizeService?> _ensureFontSizeService() async {
+    final existingService = _fontSizeService;
+    if (existingService != null) return existingService;
+
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final service = FontSizeService(prefs);
+      _fontSizeService = service;
+      return service;
+    } catch (e) {
+      debugPrint('FontSizeService unavailable: $e');
+      return null;
+    }
   }
 
   void setThemeInjector(ThemeInjectorService themeInjector) {
@@ -96,6 +115,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _setCurrentMirrorIndex(activeBaseUrl);
 
     final controller = WebViewController();
+    _controller = controller;
     controller
       ..setJavaScriptMode(.unrestricted)
       ..setBackgroundColor(Colors.transparent)
@@ -468,11 +488,14 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   Future<void> updateFontSize(double fontSize) async {
-    state = state.copyWith(fontSize: fontSize);
-    await _fontSizeService.saveFontSize(fontSize);
+    final service = await _ensureFontSizeService();
+    if (service == null) return;
+    final normalizedFontSize = FontSizeService.normalizeFontSize(fontSize);
+    state = state.copyWith(fontSize: normalizedFontSize);
+    await service.saveFontSize(normalizedFontSize);
 
     if (state.controller != null && state.isPageLoaded) {
-      final script = _themeInjector.getFontSizeUpdateScript(fontSize);
+      final script = _themeInjector.getFontSizeUpdateScript(normalizedFontSize);
       state.controller!.runJavaScript(script);
     }
   }
