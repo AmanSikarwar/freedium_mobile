@@ -50,11 +50,23 @@ class SettingsService {
     }
 
     final mirrors = <FreediumMirror>[];
+    final seenUrls = <String>{};
     for (final entry in mirrorsJson) {
       try {
-        mirrors.add(
-          FreediumMirror.fromJson(jsonDecode(entry) as Map<String, dynamic>),
+        final mirror = FreediumMirror.fromJson(
+          jsonDecode(entry) as Map<String, dynamic>,
         );
+        final url = mirror.url.trim();
+        final uri = Uri.tryParse(url);
+        final scheme = uri?.scheme.toLowerCase();
+        if (mirror.name.trim().isEmpty ||
+            uri == null ||
+            uri.host.isEmpty ||
+            (scheme != 'http' && scheme != 'https') ||
+            !seenUrls.add(url)) {
+          continue;
+        }
+        mirrors.add(mirror.copyWith(url: url));
       } catch (_) {
         continue;
       }

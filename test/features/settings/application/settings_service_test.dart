@@ -26,6 +26,31 @@ void main() {
       },
     );
 
+    test('loadMirrors skips invalid and duplicate mirror entries', () async {
+      const customMirror = FreediumMirror(
+        name: 'Custom',
+        url: 'https://custom.example',
+        isCustom: true,
+      );
+      SharedPreferences.setMockInitialValues({
+        'freedium_mirrors': [
+          jsonEncode({'name': '', 'url': 'https://blank-name.example'}),
+          jsonEncode({'name': 'Missing host', 'url': 'https://'}),
+          jsonEncode({
+            'name': 'Unsupported scheme',
+            'url': 'ftp://example.com',
+          }),
+          jsonEncode(customMirror.toJson()),
+          jsonEncode(customMirror.copyWith(name: 'Duplicate').toJson()),
+        ],
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final service = SettingsService(prefs);
+
+      expect(service.loadMirrors(), [customMirror]);
+    });
+
     test(
       'loadMirrors falls back to defaults when every entry is invalid',
       () async {
