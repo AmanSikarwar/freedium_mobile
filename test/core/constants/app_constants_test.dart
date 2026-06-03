@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
 void main() {
   group('AppConstants', () {
@@ -7,6 +8,10 @@ void main() {
       expect(
         AppConstants.appSourceUrl,
         'https://github.com/AmanSikarwar/freedium_mobile',
+      );
+      expect(
+        parseExternalHttpUrl(AppConstants.appSourceUrl),
+        Uri.parse('https://github.com/AmanSikarwar/freedium_mobile'),
       );
     });
 
