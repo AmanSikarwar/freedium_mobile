@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 class ChangelogBottomSheet extends StatelessWidget {
   const ChangelogBottomSheet({super.key, required this.updateInfo});
@@ -155,9 +157,7 @@ class ChangelogBottomSheet extends StatelessWidget {
                     ),
                   ),
                   onTapLink: (text, href, title) {
-                    if (href != null) {
-                      launchUrl(.parse(href));
-                    }
+                    unawaited(_launchChangelogUrl(href));
                   },
                 ),
               ),
@@ -183,7 +183,7 @@ class ChangelogBottomSheet extends StatelessWidget {
                     child: FilledButton.icon(
                       onPressed: () {
                         Navigator.of(context).pop();
-                        launchUrl(.parse(updateInfo.releaseUrl));
+                        unawaited(_launchChangelogUrl(updateInfo.releaseUrl));
                       },
                       icon: const Icon(Icons.download),
                       label: const Text('Update Now'),
@@ -209,4 +209,38 @@ void showChangelogBottomSheet(BuildContext context, UpdateInfo updateInfo) {
     backgroundColor: Colors.transparent,
     builder: (context) => ChangelogBottomSheet(updateInfo: updateInfo),
   );
+}
+
+@visibleForTesting
+Uri? parseChangelogHttpUrl(String? value) {
+  final url = value?.trim();
+  if (url == null || url.isEmpty) return null;
+
+  final uri = Uri.tryParse(url);
+  final scheme = uri?.scheme.toLowerCase();
+  if (uri == null ||
+      !uri.hasScheme ||
+      uri.host.isEmpty ||
+      (scheme != 'http' && scheme != 'https')) {
+    return null;
+  }
+
+  return uri;
+}
+
+Future<void> _launchChangelogUrl(String? value) async {
+  final uri = parseChangelogHttpUrl(value);
+  if (uri == null) return;
+
+  try {
+    final launched = await url_launcher.launchUrl(
+      uri,
+      mode: url_launcher.LaunchMode.externalApplication,
+    );
+    if (!launched) {
+      debugPrint('Could not launch changelog URL: $uri');
+    }
+  } catch (e) {
+    debugPrint('Failed to launch changelog URL "$uri": $e');
+  }
 }
