@@ -64,5 +64,24 @@ void main() {
       expect(history, hasLength(1));
       expect(history.single.title, 'https://medium.com/example/story');
     });
+
+    test('getHistory falls back to URL when title is missing', () async {
+      final timestamp = DateTime.utc(2026, 2, 3);
+      SharedPreferences.setMockInitialValues({
+        'reading_history': [
+          jsonEncode({
+            'url': 'https://medium.com/example/story',
+            'timestamp': timestamp.toIso8601String(),
+          }),
+        ],
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final service = HistoryService(prefs);
+
+      final history = service.getHistory();
+      expect(history, hasLength(1));
+      expect(history.single.title, 'https://medium.com/example/story');
+    });
   });
 }
