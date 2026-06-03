@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/cache_service.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
@@ -11,7 +14,6 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/settings/presentation/widgets/mirror_list_tile.dart';
 import 'package:freedium_mobile/features/settings/presentation/widgets/add_mirror_dialog.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -418,7 +420,7 @@ class SettingsScreen extends ConsumerWidget {
             FilledButton(
               onPressed: () {
                 Navigator.pop(context);
-                launchUrl(Uri.parse(updateInfo.releaseUrl));
+                unawaited(_launchUrl(updateInfo.releaseUrl));
               },
               child: const Text('Update'),
             ),
@@ -436,8 +438,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   Future<void> _launchUrl(String url) async {
-    try {
-      await launchUrl(Uri.parse(url));
-    } catch (_) {}
+    await launchExternalHttpUrl(url);
   }
 }

@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
 class UpdateSection extends ConsumerStatefulWidget {
   const UpdateSection({super.key});
@@ -51,7 +53,7 @@ class _UpdateSectionState extends ConsumerState<UpdateSection> {
                 Text('Latest Version: ${_updateInfo!.latestVersion}'),
                 TextButton(
                   onPressed: () =>
-                      launchUrl(Uri.parse(_updateInfo!.releaseUrl)),
+                      unawaited(launchExternalHttpUrl(_updateInfo!.releaseUrl)),
                   child: const Text('View Release Notes'),
                 ),
               ],

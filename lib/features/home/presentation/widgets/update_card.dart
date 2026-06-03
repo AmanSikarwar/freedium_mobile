@@ -1,8 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class UpdateCard extends StatelessWidget {
   const UpdateCard({
@@ -90,7 +92,7 @@ class UpdateCard extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      launchUrl(.parse(updateInfo.releaseUrl));
+                      unawaited(launchExternalHttpUrl(updateInfo.releaseUrl));
                     },
                     icon: const Icon(Icons.download, size: 18),
                     label: const Text('Update'),
