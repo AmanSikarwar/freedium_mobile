@@ -19,6 +19,23 @@ class _FakeClipboardService extends ClipboardService {
 
 void main() {
   group('HomeScreen clipboard detection', () {
+    testWidgets('renders the documented primary action', (tester) async {
+      final clipboard = _FakeClipboardService(null);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Read Article'), findsOneWidget);
+      expect(find.text('Get Article'), findsNothing);
+    });
+
     testWidgets('auto-fills a valid article URL from the clipboard', (
       tester,
     ) async {

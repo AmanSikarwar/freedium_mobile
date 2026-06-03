@@ -222,7 +222,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               );
                             }
                           },
-                          child: const Text('Get Article'),
+                          child: const Text('Read Article'),
                         ),
                       ),
                     ],
