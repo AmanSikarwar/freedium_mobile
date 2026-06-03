@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 
@@ -45,7 +46,7 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
   Future<void> addHistory(String url, String title) async {
     final service = await _ensureHistoryService();
     if (service == null) return;
-    final normalizedUrl = _normalizeHistoryUrl(url);
+    final normalizedUrl = normalizeHttpUrl(url);
     if (normalizedUrl == null) return;
     final normalizedTitle = title.trim().isNotEmpty
         ? title.trim()
@@ -106,18 +107,6 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
       state = prevState;
     }
   }
-}
-
-String? _normalizeHistoryUrl(String value) {
-  final url = value.trim();
-  final uri = Uri.tryParse(url);
-  final scheme = uri?.scheme.toLowerCase();
-  if (uri == null ||
-      uri.host.isEmpty ||
-      (scheme != 'http' && scheme != 'https')) {
-    return null;
-  }
-  return url;
 }
 
 final historyProvider = NotifierProvider<HistoryNotifier, List<ReadingHistory>>(

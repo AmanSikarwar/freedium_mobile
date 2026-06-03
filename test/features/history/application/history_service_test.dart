@@ -30,7 +30,7 @@ void main() {
           }),
           jsonEncode(history.toJson()),
           jsonEncode({
-            'url': history.url,
+            'url': ' HTTPS://Medium.COM/example/story/ ',
             'title': 'Duplicate',
             'timestamp': timestamp
                 .add(const Duration(minutes: 1))
@@ -50,7 +50,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'reading_history': [
           jsonEncode({
-            'url': 'https://medium.com/example/story',
+            'url': ' HTTPS://Medium.COM/example/story/ ',
             'title': ' ',
             'timestamp': timestamp.toIso8601String(),
           }),

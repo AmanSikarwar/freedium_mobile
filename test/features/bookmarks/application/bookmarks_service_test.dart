@@ -29,7 +29,14 @@ void main() {
             'savedAt': savedAt.toIso8601String(),
           }),
           jsonEncode(bookmark.toJson()),
-          jsonEncode(bookmark.copyWith(title: 'Duplicate').toJson()),
+          jsonEncode(
+            bookmark
+                .copyWith(
+                  url: ' HTTPS://Medium.COM/example/story/ ',
+                  title: 'Duplicate',
+                )
+                .toJson(),
+          ),
         ],
       });
 
@@ -44,7 +51,7 @@ void main() {
       SharedPreferences.setMockInitialValues({
         'bookmarked_articles': [
           jsonEncode({
-            'url': 'https://medium.com/example/story',
+            'url': ' HTTPS://Medium.COM/example/story/ ',
             'title': ' ',
             'savedAt': savedAt.toIso8601String(),
           }),

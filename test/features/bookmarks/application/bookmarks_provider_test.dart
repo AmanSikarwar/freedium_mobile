@@ -25,7 +25,10 @@ void main() {
     test('normalizes URL and title before saving a bookmark', () async {
       await container
           .read(bookmarksProvider.notifier)
-          .addBookmark(' https://medium.com/example/story ', ' Example story ');
+          .addBookmark(
+            ' HTTPS://Medium.COM/example/story/ ',
+            ' Example story ',
+          );
 
       final bookmarks = container.read(bookmarksProvider);
       expect(bookmarks, hasLength(1));
@@ -36,7 +39,7 @@ void main() {
     test('falls back to normalized URL when bookmark title is blank', () async {
       await container
           .read(bookmarksProvider.notifier)
-          .addBookmark(' https://medium.com/example/story ', '  ');
+          .addBookmark(' HTTPS://Medium.COM/example/story/ ', '  ');
 
       final bookmarks = container.read(bookmarksProvider);
       expect(bookmarks, hasLength(1));
@@ -57,7 +60,7 @@ void main() {
       final notifier = container.read(bookmarksProvider.notifier);
       await notifier.addBookmark('https://medium.com/example/story', 'First');
       await notifier.addBookmark(
-        ' https://medium.com/example/story ',
+        ' HTTPS://Medium.COM/example/story/ ',
         'Second',
       );
 
@@ -70,7 +73,7 @@ void main() {
       final notifier = container.read(bookmarksProvider.notifier);
       await notifier.addBookmark('https://medium.com/example/story', 'Story');
 
-      await notifier.toggleBookmark(' https://medium.com/example/story ', '');
+      await notifier.toggleBookmark(' HTTPS://Medium.COM/example/story/ ', '');
       expect(container.read(bookmarksProvider), isEmpty);
     });
   });

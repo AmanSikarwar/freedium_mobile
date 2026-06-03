@@ -25,7 +25,7 @@ void main() {
     test('normalizes URL and title before saving history', () async {
       await container
           .read(historyProvider.notifier)
-          .addHistory(' https://medium.com/example/story ', ' Example story ');
+          .addHistory(' HTTPS://Medium.COM/example/story/ ', ' Example story ');
 
       final history = container.read(historyProvider);
       expect(history, hasLength(1));
@@ -36,7 +36,7 @@ void main() {
     test('falls back to normalized URL when history title is blank', () async {
       await container
           .read(historyProvider.notifier)
-          .addHistory(' https://medium.com/example/story ', '  ');
+          .addHistory(' HTTPS://Medium.COM/example/story/ ', '  ');
 
       final history = container.read(historyProvider);
       expect(history, hasLength(1));
@@ -56,7 +56,10 @@ void main() {
     test('deduplicates history by normalized URL', () async {
       final notifier = container.read(historyProvider.notifier);
       await notifier.addHistory('https://medium.com/example/story', 'First');
-      await notifier.addHistory(' https://medium.com/example/story ', 'Second');
+      await notifier.addHistory(
+        ' HTTPS://Medium.COM/example/story/ ',
+        'Second',
+      );
 
       final history = container.read(historyProvider);
       expect(history, hasLength(1));

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
@@ -44,7 +45,7 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
 
   /// Returns true if the given [url] is already bookmarked.
   bool isBookmarked(String url) {
-    final normalizedUrl = _normalizeBookmarkUrl(url);
+    final normalizedUrl = normalizeHttpUrl(url);
     if (normalizedUrl == null) return false;
     return state.any((b) => b.url == normalizedUrl);
   }
@@ -52,7 +53,7 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
   Future<void> addBookmark(String url, String title) async {
     final service = await _ensureService();
     if (service == null) return;
-    final normalizedUrl = _normalizeBookmarkUrl(url);
+    final normalizedUrl = normalizeHttpUrl(url);
     if (normalizedUrl == null) return;
     if (isBookmarked(normalizedUrl)) return; // already saved
     final normalizedTitle = title.trim().isNotEmpty
@@ -103,7 +104,7 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
   Future<void> toggleBookmark(String url, String title) async {
     if (await _ensureService() == null) return;
 
-    final normalizedUrl = _normalizeBookmarkUrl(url);
+    final normalizedUrl = normalizeHttpUrl(url);
     if (normalizedUrl == null) return;
 
     if (isBookmarked(normalizedUrl)) {
@@ -127,18 +128,6 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
       state = prevState;
     }
   }
-}
-
-String? _normalizeBookmarkUrl(String value) {
-  final url = value.trim();
-  final uri = Uri.tryParse(url);
-  final scheme = uri?.scheme.toLowerCase();
-  if (uri == null ||
-      uri.host.isEmpty ||
-      (scheme != 'http' && scheme != 'https')) {
-    return null;
-  }
-  return url;
 }
 
 final bookmarksProvider =
