@@ -21,6 +21,17 @@ class HomeNotifier extends Notifier<HomeState> {
       onPaste(url);
     }
   }
+
+  Future<String?> detectArticleUrlFromClipboard() async {
+    final clipboardText = await ref.read(clipboardServiceProvider).paste();
+    if (clipboardText == null) return null;
+
+    final url = extractArticleUrl(clipboardText);
+    if (url == null) return null;
+
+    state = state.copyWith(url: url);
+    return url;
+  }
 }
 
 final homeProvider = NotifierProvider<HomeNotifier, HomeState>(

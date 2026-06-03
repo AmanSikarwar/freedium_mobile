@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -20,7 +21,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   bool _isUpdateCardDismissed = false;
   late final TextEditingController _urlController;
   final _formKey = GlobalKey<FormState>();
@@ -28,13 +30,38 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _urlController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_autofillFromClipboard());
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _urlController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_autofillFromClipboard());
+    }
+  }
+
+  Future<void> _autofillFromClipboard() async {
+    if (_urlController.text.trim().isNotEmpty) return;
+
+    final url = await ref
+        .read(homeProvider.notifier)
+        .detectArticleUrlFromClipboard();
+    if (!mounted || url == null || _urlController.text.trim().isNotEmpty) {
+      return;
+    }
+
+    _urlController.text = url;
   }
 
   @override
