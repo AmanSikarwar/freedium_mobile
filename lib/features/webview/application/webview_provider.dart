@@ -379,20 +379,15 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   String _extractOriginalUrl(String fullUrl) {
     try {
-      final uri = Uri.parse(fullUrl);
       if (!_freediumUrlService.isFreediumUrl(fullUrl)) {
         return fullUrl;
       }
-      final queryStr = uri.hasQuery ? '?${uri.query}' : '';
-      if (uri.path.startsWith('/http')) {
-        // Mirror URL explicitly encodes the original URL in its path.
-        return '${uri.path.substring(1)}$queryStr';
-      } else {
-        // Fall back to the original user-entered article URL, which is
-        // preserved on this notifier instance and works for any domain
-        // (not just medium.com).
-        return url;
-      }
+
+      return extractOriginalArticleUrlFromFreediumUri(
+            mirrorUrl: state.activeBaseUrl,
+            freediumUrl: fullUrl,
+          ) ??
+          url;
     } catch (e) {
       return url;
     }

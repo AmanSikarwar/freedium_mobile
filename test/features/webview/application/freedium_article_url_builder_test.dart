@@ -52,5 +52,37 @@ void main() {
         'https://freedium.cfd/https://medium.com/example/story%3Fsk=abc%23intro',
       );
     });
+
+    test('extracts original article URL from root mirror URL', () {
+      const articleUrl = 'https://medium.com/example/story?sk=abc#intro';
+      final freediumUrl = buildFreediumArticleUri(
+        mirrorUrl: 'https://freedium.cfd',
+        articleUrl: articleUrl,
+      ).toString();
+
+      expect(
+        extractOriginalArticleUrlFromFreediumUri(
+          mirrorUrl: 'https://freedium.cfd',
+          freediumUrl: freediumUrl,
+        ),
+        articleUrl,
+      );
+    });
+
+    test('extracts original article URL from path-prefixed mirror URL', () {
+      const articleUrl = 'https://medium.com/example/story?sk=abc#intro';
+      final freediumUrl = buildFreediumArticleUri(
+        mirrorUrl: 'https://mirror.example/base',
+        articleUrl: articleUrl,
+      ).toString();
+
+      expect(
+        extractOriginalArticleUrlFromFreediumUri(
+          mirrorUrl: 'https://mirror.example/base',
+          freediumUrl: freediumUrl,
+        ),
+        articleUrl,
+      );
+    });
   });
 }
