@@ -56,7 +56,7 @@ void main() {
         'freedium_mirrors': [
           jsonEncode({
             'name': ' Custom ',
-            'url': ' HTTPS://Custom.Example/ ',
+            'url': ' HTTPS://Custom.Example/// ',
             'isCustom': true,
           }),
         ],

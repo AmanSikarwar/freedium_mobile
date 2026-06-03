@@ -145,9 +145,10 @@ String? _normalizeMirrorUrl(String value) {
 }
 
 String _trimTrailingSlash(String value) {
-  if (value == '/' || !value.endsWith('/')) {
-    return value == '/' ? '' : value;
+  var trimmed = value;
+  while (trimmed.length > 1 && trimmed.endsWith('/')) {
+    trimmed = trimmed.substring(0, trimmed.length - 1);
   }
 
-  return value.substring(0, value.length - 1);
+  return trimmed == '/' ? '' : trimmed;
 }

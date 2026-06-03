@@ -186,7 +186,7 @@ void main() {
           .addMirror(
             const FreediumMirror(
               name: ' Custom ',
-              url: ' https://custom.example/ ',
+              url: ' https://custom.example/// ',
               isCustom: true,
             ),
           );
