@@ -282,9 +282,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
   String _normalizeUrl(String value) {
     try {
       final uri = Uri.parse(value);
-      final normalizedPath = uri.path.endsWith('/') && uri.path.length > 1
-          ? uri.path.substring(0, uri.path.length - 1)
-          : uri.path;
+      var normalizedPath = uri.path;
+      while (normalizedPath.length > 1 && normalizedPath.endsWith('/')) {
+        normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
+      }
       return uri.replace(path: normalizedPath, fragment: '').toString();
     } catch (_) {
       return value;

@@ -35,7 +35,7 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(0), ' Custom ');
     await tester.enterText(
       find.byType(TextFormField).at(1),
-      ' HTTPS://custom.example/ ',
+      ' HTTPS://custom.example/// ',
     );
 
     await tester.tap(find.widgetWithText(FilledButton, 'Add'));

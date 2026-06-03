@@ -119,9 +119,7 @@ bool _hasSameOrigin(Uri url, Uri mirror) {
 }
 
 bool _hasMirrorPathPrefix(String path, String mirrorPath) {
-  final normalizedMirrorPath = mirrorPath.endsWith('/')
-      ? mirrorPath.substring(0, mirrorPath.length - 1)
-      : mirrorPath;
+  final normalizedMirrorPath = _trimTrailingSlash(mirrorPath);
 
   if (normalizedMirrorPath.isEmpty) {
     return true;

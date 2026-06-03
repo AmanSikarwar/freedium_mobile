@@ -112,7 +112,7 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
     if (_formKey.currentState!.validate()) {
       HapticFeedback.mediumImpact();
       String url = _urlController.text.trim();
-      if (url.endsWith('/')) {
+      while (url.length > 1 && url.endsWith('/')) {
         url = url.substring(0, url.length - 1);
       }
 

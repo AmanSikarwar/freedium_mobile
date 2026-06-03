@@ -26,7 +26,7 @@ void main() {
     test('preserves mirror path prefix without duplicate slash', () {
       expect(
         buildFreediumArticleUri(
-          mirrorUrl: 'https://mirror.example/base/',
+          mirrorUrl: 'https://mirror.example/base///',
           articleUrl: 'https://medium.com/example/story',
         ).toString(),
         'https://mirror.example/base/https://medium.com/example/story',

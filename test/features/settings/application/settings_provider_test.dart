@@ -59,7 +59,10 @@ void main() {
 
     test('respects custom mirror path boundaries', () {
       const mirrors = [
-        FreediumMirror(name: 'Path mirror', url: 'https://mirror.example/base'),
+        FreediumMirror(
+          name: 'Path mirror',
+          url: 'https://mirror.example/base///',
+        ),
       ];
 
       expect(

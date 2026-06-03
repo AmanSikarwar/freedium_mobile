@@ -56,9 +56,10 @@ String? extractOriginalArticleUrlFromFreediumUri({
 }
 
 String _trimTrailingSlash(String value) {
-  if (value.length <= 1 || !value.endsWith('/')) {
-    return value;
+  var trimmed = value;
+  while (trimmed.length > 1 && trimmed.endsWith('/')) {
+    trimmed = trimmed.substring(0, trimmed.length - 1);
   }
 
-  return value.substring(0, value.length - 1);
+  return trimmed;
 }
