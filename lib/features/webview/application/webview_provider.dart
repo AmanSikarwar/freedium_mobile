@@ -6,14 +6,34 @@ import 'package:flutter/material.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+
+@visibleForTesting
+enum WebviewNavigationAction { navigate, launchExternal, block }
+
+@visibleForTesting
+WebviewNavigationAction resolveWebviewNavigationAction({
+  required String requestUrl,
+  required bool Function(String url) isFreediumUrl,
+}) {
+  final uri = parseExternalHttpUrl(requestUrl);
+  if (uri == null) {
+    return WebviewNavigationAction.block;
+  }
+
+  if (isFreediumUrl(uri.toString())) {
+    return WebviewNavigationAction.navigate;
+  }
+
+  return WebviewNavigationAction.launchExternal;
+}
 
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
@@ -205,31 +225,28 @@ class WebviewNotifier extends Notifier<WebviewState> {
             }
           },
           onNavigationRequest: (NavigationRequest request) async {
-            final uri = Uri.parse(request.url);
+            final action = resolveWebviewNavigationAction(
+              requestUrl: request.url,
+              isFreediumUrl: _freediumUrlService.isFreediumUrl,
+            );
 
-            if (!["http", "https"].contains(uri.scheme)) {
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
+            switch (action) {
+              case WebviewNavigationAction.navigate:
+                return .navigate;
+              case WebviewNavigationAction.launchExternal:
+                final launched = await launchExternalHttpUrl(request.url);
+                if (!launched && ref.mounted) {
+                  state = state.copyWith(
+                    userMessage: 'Could not open link: ${request.url.trim()}',
+                  );
+                }
                 return .prevent;
-              }
+              case WebviewNavigationAction.block:
+                debugPrint(
+                  'Blocked unsupported WebView navigation: ${request.url}',
+                );
+                return .prevent;
             }
-
-            if (_freediumUrlService.isFreediumUrl(request.url)) {
-              return .navigate;
-            }
-
-            try {
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: .externalApplication);
-              }
-            } catch (e) {
-              debugPrint('Failed to launch URL: $e');
-              state = state.copyWith(
-                userMessage: 'Could not open link: ${uri.toString()}',
-              );
-            }
-
-            return .prevent;
           },
         ),
       )

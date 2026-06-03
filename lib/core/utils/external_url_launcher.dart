@@ -1,7 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
-@visibleForTesting
 Uri? parseExternalHttpUrl(String? value) {
   final url = value?.trim();
   if (url == null || url.isEmpty) return null;
