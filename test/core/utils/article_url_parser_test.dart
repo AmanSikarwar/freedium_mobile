@@ -19,6 +19,13 @@ void main() {
       );
     });
 
+    test('normalizes URL casing and trailing slashes', () {
+      expect(
+        extractArticleUrl('Read HTTPS://Medium.COM/example/story/?sk=abc'),
+        'https://medium.com/example/story?sk=abc',
+      );
+    });
+
     test('strips trailing punctuation added by message text', () {
       expect(
         extractArticleUrl('Open https://medium.com/example/story.'),

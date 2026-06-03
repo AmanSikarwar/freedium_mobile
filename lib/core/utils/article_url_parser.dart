@@ -1,3 +1,5 @@
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
+
 String? extractArticleUrl(String input) {
   final trimmed = input.trim();
   if (trimmed.isEmpty) return null;
@@ -35,7 +37,7 @@ String? _validHttpUrl(String value) {
     return null;
   }
 
-  return cleaned;
+  return normalizeHttpUrl(cleaned);
 }
 
 String _stripTrailingPunctuation(String value) {
