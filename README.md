@@ -146,55 +146,81 @@ lib/
 ├── main.dart                         # Entry point
 ├── core/
 │   ├── constants/
-│   │   └── app_constants.dart        # freediumUrl, urlRegExp, appVersion
+│   │   └── app_constants.dart        # App metadata, package name, default mirrors
 │   ├── services/
 │   │   ├── clipboard_service.dart    # Clipboard URL detection
 │   │   ├── font_size_service.dart    # Font size persistence
 │   │   ├── intent_service.dart       # Share-to-app handling
-│   │   ├── theme_mode_service.dart   # Theme persistence
 │   │   └── update_service.dart       # GitHub release checker
-│   └── theme/
-│       ├── app_theme.dart            # Material You theme config
-│       ├── theme_provider.dart       # Dynamic color provider
-│       └── util.dart                 # Theme utilities
-└── features/
-    ├── history/
-    │   ├── application/
-    │   │   ├── history_provider.dart
-    │   │   └── history_service.dart
-    │   ├── domain/
-    │   │   └── reading_history.dart
-    │   └── presentation/
-    │       └── history_screen.dart
-    ├── home/
-    │   ├── application/
-    │   │   └── home_provider.dart    # Home state management
-    │   └── presentation/
-    │       ├── home_screen.dart
-    │       └── widgets/
-    ├── settings/
-    │   ├── application/
-    │   │   └── settings_provider.dart   # Settings state & mirror management
-    │   ├── domain/
-    │   │   └── settings_state.dart      # Settings & FreediumMirror models
-    │   └── presentation/
-    │       └── settings_screen.dart
-    └── webview/
-        ├── application/
-        │   ├── theme_injector_service.dart  # CSS injection for theming
-        │   └── webview_provider.dart        # WebView controller & state
-        ├── domain/
-        │   └── webview_state.dart
-        └── presentation/
-            ├── webview_screen.dart
-            └── widgets/
+│   ├── theme/
+│   │   ├── app_theme.dart            # Material You theme config
+│   │   ├── theme_provider.dart       # Dynamic color provider
+│   │   └── util.dart                 # Theme utilities
+│   └── utils/
+│       ├── article_url_parser.dart   # Shared URL extraction
+│       ├── external_url_launcher.dart
+│       └── http_url_normalizer.dart
+├── features/
+│   ├── bookmarks/
+│   │   ├── application/
+│   │   │   ├── bookmarks_provider.dart
+│   │   │   └── bookmarks_service.dart
+│   │   ├── domain/
+│   │   │   └── bookmarked_article.dart
+│   │   └── presentation/
+│   │       └── bookmarks_screen.dart
+│   ├── history/
+│   │   ├── application/
+│   │   │   ├── history_provider.dart
+│   │   │   └── history_service.dart
+│   │   ├── domain/
+│   │   │   └── reading_history.dart
+│   │   └── presentation/
+│   │       └── history_screen.dart
+│   ├── home/
+│   │   ├── application/
+│   │   │   └── home_provider.dart    # Home state management
+│   │   ├── domain/
+│   │   │   └── home_state.dart
+│   │   └── presentation/
+│   │       ├── home_screen.dart
+│   │       └── widgets/
+│   ├── onboarding/
+│   │   ├── application/
+│   │   │   └── onboarding_provider.dart
+│   │   └── presentation/
+│   │       └── onboarding_screen.dart
+│   ├── settings/
+│   │   ├── application/
+│   │   │   ├── settings_service.dart
+│   │   │   └── settings_provider.dart   # Settings state & mirror management
+│   │   ├── domain/
+│   │   │   └── settings_state.dart      # Settings & FreediumMirror models
+│   │   └── presentation/
+│   │       └── settings_screen.dart
+│   └── webview/
+│       ├── application/
+│       │   ├── freedium_article_url_builder.dart
+│       │   ├── initial_mirror_resolver.dart
+│       │   ├── theme_injector_service.dart  # CSS injection for theming
+│       │   └── webview_provider.dart        # WebView controller & state
+│       ├── domain/
+│       │   └── webview_state.dart
+│       └── presentation/
+│           ├── webview_screen.dart
+│           └── widgets/
+└── shared/
+    ├── utils/
+    │   └── date_utils.dart
+    └── widgets/
+        └── article_card.dart
 ```
 
 ### Architecture
 
 The app follows a **feature-based architecture** with **Riverpod 3.0** for state management:
 
-- **Features** - Organized by functionality (`home`, `settings`, `webview`)
+- **Features** - Organized by functionality (`bookmarks`, `history`, `home`, `onboarding`, `settings`, `webview`)
 - **Application** - Riverpod Notifiers and business logic
 - **Presentation** - UI screens and widgets
 - **Domain** - State classes with `copyWith()`
