@@ -46,6 +46,17 @@ final pendingIntentUrlProvider =
       PendingIntentUrlNotifier.new,
     );
 
+@visibleForTesting
+String incomingWebviewRouteName(String url) => '/webview/$url';
+
+@visibleForTesting
+bool shouldSkipIncomingWebviewNavigation({
+  required String? currentRouteName,
+  required String targetUrl,
+}) {
+  return currentRouteName == incomingWebviewRouteName(targetUrl);
+}
+
 class App extends ConsumerWidget {
   const App({super.key});
 
@@ -54,14 +65,17 @@ class App extends ConsumerWidget {
     if (navigator != null) {
       if (navigator.context.mounted) {
         final currentRoute = ModalRoute.of(navigator.context);
-        if (currentRoute?.settings.name != null) {
+        if (shouldSkipIncomingWebviewNavigation(
+          currentRouteName: currentRoute?.settings.name,
+          targetUrl: url,
+        )) {
           return;
         }
 
         navigator.push(
           MaterialPageRoute(
             builder: (context) => WebviewScreen(url: url),
-            settings: RouteSettings(name: '/webview/$url'),
+            settings: RouteSettings(name: incomingWebviewRouteName(url)),
           ),
         );
       }
