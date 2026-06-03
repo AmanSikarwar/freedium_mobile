@@ -10,7 +10,4 @@ class AppConstants {
     'APP_VERSION',
     defaultValue: '0.10.0',
   );
-
-  static const String urlRegExp =
-      r'^https?:\/\/([\w-]+\.)+[\w-]+(\/[\w-./?%&=@]*)?$';
 }
