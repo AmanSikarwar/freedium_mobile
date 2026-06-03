@@ -13,6 +13,16 @@ void main() {
       );
     });
 
+    test('builds article URL for root mirror with trailing slash', () {
+      expect(
+        buildFreediumArticleUri(
+          mirrorUrl: 'https://freedium.cfd/',
+          articleUrl: 'https://medium.com/example/story',
+        ).toString(),
+        'https://freedium.cfd/https://medium.com/example/story',
+      );
+    });
+
     test('preserves mirror path prefix', () {
       expect(
         buildFreediumArticleUri(
@@ -68,6 +78,25 @@ void main() {
         articleUrl,
       );
     });
+
+    test(
+      'extracts original article URL from root mirror URL with trailing slash',
+      () {
+        const articleUrl = 'https://medium.com/example/story?sk=abc#intro';
+        final freediumUrl = buildFreediumArticleUri(
+          mirrorUrl: 'https://freedium.cfd/',
+          articleUrl: articleUrl,
+        ).toString();
+
+        expect(
+          extractOriginalArticleUrlFromFreediumUri(
+            mirrorUrl: 'https://freedium.cfd/',
+            freediumUrl: freediumUrl,
+          ),
+          articleUrl,
+        );
+      },
+    );
 
     test('extracts original article URL from path-prefixed mirror URL', () {
       const articleUrl = 'https://medium.com/example/story?sk=abc#intro';

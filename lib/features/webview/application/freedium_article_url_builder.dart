@@ -61,5 +61,5 @@ String _trimTrailingSlash(String value) {
     trimmed = trimmed.substring(0, trimmed.length - 1);
   }
 
-  return trimmed;
+  return trimmed == '/' ? '' : trimmed;
 }
