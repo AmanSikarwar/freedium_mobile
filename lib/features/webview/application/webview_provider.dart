@@ -507,9 +507,14 @@ class WebviewNotifier extends Notifier<WebviewState> {
     state = state.copyWith(fontSize: normalizedFontSize);
     await service.saveFontSize(normalizedFontSize);
 
-    if (state.controller != null && state.isPageLoaded) {
+    final controller = state.controller;
+    if (controller != null && state.isPageLoaded) {
       final script = _themeInjector.getFontSizeUpdateScript(normalizedFontSize);
-      state.controller!.runJavaScript(script);
+      try {
+        await controller.runJavaScript(script);
+      } catch (e) {
+        debugPrint('Failed to update font size script: $e');
+      }
     }
   }
 }
