@@ -26,6 +26,9 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
   @override
   Widget build(BuildContext context) {
     final bookmarks = ref.watch(bookmarksProvider);
+    const searchBarHeight = 56.0;
+    const searchBarBottomPadding = 8.0;
+    const searchAreaHeight = searchBarHeight + searchBarBottomPadding;
 
     final filtered = _query.isEmpty
         ? bookmarks
@@ -55,9 +58,14 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
         ],
         bottom: bookmarks.isNotEmpty
             ? PreferredSize(
-                preferredSize: const Size.fromHeight(56),
+                preferredSize: Size.fromHeight(searchAreaHeight),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  padding: const EdgeInsets.fromLTRB(
+                    12,
+                    0,
+                    12,
+                    searchBarBottomPadding,
+                  ),
                   child: SearchBar(
                     controller: _searchController,
                     hintText: 'Search bookmarks…',

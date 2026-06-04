@@ -10,6 +10,33 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   group('BookmarksScreen', () {
+    testWidgets('reserves enough app bar height for padded search', (
+      tester,
+    ) async {
+      final bookmark = BookmarkedArticle(
+        url: 'https://medium.com/example/story',
+        title: 'Example story',
+        savedAt: DateTime.utc(2026, 2, 3),
+      );
+      SharedPreferences.setMockInitialValues({
+        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: BookmarksScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final appBar = tester.widget<AppBar>(find.byType(AppBar));
+      expect(appBar.bottom?.preferredSize.height, 64);
+    });
+
     testWidgets('removes a bookmark after swipe dismissal', (tester) async {
       final bookmark = BookmarkedArticle(
         url: 'https://medium.com/example/story',
