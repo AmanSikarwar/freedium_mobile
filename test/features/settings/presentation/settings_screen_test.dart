@@ -163,6 +163,38 @@ void main() {
       expect(tester.takeException(), isNull);
     });
 
+    testWidgets('shows update check failure when the request fails', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final updateService = UpdateService(
+        client: MockClient((_) async => http.Response('rate limited', 403)),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            updateServiceProvider.overrideWith((ref) => updateService),
+          ],
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Check for Updates'), 300);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Check for Updates'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Failed to check for updates'), findsOneWidget);
+      expect(find.text('You are using the latest version!'), findsNothing);
+      expect(find.text('Update Available'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('keeps timeout dialog open when saving fails', (tester) async {
       SharedPreferencesStorePlatform.instance =
           _FailingSharedPreferencesStore();

@@ -60,7 +60,7 @@ void main() {
       expect(updateInfo.releaseNotes, isEmpty);
     });
 
-    test('returns null when latest release URL is invalid', () async {
+    test('throws when latest release URL is invalid', () async {
       final client = MockClient((request) async {
         return http.Response(
           jsonEncode({
@@ -72,9 +72,9 @@ void main() {
         );
       });
 
-      final updateInfo = await UpdateService(client: client).checkForUpdate();
+      final updateCheck = UpdateService(client: client).checkForUpdate();
 
-      expect(updateInfo, isNull);
+      await expectLater(updateCheck, throwsA(isA<UpdateCheckException>()));
     });
 
     test('returns null when latest release is not newer', () async {
@@ -93,6 +93,26 @@ void main() {
       final updateInfo = await UpdateService(client: client).checkForUpdate();
 
       expect(updateInfo, isNull);
+    });
+
+    test('throws when latest release request fails', () async {
+      final client = MockClient((request) async {
+        return http.Response('rate limited', 403);
+      });
+
+      final updateCheck = UpdateService(client: client).checkForUpdate();
+
+      await expectLater(updateCheck, throwsA(isA<UpdateCheckException>()));
+    });
+
+    test('throws when the HTTP client fails', () async {
+      final client = MockClient((request) async {
+        throw Exception('network unavailable');
+      });
+
+      final updateCheck = UpdateService(client: client).checkForUpdate();
+
+      await expectLater(updateCheck, throwsA(isA<UpdateCheckException>()));
     });
   });
 }

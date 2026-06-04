@@ -455,13 +455,29 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     final updateService = ref.read(updateServiceProvider);
-    final updateInfo = await updateService.checkForUpdate();
+    final UpdateInfo? updateInfo;
+    try {
+      updateInfo = await updateService.checkForUpdate();
+    } on UpdateCheckException {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Failed to check for updates'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      return;
+    }
 
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    if (updateInfo != null) {
+    final availableUpdate = updateInfo;
+    if (availableUpdate != null) {
       showDialog(
         context: context,
         builder: (dialogContext) => AlertDialog(
@@ -470,7 +486,9 @@ class SettingsScreen extends ConsumerWidget {
             mainAxisSize: .min,
             crossAxisAlignment: .start,
             children: [
-              Text('A new version is available: ${updateInfo.latestVersion}'),
+              Text(
+                'A new version is available: ${availableUpdate.latestVersion}',
+              ),
               const SizedBox(height: 8),
               Text(
                 'Current version: ${AppConstants.appVersion}',
@@ -486,14 +504,14 @@ class SettingsScreen extends ConsumerWidget {
             TextButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                showChangelogBottomSheet(context, updateInfo);
+                showChangelogBottomSheet(context, availableUpdate);
               },
               child: const Text('Changelog'),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                unawaited(_launchUrl(context, ref, updateInfo.releaseUrl));
+                unawaited(_launchUrl(context, ref, availableUpdate.releaseUrl));
               },
               child: const Text('Update'),
             ),
