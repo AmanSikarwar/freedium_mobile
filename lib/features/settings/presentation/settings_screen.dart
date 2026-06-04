@@ -47,10 +47,20 @@ class SettingsScreen extends ConsumerWidget {
           ),
           RadioGroup<String>(
             groupValue: settings.selectedMirrorUrl,
-            onChanged: (url) {
+            onChanged: (url) async {
               if (url != null) {
                 HapticFeedback.selectionClick();
-                settingsNotifier.setSelectedMirror(url);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final didSave = await settingsNotifier.setSelectedMirror(url);
+                if (!context.mounted) return;
+                if (!didSave) {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to save selected mirror'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
             },
             child: Column(

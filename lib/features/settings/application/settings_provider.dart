@@ -271,15 +271,15 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> setSelectedMirror(String url) async {
+  Future<bool> setSelectedMirror(String url) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
+    if (service == null) return false;
     final normalizedUrl = _normalizeMirrorUrl(url);
     if (normalizedUrl == null ||
         !state.mirrors.any((mirror) => mirror.url == normalizedUrl)) {
-      return;
+      return false;
     }
-    await _saveAndApply(
+    return _saveAndApply(
       save: () => service.saveSelectedMirrorUrl(normalizedUrl),
       nextState: state.copyWith(selectedMirrorUrl: normalizedUrl),
       failureMessage: 'Failed to save selected mirror',

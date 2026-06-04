@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
@@ -134,6 +135,38 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('Failed to save mirror timeout'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('shows selected mirror failure when saving fails', (
+      tester,
+    ) async {
+      SharedPreferencesStorePlatform.instance =
+          _FailingSharedPreferencesStore();
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final mirrorRadio = find.byWidgetPredicate(
+        (widget) =>
+            widget is Radio<String> && widget.value == AppConstants.freediumUrl,
+      );
+      await tester.scrollUntilVisible(mirrorRadio, 300);
+      await tester.pumpAndSettle();
+      await tester.tap(mirrorRadio);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Failed to save selected mirror'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
