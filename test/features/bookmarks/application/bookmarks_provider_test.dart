@@ -101,6 +101,41 @@ void main() {
     });
 
     test(
+      'reports failure and preserves bookmarks when removing fails',
+      () async {
+        container.dispose();
+        final bookmark = BookmarkedArticle(
+          url: 'https://medium.com/example/story',
+          title: 'Story',
+          savedAt: DateTime.utc(2026, 2, 3),
+        );
+        SharedPreferencesStorePlatform.instance =
+            _FailingSharedPreferencesStore({
+              'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
+            });
+        SharedPreferences.resetStatic();
+        addTearDown(() => SharedPreferences.setMockInitialValues({}));
+        final prefs = await SharedPreferences.getInstance();
+        container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+        );
+
+        final notifier = container.read(bookmarksProvider.notifier);
+        container.read(bookmarksProvider);
+        await container.read(sharedPreferencesProvider.future);
+        await Future<void>.delayed(Duration.zero);
+        expect(container.read(bookmarksProvider), hasLength(1));
+
+        final didRemove = await notifier.removeBookmark(bookmark);
+
+        expect(didRemove, isFalse);
+        expect(container.read(bookmarksProvider), hasLength(1));
+      },
+    );
+
+    test(
       'reports failure and preserves bookmarks when clearing fails',
       () async {
         container.dispose();

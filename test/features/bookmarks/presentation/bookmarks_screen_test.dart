@@ -89,6 +89,42 @@ void main() {
       expect(prefs.getStringList('bookmarked_articles'), isEmpty);
     });
 
+    testWidgets('keeps bookmark visible when swipe removal fails', (
+      tester,
+    ) async {
+      final bookmark = BookmarkedArticle(
+        url: 'https://medium.com/example/story',
+        title: 'Example story',
+        savedAt: DateTime.utc(2026, 2, 3),
+      );
+      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+        'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
+      });
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: BookmarksScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Example story'), findsOneWidget);
+
+      await tester.drag(find.byType(Dismissible), const Offset(-500, 0));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Example story'), findsOneWidget);
+      expect(find.text('Failed to remove bookmark'), findsOneWidget);
+      expect(find.text('No saved articles yet.'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('clears the active search when clearing all bookmarks', (
       tester,
     ) async {

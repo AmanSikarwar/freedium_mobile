@@ -148,9 +148,22 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ),
-                  onDismissed: (_) {
+                  confirmDismiss: (_) async {
                     HapticFeedback.lightImpact();
-                    ref.read(bookmarksProvider.notifier).removeBookmark(item);
+                    final didRemove = await ref
+                        .read(bookmarksProvider.notifier)
+                        .removeBookmark(item);
+                    if (!context.mounted) return false;
+
+                    if (!didRemove) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to remove bookmark'),
+                        ),
+                      );
+                    }
+
+                    return didRemove;
                   },
                   child: ArticleCard(
                     title: item.title,

@@ -84,9 +84,9 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
     }
   }
 
-  Future<void> removeBookmark(BookmarkedArticle item) async {
+  Future<bool> removeBookmark(BookmarkedArticle item) async {
     final service = await _ensureService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
     final newList = state.where((b) => b.url != item.url).toList();
@@ -94,9 +94,11 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
     try {
       await service.saveBookmarks(newList);
       state = newList;
+      return true;
     } catch (e) {
       debugPrint('Failed to remove bookmark: $e');
       state = prevState;
+      return false;
     }
   }
 
