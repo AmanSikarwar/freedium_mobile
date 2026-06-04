@@ -14,6 +14,59 @@ import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
+@visibleForTesting
+class CurrentRouteNameObserver extends NavigatorObserver {
+  final List<Route<dynamic>> _routeStack = [];
+
+  String? get currentRouteName =>
+      _routeStack.isEmpty ? null : _routeStack.last.settings.name;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    _routeStack.add(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    _routeStack.remove(route);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _routeStack.remove(route);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    if (oldRoute == null) {
+      if (newRoute != null) {
+        _routeStack.add(newRoute);
+      }
+      return;
+    }
+
+    final index = _routeStack.indexOf(oldRoute);
+    if (index == -1) return;
+
+    if (newRoute == null) {
+      _routeStack.removeAt(index);
+    } else {
+      _routeStack[index] = newRoute;
+    }
+  }
+
+  @visibleForTesting
+  void reset() {
+    _routeStack.clear();
+  }
+}
+
+final currentRouteNameObserver = CurrentRouteNameObserver();
+
 class InitialIntentHandledNotifier extends Notifier<bool> {
   @override
   bool build() => false;
@@ -64,9 +117,8 @@ class App extends ConsumerWidget {
     final navigator = navigatorKey.currentState;
     if (navigator != null) {
       if (navigator.context.mounted) {
-        final currentRoute = ModalRoute.of(navigator.context);
         if (shouldSkipIncomingWebviewNavigation(
-          currentRouteName: currentRoute?.settings.name,
+          currentRouteName: currentRouteNameObserver.currentRouteName,
           targetUrl: url,
         )) {
           return;
@@ -144,6 +196,7 @@ class App extends ConsumerWidget {
         theme: theme.lightTheme,
         darkTheme: theme.darkTheme,
         themeMode: themeMode,
+        navigatorObservers: [currentRouteNameObserver],
         home: onboarding.isLoading
             ? const Scaffold(body: Center(child: CircularProgressIndicator()))
             : hasSeenOnboarding
