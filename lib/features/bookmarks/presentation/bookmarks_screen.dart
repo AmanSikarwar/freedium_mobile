@@ -188,11 +188,22 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              _clearSearch();
-              ref.read(bookmarksProvider.notifier).clearBookmarks();
-              Navigator.pop(context);
+              final didClear = await ref
+                  .read(bookmarksProvider.notifier)
+                  .clearBookmarks();
+              if (!context.mounted) return;
+
+              if (didClear) {
+                _clearSearch();
+                Navigator.pop(context);
+                return;
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Failed to clear bookmarks')),
+              );
             },
             child: const Text('Clear'),
           ),

@@ -115,17 +115,19 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
     }
   }
 
-  Future<void> clearBookmarks() async {
+  Future<bool> clearBookmarks() async {
     final service = await _ensureService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
     try {
       await service.clearBookmarks();
       state = [];
+      return true;
     } catch (e) {
       debugPrint('Failed to clear bookmarks: $e');
       state = prevState;
+      return false;
     }
   }
 }
