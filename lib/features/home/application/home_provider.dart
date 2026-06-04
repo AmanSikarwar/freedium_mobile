@@ -13,13 +13,13 @@ class HomeNotifier extends Notifier<HomeState> {
     state = state.copyWith(url: url);
   }
 
-  Future<void> pasteFromClipboard(void Function(String) onPaste) async {
+  Future<String?> pasteFromClipboard() async {
     final clipboardText = await ref.read(clipboardServiceProvider).paste();
-    if (clipboardText != null) {
-      final url = extractArticleUrl(clipboardText) ?? clipboardText.trim();
-      state = state.copyWith(url: url);
-      onPaste(url);
-    }
+    if (clipboardText == null) return null;
+
+    final url = extractArticleUrl(clipboardText) ?? clipboardText.trim();
+    state = state.copyWith(url: url);
+    return url;
   }
 
   Future<String?> detectArticleUrlFromClipboard() async {

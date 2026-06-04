@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,6 +16,20 @@ class _FakeClipboardService extends ClipboardService {
   Future<String?> paste() async {
     pasteCount++;
     return text;
+  }
+}
+
+class _DelayedPasteClipboardService extends ClipboardService {
+  final pasteCompleter = Completer<String?>();
+  int pasteCount = 0;
+
+  @override
+  Future<String?> paste() {
+    pasteCount++;
+    if (pasteCount == 1) {
+      return Future<String?>.value();
+    }
+    return pasteCompleter.future;
   }
 }
 
@@ -112,6 +128,40 @@ void main() {
         find.byType(EditableText),
       );
       expect(editableText.controller.text, 'https://medium.com/manual/story');
+    });
+
+    testWidgets('ignores paste completion after the screen is disposed', (
+      tester,
+    ) async {
+      final clipboard = _DelayedPasteClipboardService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.paste));
+      await tester.pump();
+      expect(clipboard.pasteCount, 2);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: SizedBox.shrink()),
+        ),
+      );
+
+      clipboard.pasteCompleter.complete('https://medium.com/clipboard/story');
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
     });
   });
 }

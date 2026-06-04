@@ -64,6 +64,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     _urlController.text = url;
   }
 
+  Future<void> _pasteFromClipboard() async {
+    final text = await ref.read(homeProvider.notifier).pasteFromClipboard();
+    if (!mounted || text == null) return;
+
+    _urlController.text = text;
+  }
+
   @override
   Widget build(BuildContext context) {
     final homeNotifier = ref.read(homeProvider.notifier);
@@ -184,9 +191,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               icon: const Icon(Icons.paste),
                               onPressed: () {
                                 HapticFeedback.lightImpact();
-                                homeNotifier.pasteFromClipboard((text) {
-                                  _urlController.text = text;
-                                });
+                                unawaited(_pasteFromClipboard());
                               },
                             ),
                           ),
