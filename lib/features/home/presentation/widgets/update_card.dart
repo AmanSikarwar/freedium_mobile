@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 
-class UpdateCard extends StatelessWidget {
+class UpdateCard extends ConsumerWidget {
   const UpdateCard({
     super.key,
     required this.updateInfo,
@@ -17,7 +18,7 @@ class UpdateCard extends StatelessWidget {
   final VoidCallback onDismissed;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Dismissible(
       key: const Key('update_card'),
       onDismissed: (_) => onDismissed(),
@@ -92,7 +93,7 @@ class UpdateCard extends StatelessWidget {
                   FilledButton.icon(
                     onPressed: () {
                       HapticFeedback.mediumImpact();
-                      unawaited(launchExternalHttpUrl(updateInfo.releaseUrl));
+                      unawaited(_launchUpdate(context, ref));
                     },
                     icon: const Icon(Icons.download, size: 18),
                     label: const Text('Update'),
@@ -106,6 +107,21 @@ class UpdateCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Future<void> _launchUpdate(BuildContext context, WidgetRef ref) async {
+    final launched = await ref.read(externalUrlLauncherProvider)(
+      updateInfo.releaseUrl,
+    );
+    if (!context.mounted || launched) return;
+
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not open link'),
+        backgroundColor: Colors.red,
       ),
     );
   }
