@@ -335,10 +335,24 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              ref.read(settingsProvider.notifier).removeMirror(mirror);
-              Navigator.pop(context);
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
+              final didRemove = await ref
+                  .read(settingsProvider.notifier)
+                  .removeMirror(mirror);
+              if (!context.mounted) return;
+              if (didRemove) {
+                navigator.pop();
+              } else {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to remove mirror'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text('Delete'),
           ),

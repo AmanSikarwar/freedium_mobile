@@ -202,11 +202,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> removeMirror(FreediumMirror mirror) async {
-    if (mirror.isDefault) return;
+  Future<bool> removeMirror(FreediumMirror mirror) async {
+    if (mirror.isDefault) return false;
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    if (!state.mirrors.contains(mirror)) return;
+    if (service == null) return false;
+    if (!state.mirrors.contains(mirror)) return false;
     final selectedMirrorUrl = state.selectedMirrorUrl;
     final remainingMirrors = state.mirrors.where((m) => m != mirror).toList();
     final updatedMirrors = remainingMirrors.isEmpty
@@ -216,7 +216,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
         ? updatedMirrors.first.url
         : selectedMirrorUrl;
 
-    await _saveAndApply(
+    return _saveAndApply(
       save: () async {
         await service.saveMirrors(updatedMirrors);
         if (updatedSelectedMirrorUrl != selectedMirrorUrl) {

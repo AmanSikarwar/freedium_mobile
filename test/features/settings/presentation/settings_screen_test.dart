@@ -13,11 +13,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
+  _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
+    : _values = Map.of(initialValues ?? {});
+
+  final Map<String, Object> _values;
+
   @override
   Future<bool> clear() async => false;
 
   @override
-  Future<Map<String, Object>> getAll() async => {};
+  Future<Map<String, Object>> getAll() async => Map.of(_values);
 
   @override
   Future<bool> remove(String key) async => false;
@@ -193,6 +198,55 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Failed to save auto-switch mirror'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('keeps delete mirror dialog open when saving fails', (
+      tester,
+    ) async {
+      const customMirror = {
+        'name': 'Custom',
+        'url': 'https://custom.example',
+        'isDefault': false,
+        'isCustom': true,
+      };
+      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+        'flutter.freedium_mirrors': [jsonEncode(customMirror)],
+      });
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final customMirrorCard = find.ancestor(
+        of: find.text('https://custom.example'),
+        matching: find.byType(Card),
+      );
+      await tester.scrollUntilVisible(customMirrorCard, 300);
+      await tester.pumpAndSettle();
+      await tester.tap(
+        find.descendant(
+          of: customMirrorCard,
+          matching: find.byType(PopupMenuButton<String>),
+        ),
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Delete'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(AlertDialog, 'Delete Mirror'), findsOneWidget);
+      expect(find.text('Failed to remove mirror'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
