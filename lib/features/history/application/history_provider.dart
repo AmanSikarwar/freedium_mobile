@@ -93,18 +93,20 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
     }
   }
 
-  Future<void> clearHistory() async {
+  Future<bool> clearHistory() async {
     final service = await _ensureHistoryService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
 
     try {
       await service.clearHistory();
       state = [];
+      return true;
     } catch (e) {
       debugPrint('Failed to clear history: $e');
       state = prevState;
+      return false;
     }
   }
 }

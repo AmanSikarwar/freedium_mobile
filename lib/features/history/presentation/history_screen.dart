@@ -174,11 +174,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              _clearSearch();
-              ref.read(historyProvider.notifier).clearHistory();
-              Navigator.pop(dialogContext);
+              final didClear = await ref
+                  .read(historyProvider.notifier)
+                  .clearHistory();
+              if (!context.mounted || !dialogContext.mounted) return;
+
+              if (didClear) {
+                _clearSearch();
+                Navigator.pop(dialogContext);
+                return;
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Failed to clear history')),
+              );
             },
             child: const Text('Clear'),
           ),
