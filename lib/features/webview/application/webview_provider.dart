@@ -500,12 +500,23 @@ class WebviewNotifier extends Notifier<WebviewState> {
     state.controller?.reload();
   }
 
-  Future<void> updateFontSize(double fontSize) async {
+  Future<bool> updateFontSize(double fontSize) async {
     final service = await _ensureFontSizeService();
-    if (service == null) return;
+    if (service == null) {
+      state = state.copyWith(userMessage: 'Failed to save font size');
+      return false;
+    }
     final normalizedFontSize = FontSizeService.normalizeFontSize(fontSize);
+
+    try {
+      await service.saveFontSize(normalizedFontSize);
+    } catch (e) {
+      debugPrint('Failed to save font size: $e');
+      state = state.copyWith(userMessage: 'Failed to save font size');
+      return false;
+    }
+
     state = state.copyWith(fontSize: normalizedFontSize);
-    await service.saveFontSize(normalizedFontSize);
 
     final controller = state.controller;
     if (controller != null && state.isPageLoaded) {
@@ -516,6 +527,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
         debugPrint('Failed to update font size script: $e');
       }
     }
+    return true;
   }
 }
 

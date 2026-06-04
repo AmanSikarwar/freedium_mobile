@@ -17,7 +17,13 @@ class FontSizeService {
   FontSizeService(this._prefs);
 
   Future<void> saveFontSize(double fontSize) async {
-    await _prefs.setDouble(_fontSizeKey, normalizeFontSize(fontSize));
+    final success = await _prefs.setDouble(
+      _fontSizeKey,
+      normalizeFontSize(fontSize),
+    );
+    if (!success) {
+      throw Exception('setDouble returned false for key "$_fontSizeKey"');
+    }
   }
 
   double loadFontSize() {
@@ -25,7 +31,10 @@ class FontSizeService {
   }
 
   Future<void> resetFontSize() async {
-    await _prefs.remove(_fontSizeKey);
+    final success = await _prefs.remove(_fontSizeKey);
+    if (!success) {
+      throw Exception('remove returned false for key "$_fontSizeKey"');
+    }
   }
 
   static double normalizeFontSize(double fontSize) {
