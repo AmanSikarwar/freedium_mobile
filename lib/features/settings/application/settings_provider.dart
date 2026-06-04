@@ -310,14 +310,14 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> resetToDefaults() async {
+  Future<bool> resetToDefaults() async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
+    if (service == null) return false;
     final defaultState = SettingsState(
       mirrors: SettingsState.defaultMirrors,
       selectedMirrorUrl: SettingsState.defaultMirrors.first.url,
     );
-    await _saveAndApply(
+    return _saveAndApply(
       save: () async {
         await service.saveThemeMode(defaultState.themeMode);
         await service.saveDefaultFontSize(defaultState.defaultFontSize);

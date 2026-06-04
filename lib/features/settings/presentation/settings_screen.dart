@@ -329,13 +329,24 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              ref.read(settingsProvider.notifier).resetToDefaults();
               final scaffoldMessenger = ScaffoldMessenger.of(context);
-              Navigator.pop(context);
+              final navigator = Navigator.of(context);
+              final didReset = await ref
+                  .read(settingsProvider.notifier)
+                  .resetToDefaults();
+              if (!context.mounted) return;
+              navigator.pop();
               scaffoldMessenger.showSnackBar(
-                const SnackBar(content: Text('Settings reset to defaults')),
+                SnackBar(
+                  content: Text(
+                    didReset
+                        ? 'Settings reset to defaults'
+                        : 'Failed to reset settings',
+                  ),
+                  backgroundColor: didReset ? Colors.green : Colors.red,
+                ),
               );
             },
             child: const Text('Reset'),
