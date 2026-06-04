@@ -33,6 +33,20 @@ void main() {
       );
     });
 
+    test('preserves balanced trailing delimiters in URL paths', () {
+      expect(
+        extractArticleUrl('https://medium.com/example/story-(part-1)'),
+        'https://medium.com/example/story-(part-1)',
+      );
+    });
+
+    test('strips unmatched closing delimiters from wrapped URLs', () {
+      expect(
+        extractArticleUrl('Open (https://medium.com/example/story).'),
+        'https://medium.com/example/story',
+      );
+    });
+
     test('rejects unsupported schemes', () {
       expect(extractArticleUrl('ftp://medium.com/example/story'), isNull);
     });

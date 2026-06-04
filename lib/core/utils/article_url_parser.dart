@@ -42,9 +42,26 @@ String? _validHttpUrl(String value) {
 
 String _stripTrailingPunctuation(String value) {
   var cleaned = value.trim();
-  while (cleaned.isNotEmpty &&
-      '.,;:!?)>]'.contains(cleaned[cleaned.length - 1])) {
+  while (cleaned.isNotEmpty) {
+    final last = cleaned[cleaned.length - 1];
+    final shouldStrip =
+        '.,;:!?'.contains(last) ||
+        (last == ')' && _hasUnmatchedClosingDelimiter(cleaned, '(', ')')) ||
+        (last == ']' && _hasUnmatchedClosingDelimiter(cleaned, '[', ']')) ||
+        (last == '>' && _hasUnmatchedClosingDelimiter(cleaned, '<', '>'));
+
+    if (!shouldStrip) break;
     cleaned = cleaned.substring(0, cleaned.length - 1);
   }
   return cleaned;
+}
+
+bool _hasUnmatchedClosingDelimiter(
+  String value,
+  String openingDelimiter,
+  String closingDelimiter,
+) {
+  final openingCount = openingDelimiter.allMatches(value).length;
+  final closingCount = closingDelimiter.allMatches(value).length;
+  return closingCount > openingCount;
 }
