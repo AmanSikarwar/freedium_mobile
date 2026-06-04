@@ -245,10 +245,22 @@ class SettingsScreen extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () {
+              onPressed: () async {
                 HapticFeedback.lightImpact();
-                notifier.setMirrorTimeout(timeout);
-                Navigator.pop(context);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final navigator = Navigator.of(context);
+                final didSave = await notifier.setMirrorTimeout(timeout);
+                if (!context.mounted) return;
+                if (didSave) {
+                  navigator.pop();
+                } else {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to save mirror timeout'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               child: const Text('Save'),
             ),

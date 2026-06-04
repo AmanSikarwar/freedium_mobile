@@ -298,11 +298,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> setMirrorTimeout(int timeout) async {
+  Future<bool> setMirrorTimeout(int timeout) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
+    if (service == null) return false;
     final normalizedTimeout = SettingsState.normalizeMirrorTimeout(timeout);
-    await _saveAndApply(
+    return _saveAndApply(
       save: () => service.saveMirrorTimeout(normalizedTimeout),
       nextState: state.copyWith(mirrorTimeout: normalizedTimeout),
       failureMessage: 'Failed to save mirror timeout',

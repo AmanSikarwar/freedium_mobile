@@ -103,5 +103,38 @@ void main() {
       expect(find.text('Settings reset to defaults'), findsNothing);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('keeps timeout dialog open when saving fails', (tester) async {
+      SharedPreferencesStorePlatform.instance =
+          _FailingSharedPreferencesStore();
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Mirror Timeout'), 300);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Mirror Timeout'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.widgetWithText(AlertDialog, 'Mirror Timeout'),
+        findsOneWidget,
+      );
+      expect(find.text('Failed to save mirror timeout'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }
