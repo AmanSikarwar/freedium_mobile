@@ -1,17 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
-class ChangelogBottomSheet extends StatelessWidget {
+class ChangelogBottomSheet extends ConsumerWidget {
   const ChangelogBottomSheet({super.key, required this.updateInfo});
 
   final UpdateInfo updateInfo;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
 
     return DraggableScrollableSheet(
@@ -157,7 +159,7 @@ class ChangelogBottomSheet extends StatelessWidget {
                     ),
                   ),
                   onTapLink: (text, href, title) {
-                    unawaited(launchExternalHttpUrl(href));
+                    unawaited(_launchUrl(context, ref, href));
                   },
                 ),
               ),
@@ -182,8 +184,14 @@ class ChangelogBottomSheet extends StatelessWidget {
                     width: .infinity,
                     child: FilledButton.icon(
                       onPressed: () {
-                        Navigator.of(context).pop();
-                        unawaited(launchExternalHttpUrl(updateInfo.releaseUrl));
+                        unawaited(
+                          _launchUrl(
+                            context,
+                            ref,
+                            updateInfo.releaseUrl,
+                            dismissBeforeLaunch: true,
+                          ),
+                        );
                       },
                       icon: const Icon(Icons.download),
                       label: const Text('Update Now'),
@@ -198,6 +206,30 @@ class ChangelogBottomSheet extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Future<void> _launchUrl(
+    BuildContext context,
+    WidgetRef ref,
+    String? url, {
+    bool dismissBeforeLaunch = false,
+  }) async {
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    if (dismissBeforeLaunch) {
+      Navigator.of(context).pop();
+    }
+
+    final launched = await ref.read(externalUrlLauncherProvider)(url);
+    if (launched) return;
+    if (!dismissBeforeLaunch && !context.mounted) return;
+
+    HapticFeedback.heavyImpact();
+    scaffoldMessenger.showSnackBar(
+      const SnackBar(
+        content: Text('Could not open link'),
+        backgroundColor: Colors.red,
+      ),
     );
   }
 }
