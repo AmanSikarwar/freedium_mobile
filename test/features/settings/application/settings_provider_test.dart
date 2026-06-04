@@ -184,7 +184,7 @@ void main() {
           container.read(freediumUrlServiceProvider)
               as _RecordingFreediumUrlService;
 
-      await container
+      final added = await container
           .read(settingsProvider.notifier)
           .addMirror(
             const FreediumMirror(
@@ -194,6 +194,7 @@ void main() {
             ),
           );
 
+      expect(added, isTrue);
       final mirror = container.read(settingsProvider).mirrors.last;
       expect(mirror.name, 'Custom');
       expect(mirror.url, 'https://custom.example');
@@ -269,14 +270,14 @@ void main() {
               as _RecordingFreediumUrlService;
 
       final notifier = container.read(settingsProvider.notifier);
-      await notifier.addMirror(
+      final duplicateAdded = await notifier.addMirror(
         const FreediumMirror(
           name: 'Duplicate',
           url: ' HTTPS://Freedium.CFD/ ',
           isCustom: true,
         ),
       );
-      await notifier.addMirror(
+      final invalidAdded = await notifier.addMirror(
         const FreediumMirror(
           name: 'Unsupported',
           url: 'ftp://custom.example',
@@ -284,6 +285,8 @@ void main() {
         ),
       );
 
+      expect(duplicateAdded, isFalse);
+      expect(invalidAdded, isFalse);
       final settings = container.read(settingsProvider);
       expect(settings.mirrors, SettingsState.defaultMirrors);
       expect(freediumUrlService.invalidateCount, 0);

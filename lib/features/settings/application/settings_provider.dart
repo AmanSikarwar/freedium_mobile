@@ -179,18 +179,19 @@ class SettingsNotifier extends Notifier<SettingsState> {
     await service.saveDefaultFontSize(normalizedFontSize);
   }
 
-  Future<void> addMirror(FreediumMirror mirror) async {
+  Future<bool> addMirror(FreediumMirror mirror) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
+    if (service == null) return false;
     final normalizedMirror = _normalizeMirror(mirror);
     if (normalizedMirror == null ||
         state.mirrors.any((m) => m.url == normalizedMirror.url)) {
-      return;
+      return false;
     }
     final updatedMirrors = [...state.mirrors, normalizedMirror];
     state = state.copyWith(mirrors: updatedMirrors);
     await service.saveMirrors(updatedMirrors);
     ref.read(freediumUrlServiceProvider).invalidateCache();
+    return true;
   }
 
   Future<void> removeMirror(FreediumMirror mirror) async {
@@ -212,19 +213,19 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
   }
 
-  Future<void> updateMirror(
+  Future<bool> updateMirror(
     FreediumMirror oldMirror,
     FreediumMirror newMirror,
   ) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    if (!state.mirrors.contains(oldMirror)) return;
+    if (service == null) return false;
+    if (!state.mirrors.contains(oldMirror)) return false;
     final normalizedMirror = _normalizeMirror(newMirror);
     if (normalizedMirror == null ||
         state.mirrors.any(
           (m) => m != oldMirror && m.url == normalizedMirror.url,
         )) {
-      return;
+      return false;
     }
     final updatedMirrors = state.mirrors.map((m) {
       if (m == oldMirror) return normalizedMirror;
@@ -237,6 +238,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
     if (state.selectedMirrorUrl == oldMirror.url) {
       await setSelectedMirror(normalizedMirror.url);
     }
+    return true;
   }
 
   Future<void> setSelectedMirror(String url) async {

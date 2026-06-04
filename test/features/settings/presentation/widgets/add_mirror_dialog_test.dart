@@ -17,7 +17,10 @@ void main() {
                   showDialog<void>(
                     context: context,
                     builder: (_) => AddMirrorDialog(
-                      onAdd: (mirror) => addedMirror = mirror,
+                      onAdd: (mirror) {
+                        addedMirror = mirror;
+                        return true;
+                      },
                     ),
                   );
                 },
@@ -46,5 +49,55 @@ void main() {
     expect(mirror, isNotNull);
     expect(mirror!.name, 'Custom');
     expect(mirror.url, 'HTTPS://custom.example');
+  });
+
+  testWidgets('stays open and shows an error when a mirror is rejected', (
+    tester,
+  ) async {
+    FreediumMirror? submittedMirror;
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            return Scaffold(
+              body: FilledButton(
+                onPressed: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (_) => AddMirrorDialog(
+                      onAdd: (mirror) {
+                        submittedMirror = mirror;
+                        return false;
+                      },
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'Duplicate');
+    await tester.enterText(
+      find.byType(TextFormField).at(1),
+      'https://freedium.cfd',
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
+    await tester.pumpAndSettle();
+
+    expect(submittedMirror?.url, 'https://freedium.cfd');
+    expect(
+      find.text('Mirror already exists or could not be saved.'),
+      findsOneWidget,
+    );
+    expect(find.byType(AddMirrorDialog), findsOneWidget);
   });
 }

@@ -1,10 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class AddMirrorDialog extends StatefulWidget {
   final FreediumMirror? existingMirror;
-  final void Function(FreediumMirror mirror) onAdd;
+  final FutureOr<bool> Function(FreediumMirror mirror) onAdd;
 
   const AddMirrorDialog({super.key, this.existingMirror, required this.onAdd});
 
@@ -16,6 +18,8 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
   late TextEditingController _nameController;
   late TextEditingController _urlController;
   final _formKey = GlobalKey<FormState>();
+  bool _isSubmitting = false;
+  String? _submissionError;
 
   bool get isEditing => widget.existingMirror != null;
 
@@ -92,38 +96,62 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
+            if (_submissionError != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                _submissionError!,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.error,
+                ),
+              ),
+            ],
           ],
         ),
       ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context),
+          onPressed: _isSubmitting ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
         FilledButton(
-          onPressed: _submit,
-          child: Text(isEditing ? 'Save' : 'Add'),
+          onPressed: _isSubmitting ? null : _submit,
+          child: Text(
+            _isSubmitting ? 'Saving...' : (isEditing ? 'Save' : 'Add'),
+          ),
         ),
       ],
     );
   }
 
-  void _submit() {
-    if (_formKey.currentState!.validate()) {
-      HapticFeedback.mediumImpact();
-      String url = _urlController.text.trim();
-      while (url.length > 1 && url.endsWith('/')) {
-        url = url.substring(0, url.length - 1);
-      }
+  Future<void> _submit() async {
+    setState(() => _submissionError = null);
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
-      final mirror = FreediumMirror(
-        name: _nameController.text.trim(),
-        url: url,
-        isCustom: true,
-      );
+    HapticFeedback.mediumImpact();
+    String url = _urlController.text.trim();
+    while (url.length > 1 && url.endsWith('/')) {
+      url = url.substring(0, url.length - 1);
+    }
 
-      widget.onAdd(mirror);
+    final mirror = FreediumMirror(
+      name: _nameController.text.trim(),
+      url: url,
+      isCustom: true,
+    );
+
+    setState(() => _isSubmitting = true);
+    final accepted = await Future<bool>.value(widget.onAdd(mirror));
+    if (!mounted) return;
+
+    if (accepted) {
       Navigator.pop(context);
+    } else {
+      setState(() {
+        _isSubmitting = false;
+        _submissionError = 'Mirror already exists or could not be saved.';
+      });
     }
   }
 }

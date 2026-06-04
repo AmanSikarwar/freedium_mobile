@@ -263,7 +263,7 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AddMirrorDialog(
         onAdd: (mirror) {
-          ref.read(settingsProvider.notifier).addMirror(mirror);
+          return ref.read(settingsProvider.notifier).addMirror(mirror);
         },
       ),
     );
@@ -279,7 +279,7 @@ class SettingsScreen extends ConsumerWidget {
       builder: (context) => AddMirrorDialog(
         existingMirror: mirror,
         onAdd: (updatedMirror) {
-          ref
+          return ref
               .read(settingsProvider.notifier)
               .updateMirror(mirror, updatedMirror);
         },
