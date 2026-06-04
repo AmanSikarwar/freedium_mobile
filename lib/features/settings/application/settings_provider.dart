@@ -164,10 +164,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> setThemeMode(ThemeMode themeMode) async {
+  Future<bool> setThemeMode(ThemeMode themeMode) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    await _saveAndApply(
+    if (service == null) return false;
+    return _saveAndApply(
       save: () => service.saveThemeMode(themeMode),
       nextState: state.copyWith(themeMode: themeMode),
       failureMessage: 'Failed to save theme mode',
