@@ -118,7 +118,8 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.code),
             title: const Text('Source Code'),
             subtitle: const Text('View on GitHub'),
-            onTap: () => _launchUrl(AppConstants.appSourceUrl),
+            onTap: () =>
+                unawaited(_launchUrl(context, ref, AppConstants.appSourceUrl)),
           ),
           ListTile(
             leading: const Icon(Icons.restore),
@@ -492,7 +493,7 @@ class SettingsScreen extends ConsumerWidget {
             FilledButton(
               onPressed: () {
                 Navigator.pop(dialogContext);
-                unawaited(_launchUrl(updateInfo.releaseUrl));
+                unawaited(_launchUrl(context, ref, updateInfo.releaseUrl));
               },
               child: const Text('Update'),
             ),
@@ -509,7 +510,20 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _launchUrl(String url) async {
-    await launchExternalHttpUrl(url);
+  Future<void> _launchUrl(
+    BuildContext context,
+    WidgetRef ref,
+    String url,
+  ) async {
+    final launched = await ref.read(externalUrlLauncherProvider)(url);
+    if (!context.mounted || launched) return;
+
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not open link'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 }

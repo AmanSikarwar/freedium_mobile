@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -107,6 +108,58 @@ void main() {
 
       expect(find.text('Failed to reset settings'), findsOneWidget);
       expect(find.text('Settings reset to defaults'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('shows link failure when update URL cannot be opened', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final launchedUrls = <String?>[];
+      const releaseUrl =
+          'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0';
+      final updateService = UpdateService(
+        client: MockClient(
+          (_) async => http.Response(
+            jsonEncode({
+              'tag_name': 'v0.11.0',
+              'html_url': releaseUrl,
+              'body': 'Release notes',
+            }),
+            200,
+          ),
+        ),
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            updateServiceProvider.overrideWith((ref) => updateService),
+            externalUrlLauncherProvider.overrideWith(
+              (ref) => (url) async {
+                launchedUrls.add(url);
+                return false;
+              },
+            ),
+          ],
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.scrollUntilVisible(find.text('Check for Updates'), 300);
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Check for Updates'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Update'));
+      await tester.pumpAndSettle();
+
+      expect(launchedUrls, [releaseUrl]);
+      expect(find.text('Could not open link'), findsOneWidget);
+      expect(find.text('Update Available'), findsNothing);
       expect(tester.takeException(), isNull);
     });
 

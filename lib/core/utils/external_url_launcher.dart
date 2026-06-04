@@ -1,5 +1,12 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
+
+typedef ExternalUrlLauncher = Future<bool> Function(String? value);
+
+final externalUrlLauncherProvider = Provider<ExternalUrlLauncher>(
+  (ref) => launchExternalHttpUrl,
+);
 
 Uri? parseExternalHttpUrl(String? value) {
   final url = value?.trim();
