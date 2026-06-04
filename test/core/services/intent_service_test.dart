@@ -5,6 +5,22 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
+class _ThrowingResetSharingIntent extends ReceiveSharingIntent {
+  int resetRequests = 0;
+
+  @override
+  Future<List<SharedMediaFile>> getInitialMedia() async => <SharedMediaFile>[];
+
+  @override
+  Stream<List<SharedMediaFile>> getMediaStream() => const Stream.empty();
+
+  @override
+  Future<dynamic> reset() async {
+    resetRequests++;
+    throw Exception('reset unavailable');
+  }
+}
+
 class _FakeIntentService extends IntentService {
   _FakeIntentService(this._intentStream);
 
@@ -24,6 +40,17 @@ class _FakeIntentService extends IntentService {
 }
 
 void main() {
+  group('IntentService', () {
+    test('suppresses plugin reset failures', () async {
+      final sharingIntent = _ThrowingResetSharingIntent();
+      final intentService = IntentService(sharingIntent: sharingIntent);
+
+      await intentService.reset();
+
+      expect(sharingIntent.resetRequests, 1);
+    });
+  });
+
   group('intentStreamProvider', () {
     test('emits shared article URLs and resets consumed intents', () async {
       final mediaController = StreamController<List<SharedMediaFile>>();

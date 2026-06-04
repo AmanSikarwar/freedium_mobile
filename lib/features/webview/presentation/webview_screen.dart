@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
@@ -12,7 +13,6 @@ import 'package:freedium_mobile/features/webview/application/initial_mirror_reso
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebviewScreen extends ConsumerStatefulWidget {
@@ -28,10 +28,12 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
   WebViewController? _controller;
   ColorScheme? _prevColorScheme;
+  late final IntentService _intentService;
 
   @override
   void initState() {
     super.initState();
+    _intentService = ref.read(intentServiceProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeWebView();
     });
@@ -67,8 +69,12 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
 
   @override
   void dispose() {
-    ReceiveSharingIntent.instance.reset();
+    _resetSharingIntent();
     super.dispose();
+  }
+
+  void _resetSharingIntent() {
+    unawaited(_intentService.reset());
   }
 
   @override
@@ -113,7 +119,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                ReceiveSharingIntent.instance.reset();
+                _resetSharingIntent();
                 navigator.pop();
               }
             });
@@ -125,7 +131,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                ReceiveSharingIntent.instance.reset();
+                _resetSharingIntent();
                 navigator.pushReplacement(
                   MaterialPageRoute(builder: (context) => const HomeScreen()),
                 );

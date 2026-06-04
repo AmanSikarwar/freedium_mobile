@@ -6,16 +6,21 @@ import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 class IntentService {
+  IntentService({ReceiveSharingIntent? sharingIntent})
+    : _sharingIntent = sharingIntent ?? ReceiveSharingIntent.instance;
+
+  final ReceiveSharingIntent _sharingIntent;
+
   Stream<List<SharedMediaFile>> get intentStream =>
-      ReceiveSharingIntent.instance.getMediaStream();
+      _sharingIntent.getMediaStream();
 
   Future<List<SharedMediaFile>> getInitialIntent() async {
-    return ReceiveSharingIntent.instance.getInitialMedia();
+    return _sharingIntent.getInitialMedia();
   }
 
   Future<void> reset() async {
     try {
-      await ReceiveSharingIntent.instance.reset();
+      await _sharingIntent.reset();
     } catch (e) {
       debugPrint('Failed to reset sharing intent: $e');
     }
