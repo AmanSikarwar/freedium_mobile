@@ -91,6 +91,37 @@ void main() {
       expect(history.single.title, 'Second');
     });
 
+    test('reports failure and preserves history when removing fails', () async {
+      container.dispose();
+      final history = ReadingHistory(
+        url: 'https://medium.com/example/story',
+        title: 'Story',
+        timestamp: DateTime.utc(2026, 2, 3),
+      );
+      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+        'flutter.reading_history': [jsonEncode(history.toJson())],
+      });
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+      container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+        ],
+      );
+
+      final notifier = container.read(historyProvider.notifier);
+      container.read(historyProvider);
+      await container.read(sharedPreferencesProvider.future);
+      await Future<void>.delayed(Duration.zero);
+      expect(container.read(historyProvider), hasLength(1));
+
+      final didRemove = await notifier.removeHistory(history);
+
+      expect(didRemove, isFalse);
+      expect(container.read(historyProvider), hasLength(1));
+    });
+
     test('reports failure and preserves history when clearing fails', () async {
       container.dispose();
       final history = ReadingHistory(

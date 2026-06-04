@@ -77,9 +77,9 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
     }
   }
 
-  Future<void> removeHistory(ReadingHistory item) async {
+  Future<bool> removeHistory(ReadingHistory item) async {
     final service = await _ensureHistoryService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
     final newList = state.where((element) => element.url != item.url).toList();
@@ -87,9 +87,11 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
     try {
       await service.saveHistory(newList);
       state = newList;
+      return true;
     } catch (e) {
       debugPrint('Failed to remove history entry: $e');
       state = prevState;
+      return false;
     }
   }
 

@@ -139,9 +139,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ),
-                  onDismissed: (_) {
+                  confirmDismiss: (_) async {
                     HapticFeedback.lightImpact();
-                    ref.read(historyProvider.notifier).removeHistory(item);
+                    final didRemove = await ref
+                        .read(historyProvider.notifier)
+                        .removeHistory(item);
+                    if (!context.mounted) return false;
+
+                    if (!didRemove) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to remove history entry'),
+                        ),
+                      );
+                    }
+
+                    return didRemove;
                   },
                   child: ArticleCard(
                     title: item.title,
