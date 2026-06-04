@@ -22,9 +22,45 @@ class _FakeIntentService extends IntentService {
   Future<List<SharedMediaFile>> getInitialIntent() async => <SharedMediaFile>[];
 }
 
+class _FailingIntentService extends IntentService {
+  @override
+  Future<List<SharedMediaFile>> getInitialIntent() async {
+    throw Exception('initial intent unavailable');
+  }
+}
+
+class _RecordingIntentService extends IntentService {
+  int initialIntentRequests = 0;
+
+  @override
+  Future<List<SharedMediaFile>> getInitialIntent() async {
+    initialIntentRequests++;
+    return <SharedMediaFile>[];
+  }
+}
+
 class _FakeUpdateService extends UpdateService {
   @override
   Future<UpdateInfo?> checkForUpdate() async => null;
+}
+
+Widget _buildApp({
+  required SharedPreferences prefs,
+  IntentService? intentService,
+}) {
+  return ProviderScope(
+    overrides: [
+      sharedPreferencesProvider.overrideWith((ref) async => prefs),
+      dynamicThemeProvider.overrideWith((ref) => ref.watch(themeProvider)),
+      clipboardServiceProvider.overrideWith((ref) => _FakeClipboardService()),
+      intentServiceProvider.overrideWith(
+        (ref) => intentService ?? _FakeIntentService(),
+      ),
+      intentStreamProvider.overrideWith((ref) => const Stream<String>.empty()),
+      updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
+    ],
+    child: const App(),
+  );
 }
 
 void main() {
@@ -100,25 +136,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-            dynamicThemeProvider.overrideWith(
-              (ref) => ref.watch(themeProvider),
-            ),
-            clipboardServiceProvider.overrideWith(
-              (ref) => _FakeClipboardService(),
-            ),
-            intentServiceProvider.overrideWith((ref) => _FakeIntentService()),
-            intentStreamProvider.overrideWith(
-              (ref) => const Stream<String>.empty(),
-            ),
-            updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
-          ],
-          child: const App(),
-        ),
-      );
+      await tester.pumpWidget(_buildApp(prefs: prefs));
       await tester.pumpAndSettle();
 
       expect(find.byType(OnboardingScreen), findsOneWidget);
@@ -130,6 +148,41 @@ void main() {
       expect(find.byType(OnboardingScreen), findsNothing);
       expect(find.byType(HomeScreen), findsOneWidget);
       expect(find.text('Read Article'), findsOneWidget);
+    });
+
+    testWidgets('keeps home visible when initial intent lookup fails', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({'has_seen_onboarding': true});
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        _buildApp(prefs: prefs, intentService: _FailingIntentService()),
+      );
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(tester.takeException(), isNull);
+      expect(find.byType(HomeScreen), findsOneWidget);
+    });
+
+    testWidgets('does not read initial intent after app disposal', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({'has_seen_onboarding': true});
+      final prefs = await SharedPreferences.getInstance();
+      final intentService = _RecordingIntentService();
+
+      await tester.pumpWidget(
+        _buildApp(prefs: prefs, intentService: intentService),
+      );
+      await tester.pump();
+
+      await tester.pumpWidget(const SizedBox.shrink());
+      await tester.pump(const Duration(milliseconds: 500));
+
+      expect(tester.takeException(), isNull);
+      expect(intentService.initialIntentRequests, 0);
     });
   });
 }

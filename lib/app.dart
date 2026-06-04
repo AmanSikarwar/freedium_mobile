@@ -148,13 +148,24 @@ class App extends ConsumerWidget {
     ReceiveSharingIntent.instance.reset();
   }
 
-  Future<void> _processInitialIntent(WidgetRef ref) async {
+  Future<void> _processInitialIntent(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    final value = await ref.read(intentServiceProvider).getInitialIntent();
-    final url = extractFirstArticleUrl(value.map((item) => item.path));
-    if (url == null) return;
+    if (!context.mounted) return;
 
-    _handleIncomingIntent(ref, url);
+    try {
+      final value = await ref.read(intentServiceProvider).getInitialIntent();
+      if (!context.mounted) return;
+
+      final url = extractFirstArticleUrl(value.map((item) => item.path));
+      if (url == null) return;
+
+      _handleIncomingIntent(ref, url);
+    } catch (e) {
+      debugPrint('Failed to process initial intent: $e');
+    }
   }
 
   @override
@@ -185,7 +196,7 @@ class App extends ConsumerWidget {
     if (!hasHandledInitialIntent) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(initialIntentHandledProvider.notifier).setHandled();
-        unawaited(_processInitialIntent(ref));
+        unawaited(_processInitialIntent(context, ref));
       });
     }
 
