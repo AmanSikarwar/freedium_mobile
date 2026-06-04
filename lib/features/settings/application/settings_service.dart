@@ -16,7 +16,11 @@ class SettingsService {
   SettingsService(this._prefs);
 
   Future<void> saveThemeMode(ThemeMode themeMode) async {
-    await _prefs.setString(_themeModeKey, themeMode.name);
+    await _savePreference(
+      () => _prefs.setString(_themeModeKey, themeMode.name),
+      methodName: 'setString',
+      key: _themeModeKey,
+    );
   }
 
   ThemeMode loadThemeMode() {
@@ -31,9 +35,13 @@ class SettingsService {
   }
 
   Future<void> saveDefaultFontSize(double fontSize) async {
-    await _prefs.setDouble(
-      _defaultFontSizeKey,
-      SettingsState.normalizeDefaultFontSize(fontSize),
+    await _savePreference(
+      () => _prefs.setDouble(
+        _defaultFontSizeKey,
+        SettingsState.normalizeDefaultFontSize(fontSize),
+      ),
+      methodName: 'setDouble',
+      key: _defaultFontSizeKey,
     );
   }
 
@@ -46,7 +54,11 @@ class SettingsService {
 
   Future<void> saveMirrors(List<FreediumMirror> mirrors) async {
     final mirrorsJson = mirrors.map((m) => jsonEncode(m.toJson())).toList();
-    await _prefs.setStringList(_mirrorsKey, mirrorsJson);
+    await _savePreference(
+      () => _prefs.setStringList(_mirrorsKey, mirrorsJson),
+      methodName: 'setStringList',
+      key: _mirrorsKey,
+    );
   }
 
   List<FreediumMirror> loadMirrors() {
@@ -77,7 +89,11 @@ class SettingsService {
   }
 
   Future<void> saveSelectedMirrorUrl(String url) async {
-    await _prefs.setString(_selectedMirrorUrlKey, url);
+    await _savePreference(
+      () => _prefs.setString(_selectedMirrorUrlKey, url),
+      methodName: 'setString',
+      key: _selectedMirrorUrlKey,
+    );
   }
 
   String loadSelectedMirrorUrl() {
@@ -89,7 +105,11 @@ class SettingsService {
   }
 
   Future<void> saveAutoSwitchMirror(bool autoSwitch) async {
-    await _prefs.setBool(_autoSwitchMirrorKey, autoSwitch);
+    await _savePreference(
+      () => _prefs.setBool(_autoSwitchMirrorKey, autoSwitch),
+      methodName: 'setBool',
+      key: _autoSwitchMirrorKey,
+    );
   }
 
   bool loadAutoSwitchMirror() {
@@ -97,9 +117,13 @@ class SettingsService {
   }
 
   Future<void> saveMirrorTimeout(int timeout) async {
-    await _prefs.setInt(
-      _mirrorTimeoutKey,
-      SettingsState.normalizeMirrorTimeout(timeout),
+    await _savePreference(
+      () => _prefs.setInt(
+        _mirrorTimeoutKey,
+        SettingsState.normalizeMirrorTimeout(timeout),
+      ),
+      methodName: 'setInt',
+      key: _mirrorTimeoutKey,
     );
   }
 
@@ -125,6 +149,22 @@ class SettingsService {
       autoSwitchMirror: loadAutoSwitchMirror(),
       mirrorTimeout: loadMirrorTimeout(),
     );
+  }
+}
+
+Future<void> _savePreference(
+  Future<bool> Function() save, {
+  required String methodName,
+  required String key,
+}) async {
+  try {
+    final success = await save();
+    if (!success) {
+      throw Exception('$methodName returned false for key "$key"');
+    }
+  } catch (e) {
+    debugPrint('Failed to save setting "$key": $e');
+    rethrow;
   }
 }
 

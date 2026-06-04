@@ -6,6 +6,7 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 class _RecordingFreediumUrlService extends FreediumUrlService {
   _RecordingFreediumUrlService(super.ref);
@@ -16,6 +17,21 @@ class _RecordingFreediumUrlService extends FreediumUrlService {
   void invalidateCache() {
     invalidateCount++;
   }
+}
+
+class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
+  @override
+  Future<bool> clear() async => false;
+
+  @override
+  Future<Map<String, Object>> getAll() async => {};
+
+  @override
+  Future<bool> remove(String key) async => false;
+
+  @override
+  Future<bool> setValue(String valueType, String key, Object value) async =>
+      false;
 }
 
 void main() {
@@ -164,6 +180,44 @@ void main() {
         SettingsState.maxDefaultFontSize,
       );
       expect(prefs.getInt('mirror_timeout'), SettingsState.minMirrorTimeout);
+    });
+
+    test('keeps state and mirror cache unchanged when saving fails', () async {
+      SharedPreferencesStorePlatform.instance =
+          _FailingSharedPreferencesStore();
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+      late _RecordingFreediumUrlService freediumUrlService;
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith((ref) {
+            freediumUrlService = _RecordingFreediumUrlService(ref);
+            return freediumUrlService;
+          }),
+        ],
+      );
+      addTearDown(container.dispose);
+      freediumUrlService =
+          container.read(freediumUrlServiceProvider)
+              as _RecordingFreediumUrlService;
+
+      final notifier = container.read(settingsProvider.notifier);
+      final added = await notifier.addMirror(
+        const FreediumMirror(
+          name: 'Custom',
+          url: 'https://custom.example',
+          isCustom: true,
+        ),
+      );
+      await notifier.setAutoSwitchMirror(false);
+
+      final settings = container.read(settingsProvider);
+      expect(added, isFalse);
+      expect(settings.mirrors, SettingsState.defaultMirrors);
+      expect(settings.autoSwitchMirror, isTrue);
+      expect(freediumUrlService.invalidateCount, 0);
     });
 
     test('normalizes custom mirrors before saving live state', () async {
