@@ -134,12 +134,9 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ),
-                  confirmDismiss: (_) async {
+                  onDismissed: (_) {
                     HapticFeedback.lightImpact();
-                    await ref
-                        .read(bookmarksProvider.notifier)
-                        .removeBookmark(item);
-                    return true;
+                    ref.read(bookmarksProvider.notifier).removeBookmark(item);
                   },
                   child: ArticleCard(
                     title: item.title,
