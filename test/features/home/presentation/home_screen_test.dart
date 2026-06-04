@@ -100,6 +100,33 @@ void main() {
       expect(editableText.controller.text, isEmpty);
     });
 
+    testWidgets('shows paste failure when clipboard has no text', (
+      tester,
+    ) async {
+      final clipboard = _FakeClipboardService(null);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.paste));
+      await tester.pumpAndSettle();
+
+      final editableText = tester.widget<EditableText>(
+        find.byType(EditableText),
+      );
+      expect(clipboard.pasteCount, 2);
+      expect(editableText.controller.text, isEmpty);
+      expect(find.text('Could not paste from clipboard'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('does not overwrite typed input when the app resumes', (
       tester,
     ) async {

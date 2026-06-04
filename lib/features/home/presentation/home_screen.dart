@@ -66,7 +66,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
 
   Future<void> _pasteFromClipboard() async {
     final text = await ref.read(homeProvider.notifier).pasteFromClipboard();
-    if (!mounted || text == null) return;
+    if (!mounted) return;
+    if (text == null) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not paste from clipboard'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
 
     _urlController.text = text;
   }
