@@ -46,7 +46,7 @@ void main() {
     });
 
     test('normalizes URL and title before saving a bookmark', () async {
-      await container
+      final didAdd = await container
           .read(bookmarksProvider.notifier)
           .addBookmark(
             ' HTTPS://Medium.COM/example/story/ ',
@@ -54,6 +54,7 @@ void main() {
           );
 
       final bookmarks = container.read(bookmarksProvider);
+      expect(didAdd, isTrue);
       expect(bookmarks, hasLength(1));
       expect(bookmarks.single.url, 'https://medium.com/example/story');
       expect(bookmarks.single.title, 'Example story');
@@ -72,10 +73,16 @@ void main() {
     test('ignores invalid bookmark URLs', () async {
       final notifier = container.read(bookmarksProvider.notifier);
 
-      await notifier.addBookmark('ftp://example.com/story', 'Invalid');
-      await notifier.addBookmark('not a url', 'Invalid');
-      await notifier.addBookmark('', 'Invalid');
+      final didAddFtp = await notifier.addBookmark(
+        'ftp://example.com/story',
+        'Invalid',
+      );
+      final didAddText = await notifier.addBookmark('not a url', 'Invalid');
+      final didAddEmpty = await notifier.addBookmark('', 'Invalid');
 
+      expect(didAddFtp, isFalse);
+      expect(didAddText, isFalse);
+      expect(didAddEmpty, isFalse);
       expect(container.read(bookmarksProvider), isEmpty);
     });
 
@@ -96,7 +103,65 @@ void main() {
       final notifier = container.read(bookmarksProvider.notifier);
       await notifier.addBookmark('https://medium.com/example/story', 'Story');
 
-      await notifier.toggleBookmark(' HTTPS://Medium.COM/example/story/ ', '');
+      final didToggle = await notifier.toggleBookmark(
+        ' HTTPS://Medium.COM/example/story/ ',
+        '',
+      );
+      expect(didToggle, isTrue);
+      expect(container.read(bookmarksProvider), isEmpty);
+    });
+
+    test('reports failure and preserves bookmarks when adding fails', () async {
+      container.dispose();
+      SharedPreferencesStorePlatform.instance =
+          _FailingSharedPreferencesStore();
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+      container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+        ],
+      );
+
+      final notifier = container.read(bookmarksProvider.notifier);
+      container.read(bookmarksProvider);
+      await container.read(sharedPreferencesProvider.future);
+      await Future<void>.delayed(Duration.zero);
+
+      final didAdd = await notifier.addBookmark(
+        'https://medium.com/example/story',
+        'Story',
+      );
+
+      expect(didAdd, isFalse);
+      expect(container.read(bookmarksProvider), isEmpty);
+    });
+
+    test('reports failure when toggling a bookmark add fails', () async {
+      container.dispose();
+      SharedPreferencesStorePlatform.instance =
+          _FailingSharedPreferencesStore();
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+      container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+        ],
+      );
+
+      final notifier = container.read(bookmarksProvider.notifier);
+      container.read(bookmarksProvider);
+      await container.read(sharedPreferencesProvider.future);
+      await Future<void>.delayed(Duration.zero);
+
+      final didToggle = await notifier.toggleBookmark(
+        'https://medium.com/example/story',
+        'Story',
+      );
+
+      expect(didToggle, isFalse);
       expect(container.read(bookmarksProvider), isEmpty);
     });
 

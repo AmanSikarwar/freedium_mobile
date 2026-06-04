@@ -50,12 +50,12 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
     return state.any((b) => b.url == normalizedUrl);
   }
 
-  Future<void> addBookmark(String url, String title) async {
+  Future<bool> addBookmark(String url, String title) async {
     final service = await _ensureService();
-    if (service == null) return;
+    if (service == null) return false;
     final normalizedUrl = normalizeHttpUrl(url);
-    if (normalizedUrl == null) return;
-    if (isBookmarked(normalizedUrl)) return; // already saved
+    if (normalizedUrl == null) return false;
+    if (isBookmarked(normalizedUrl)) return true; // already saved
     final normalizedTitle = title.trim().isNotEmpty
         ? title.trim()
         : normalizedUrl;
@@ -78,9 +78,11 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
     try {
       await service.saveBookmarks(newList);
       state = newList;
+      return true;
     } catch (e) {
       debugPrint('Failed to save bookmark: $e');
       state = prevState;
+      return false;
     }
   }
 
@@ -103,18 +105,15 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
   }
 
   /// Toggles the bookmark state for [url]. Adds if absent, removes if present.
-  Future<void> toggleBookmark(String url, String title) async {
-    if (await _ensureService() == null) return;
-
+  Future<bool> toggleBookmark(String url, String title) async {
     final normalizedUrl = normalizeHttpUrl(url);
-    if (normalizedUrl == null) return;
+    if (normalizedUrl == null) return false;
 
     if (isBookmarked(normalizedUrl)) {
       final item = state.firstWhere((b) => b.url == normalizedUrl);
-      await removeBookmark(item);
-    } else {
-      await addBookmark(normalizedUrl, title);
+      return removeBookmark(item);
     }
+    return addBookmark(normalizedUrl, title);
   }
 
   Future<bool> clearBookmarks() async {

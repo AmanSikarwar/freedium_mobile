@@ -75,6 +75,25 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     unawaited(_intentService.reset());
   }
 
+  Future<void> _toggleBookmark(
+    BookmarksNotifier bookmarksNotifier,
+    WebviewState webviewState,
+  ) async {
+    final didSave = await bookmarksNotifier.toggleBookmark(
+      widget.url,
+      webviewState.articleMeta?.title ?? '',
+    );
+    if (!mounted || didSave) return;
+
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Failed to update bookmark'),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final webviewState = ref.watch(webviewProvider(widget.url));
@@ -319,10 +338,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
               borderRadius: BorderRadius.zero,
               onTap: () {
                 HapticFeedback.lightImpact();
-                bookmarksNotifier.toggleBookmark(
-                  widget.url,
-                  webviewState.articleMeta?.title ?? '',
-                );
+                unawaited(_toggleBookmark(bookmarksNotifier, webviewState));
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
