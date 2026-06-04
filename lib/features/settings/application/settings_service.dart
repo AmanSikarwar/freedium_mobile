@@ -138,10 +138,13 @@ String? _normalizeMirrorUrl(String value) {
     return null;
   }
 
-  final path = _trimTrailingSlash(uri.path);
-  return uri
-      .replace(scheme: scheme, host: uri.host.toLowerCase(), path: path)
-      .toString();
+  return Uri(
+    scheme: scheme,
+    userInfo: uri.userInfo,
+    host: uri.host.toLowerCase(),
+    port: uri.hasPort ? uri.port : null,
+    path: _trimTrailingSlash(uri.path),
+  ).toString();
 }
 
 String _trimTrailingSlash(String value) {

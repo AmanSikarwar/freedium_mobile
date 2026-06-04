@@ -189,7 +189,7 @@ void main() {
           .addMirror(
             const FreediumMirror(
               name: ' Custom ',
-              url: ' https://custom.example/// ',
+              url: ' https://custom.example///?ref=home#top ',
               isCustom: true,
             ),
           );
@@ -204,6 +204,51 @@ void main() {
       expect(savedMirror['name'], 'Custom');
       expect(savedMirror['url'], 'https://custom.example');
     });
+
+    test(
+      'deduplicates custom mirrors after dropping query and fragment',
+      () async {
+        SharedPreferences.setMockInitialValues({});
+        final prefs = await SharedPreferences.getInstance();
+        late _RecordingFreediumUrlService freediumUrlService;
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            freediumUrlServiceProvider.overrideWith((ref) {
+              freediumUrlService = _RecordingFreediumUrlService(ref);
+              return freediumUrlService;
+            }),
+          ],
+        );
+        addTearDown(container.dispose);
+        freediumUrlService =
+            container.read(freediumUrlServiceProvider)
+                as _RecordingFreediumUrlService;
+
+        final notifier = container.read(settingsProvider.notifier);
+        await notifier.addMirror(
+          const FreediumMirror(
+            name: 'Custom',
+            url: 'https://custom.example/base?ref=one#top',
+            isCustom: true,
+          ),
+        );
+        await notifier.addMirror(
+          const FreediumMirror(
+            name: 'Duplicate',
+            url: 'https://custom.example/base?ref=two#bottom',
+            isCustom: true,
+          ),
+        );
+
+        final customMirrors = container
+            .read(settingsProvider)
+            .mirrors
+            .where((mirror) => mirror.url == 'https://custom.example/base');
+        expect(customMirrors, hasLength(1));
+        expect(freediumUrlService.invalidateCount, 1);
+      },
+    );
 
     test('rejects invalid and duplicate custom mirrors', () async {
       SharedPreferences.setMockInitialValues({});
