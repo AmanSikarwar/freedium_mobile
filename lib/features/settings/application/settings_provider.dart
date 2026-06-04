@@ -174,11 +174,11 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> setDefaultFontSize(double fontSize) async {
+  Future<bool> setDefaultFontSize(double fontSize) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
+    if (service == null) return false;
     final normalizedFontSize = SettingsState.normalizeDefaultFontSize(fontSize);
-    await _saveAndApply(
+    return _saveAndApply(
       save: () => service.saveDefaultFontSize(normalizedFontSize),
       nextState: state.copyWith(defaultFontSize: normalizedFontSize),
       failureMessage: 'Failed to save default font size',

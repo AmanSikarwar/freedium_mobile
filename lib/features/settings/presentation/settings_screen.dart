@@ -181,7 +181,19 @@ class SettingsScreen extends ConsumerWidget {
       onTap: () => showFontSettingsSheet(
         context,
         initialFontSize: settings.defaultFontSize,
-        onFontSizeChanged: (newSize) => notifier.setDefaultFontSize(newSize),
+        onFontSizeChanged: (newSize) async {
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
+          final didSave = await notifier.setDefaultFontSize(newSize);
+          if (!context.mounted) return;
+          if (!didSave) {
+            scaffoldMessenger.showSnackBar(
+              const SnackBar(
+                content: Text('Failed to save default font size'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
       ),
     );
   }
