@@ -113,5 +113,33 @@ void main() {
         articleUrl,
       );
     });
+
+    test(
+      'extracts original article URL when query and fragment are unencoded',
+      () {
+        expect(
+          extractOriginalArticleUrlFromFreediumUri(
+            mirrorUrl: 'https://freedium.cfd',
+            freediumUrl:
+                'https://freedium.cfd/https://medium.com/example/story?sk=abc#intro',
+          ),
+          'https://medium.com/example/story?sk=abc#intro',
+        );
+      },
+    );
+
+    test(
+      'extracts path-prefixed original URL with unencoded query and fragment',
+      () {
+        expect(
+          extractOriginalArticleUrlFromFreediumUri(
+            mirrorUrl: 'https://mirror.example/base',
+            freediumUrl:
+                'https://mirror.example/base/https://medium.com/example/story?sk=abc#intro',
+          ),
+          'https://medium.com/example/story?sk=abc#intro',
+        );
+      },
+    );
   });
 }

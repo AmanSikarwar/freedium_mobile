@@ -52,7 +52,8 @@ String? extractOriginalArticleUrlFromFreediumUri({
 
   final originalUrl = Uri.decodeComponent(articlePath);
   final queryStr = freediumUri.hasQuery ? '?${freediumUri.query}' : '';
-  return '$originalUrl$queryStr';
+  final fragmentStr = freediumUri.hasFragment ? '#${freediumUri.fragment}' : '';
+  return '$originalUrl$queryStr$fragmentStr';
 }
 
 String _trimTrailingSlash(String value) {
