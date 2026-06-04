@@ -24,6 +24,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     super.dispose();
   }
 
+  void _clearSearch() {
+    if (_query.isEmpty && _searchController.text.isEmpty) return;
+    _searchController.clear();
+    setState(() => _query = '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final history = ref.watch(historyProvider);
@@ -170,6 +176,7 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
           FilledButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
+              _clearSearch();
               ref.read(historyProvider.notifier).clearHistory();
               Navigator.pop(dialogContext);
             },

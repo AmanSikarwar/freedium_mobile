@@ -67,5 +67,47 @@ void main() {
       expect(find.text('No saved articles yet.'), findsOneWidget);
       expect(prefs.getStringList('bookmarked_articles'), isEmpty);
     });
+
+    testWidgets('clears the active search when clearing all bookmarks', (
+      tester,
+    ) async {
+      final bookmark = BookmarkedArticle(
+        url: 'https://medium.com/example/story',
+        title: 'Example story',
+        savedAt: DateTime.utc(2026, 2, 3),
+      );
+      SharedPreferences.setMockInitialValues({
+        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: BookmarksScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(SearchBar),
+          matching: find.byType(EditableText),
+        ),
+        'Example',
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byTooltip('Clear Bookmarks'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('No saved articles yet.'), findsOneWidget);
+      expect(find.textContaining('No results for'), findsNothing);
+      expect(prefs.getStringList('bookmarked_articles'), isNull);
+    });
   });
 }

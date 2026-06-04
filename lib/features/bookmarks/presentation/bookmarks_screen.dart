@@ -23,6 +23,12 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
     super.dispose();
   }
 
+  void _clearSearch() {
+    if (_query.isEmpty && _searchController.text.isEmpty) return;
+    _searchController.clear();
+    setState(() => _query = '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final bookmarks = ref.watch(bookmarksProvider);
@@ -184,6 +190,7 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
           FilledButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
+              _clearSearch();
               ref.read(bookmarksProvider.notifier).clearBookmarks();
               Navigator.pop(context);
             },
