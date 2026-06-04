@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
@@ -11,6 +12,14 @@ class IntentService {
   Future<List<SharedMediaFile>> getInitialIntent() async {
     return ReceiveSharingIntent.instance.getInitialMedia();
   }
+
+  Future<void> reset() async {
+    try {
+      await ReceiveSharingIntent.instance.reset();
+    } catch (e) {
+      debugPrint('Failed to reset sharing intent: $e');
+    }
+  }
 }
 
 final intentServiceProvider = Provider((ref) => IntentService());
@@ -19,18 +28,32 @@ final intentStreamProvider = StreamProvider<String>((ref) {
   final intentService = ref.watch(intentServiceProvider);
   final controller = StreamController<String>();
 
-  final sub = intentService.intentStream.listen((value) {
-    final url = extractFirstArticleUrl(value.map((item) => item.path));
-    if (url != null) {
-      controller.add(url);
-      ReceiveSharingIntent.instance.reset();
+  void closeController() {
+    if (!controller.isClosed) {
+      unawaited(controller.close());
     }
-  });
+  }
+
+  final sub = intentService.intentStream.listen(
+    (value) {
+      if (controller.isClosed) return;
+
+      final url = extractFirstArticleUrl(value.map((item) => item.path));
+      if (url != null) {
+        controller.add(url);
+        unawaited(intentService.reset());
+      }
+    },
+    onError: (Object e, StackTrace stack) {
+      debugPrint('Incoming intent stream failed: $e');
+    },
+    onDone: closeController,
+  );
 
   ref.onDispose(() {
-    sub.cancel();
-    controller.close();
-    ReceiveSharingIntent.instance.reset();
+    unawaited(sub.cancel());
+    closeController();
+    unawaited(intentService.reset());
   });
 
   return controller.stream;

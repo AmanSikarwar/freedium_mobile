@@ -10,7 +10,6 @@ import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -145,7 +144,7 @@ class App extends ConsumerWidget {
     }
 
     _navigateToWebview(url);
-    ReceiveSharingIntent.instance.reset();
+    unawaited(ref.read(intentServiceProvider).reset());
   }
 
   Future<void> _processInitialIntent(
@@ -184,7 +183,7 @@ class App extends ConsumerWidget {
 
       ref.read(pendingIntentUrlProvider.notifier).clear();
       _navigateToWebview(pendingUrl);
-      ReceiveSharingIntent.instance.reset();
+      unawaited(ref.read(intentServiceProvider).reset());
     });
 
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {
