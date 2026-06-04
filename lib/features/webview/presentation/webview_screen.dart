@@ -5,14 +5,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
-import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
-import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebviewScreen extends ConsumerStatefulWidget {
@@ -352,16 +350,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                 right: Radius.circular(30),
               ),
               onTap: () {
-                SharePlus.instance.share(
-                  ShareParams(
-                    subject: 'Read this article without Paywall',
-                    title: 'Share Freedium link',
-                    uri: buildFreediumArticleUri(
-                      mirrorUrl: webviewState.activeBaseUrl,
-                      articleUrl: widget.url,
-                    ),
-                  ),
-                );
+                unawaited(webviewNotifier.shareArticle());
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(

@@ -12,8 +12,11 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+
+typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 
 @visibleForTesting
 enum WebviewNavigationAction { navigate, launchExternal, block }
@@ -458,6 +461,33 @@ class WebviewNotifier extends Notifier<WebviewState> {
     state.controller?.loadRequest(newUrl);
   }
 
+  Future<void> shareArticle() async {
+    final shareUri = buildFreediumArticleUri(
+      mirrorUrl: state.activeBaseUrl,
+      articleUrl: url,
+    );
+
+    try {
+      final result = await ref.read(shareLauncherProvider)(
+        ShareParams(
+          subject: 'Read this article without Paywall',
+          title: 'Share Freedium link',
+          uri: shareUri,
+        ),
+      );
+      if (!ref.mounted || result.status != ShareResultStatus.unavailable) {
+        return;
+      }
+
+      state = state.copyWith(userMessage: 'Could not share article');
+    } catch (e) {
+      debugPrint('Failed to share article: $e');
+      if (ref.mounted) {
+        state = state.copyWith(userMessage: 'Could not share article');
+      }
+    }
+  }
+
   Future<void> _injectTheme() async {
     if (_colorScheme == null || state.controller == null) return;
     try {
@@ -537,3 +567,7 @@ final webviewProvider =
     );
 
 final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
+
+final shareLauncherProvider = Provider<ShareLauncher>(
+  (ref) => SharePlus.instance.share,
+);
