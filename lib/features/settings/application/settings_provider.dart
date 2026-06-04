@@ -287,10 +287,10 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> setAutoSwitchMirror(bool autoSwitch) async {
+  Future<bool> setAutoSwitchMirror(bool autoSwitch) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    await _saveAndApply(
+    if (service == null) return false;
+    return _saveAndApply(
       save: () => service.saveAutoSwitchMirror(autoSwitch),
       nextState: state.copyWith(autoSwitchMirror: autoSwitch),
       failureMessage: 'Failed to save auto-switch mirror',

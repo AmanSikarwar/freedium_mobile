@@ -169,5 +169,31 @@ void main() {
       expect(find.text('Failed to save selected mirror'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('shows auto-switch failure when saving fails', (tester) async {
+      SharedPreferencesStorePlatform.instance =
+          _FailingSharedPreferencesStore();
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(
+        find.widgetWithText(SwitchListTile, 'Auto-Switch Mirror'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Failed to save auto-switch mirror'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }

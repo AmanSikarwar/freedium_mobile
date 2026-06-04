@@ -196,9 +196,19 @@ class SettingsScreen extends ConsumerWidget {
       title: const Text('Auto-Switch Mirror'),
       subtitle: const Text('Automatically use working mirror'),
       value: settings.autoSwitchMirror,
-      onChanged: (value) {
+      onChanged: (value) async {
         HapticFeedback.lightImpact();
-        notifier.setAutoSwitchMirror(value);
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        final didSave = await notifier.setAutoSwitchMirror(value);
+        if (!context.mounted) return;
+        if (!didSave) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(
+              content: Text('Failed to save auto-switch mirror'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       },
     );
   }
