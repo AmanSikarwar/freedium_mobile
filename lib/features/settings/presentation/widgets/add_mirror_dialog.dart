@@ -142,16 +142,27 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
     );
 
     setState(() => _isSubmitting = true);
-    final accepted = await Future<bool>.value(widget.onAdd(mirror));
+    final bool accepted;
+    try {
+      accepted = await Future<bool>.value(widget.onAdd(mirror));
+    } catch (_) {
+      if (!mounted) return;
+      _showSubmissionError();
+      return;
+    }
     if (!mounted) return;
 
     if (accepted) {
       Navigator.pop(context);
     } else {
-      setState(() {
-        _isSubmitting = false;
-        _submissionError = 'Mirror already exists or could not be saved.';
-      });
+      _showSubmissionError();
     }
+  }
+
+  void _showSubmissionError() {
+    setState(() {
+      _isSubmitting = false;
+      _submissionError = 'Mirror already exists or could not be saved.';
+    });
   }
 }

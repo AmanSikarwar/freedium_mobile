@@ -100,4 +100,51 @@ void main() {
     );
     expect(find.byType(AddMirrorDialog), findsOneWidget);
   });
+
+  testWidgets('stays open and shows an error when saving throws', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Builder(
+          builder: (context) {
+            return Scaffold(
+              body: FilledButton(
+                onPressed: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (_) => AddMirrorDialog(
+                      onAdd: (mirror) async {
+                        throw Exception('preferences unavailable');
+                      },
+                    ),
+                  );
+                },
+                child: const Text('Open'),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextFormField).at(0), 'Custom');
+    await tester.enterText(
+      find.byType(TextFormField).at(1),
+      'https://custom.example',
+    );
+
+    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Mirror already exists or could not be saved.'),
+      findsOneWidget,
+    );
+    expect(find.byType(AddMirrorDialog), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }
