@@ -394,7 +394,7 @@ class SettingsScreen extends ConsumerWidget {
     if (updateInfo != null) {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Update Available'),
           content: Column(
             mainAxisSize: .min,
@@ -410,16 +410,19 @@ class SettingsScreen extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Later'),
             ),
             TextButton(
-              onPressed: () => showChangelogBottomSheet(context, updateInfo),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                showChangelogBottomSheet(context, updateInfo);
+              },
               child: const Text('Changelog'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(context);
+                Navigator.pop(dialogContext);
                 unawaited(_launchUrl(updateInfo.releaseUrl));
               },
               child: const Text('Update'),
