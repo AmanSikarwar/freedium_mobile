@@ -24,6 +24,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
     super.dispose();
   }
 
+  void _clearSearch() {
+    if (_query.isEmpty && _searchController.text.isEmpty) return;
+    _searchController.clear();
+    setState(() => _query = '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final history = ref.watch(historyProvider);
@@ -133,9 +139,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                       color: Theme.of(context).colorScheme.onErrorContainer,
                     ),
                   ),
-                  onDismissed: (_) {
+                  confirmDismiss: (_) async {
                     HapticFeedback.lightImpact();
-                    ref.read(historyProvider.notifier).removeHistory(item);
+                    final didRemove = await ref
+                        .read(historyProvider.notifier)
+                        .removeHistory(item);
+                    if (!context.mounted) return false;
+
+                    if (!didRemove) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to remove history entry'),
+                        ),
+                      );
+                    }
+
+                    return didRemove;
                   },
                   child: ArticleCard(
                     title: item.title,
@@ -168,10 +187,22 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              ref.read(historyProvider.notifier).clearHistory();
-              Navigator.pop(dialogContext);
+              final didClear = await ref
+                  .read(historyProvider.notifier)
+                  .clearHistory();
+              if (!context.mounted || !dialogContext.mounted) return;
+
+              if (didClear) {
+                _clearSearch();
+                Navigator.pop(dialogContext);
+                return;
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Failed to clear history')),
+              );
             },
             child: const Text('Clear'),
           ),

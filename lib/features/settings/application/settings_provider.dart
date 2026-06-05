@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/features/settings/application/mirror_url_normalizer.dart';
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
@@ -86,6 +87,49 @@ Future<_MirrorProbeResult> _probeMirrorUrl(
   return headResult;
 }
 
+bool isFreediumMirrorUrl(String url, Iterable<FreediumMirror> mirrors) {
+  final uri = Uri.tryParse(url);
+  if (uri == null || !_isHttpUri(uri)) {
+    return false;
+  }
+
+  for (final mirror in mirrors) {
+    final mirrorUri = Uri.tryParse(mirror.url);
+    if (mirrorUri == null || !_isHttpUri(mirrorUri)) {
+      continue;
+    }
+
+    if (_hasSameOrigin(uri, mirrorUri) &&
+        _hasMirrorPathPrefix(uri.path, mirrorUri.path)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+bool _isHttpUri(Uri uri) {
+  final scheme = uri.scheme.toLowerCase();
+  return (scheme == 'http' || scheme == 'https') && uri.host.isNotEmpty;
+}
+
+bool _hasSameOrigin(Uri url, Uri mirror) {
+  return url.scheme.toLowerCase() == mirror.scheme.toLowerCase() &&
+      url.host.toLowerCase() == mirror.host.toLowerCase() &&
+      url.port == mirror.port;
+}
+
+bool _hasMirrorPathPrefix(String path, String mirrorPath) {
+  final normalizedMirrorPath = trimTrailingSlash(mirrorPath);
+
+  if (normalizedMirrorPath.isEmpty) {
+    return true;
+  }
+
+  return path == normalizedMirrorPath ||
+      path.startsWith('$normalizedMirrorPath/');
+}
+
 class SettingsNotifier extends Notifier<SettingsState> {
   SettingsService? _settingsService;
 
@@ -121,95 +165,191 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
-  Future<void> setThemeMode(ThemeMode themeMode) async {
+  Future<bool> setThemeMode(ThemeMode themeMode) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    state = state.copyWith(themeMode: themeMode);
-    await service.saveThemeMode(themeMode);
+    if (service == null) return false;
+    return _saveAndApply(
+      save: () => service.saveThemeMode(themeMode),
+      nextState: state.copyWith(themeMode: themeMode),
+      failureMessage: 'Failed to save theme mode',
+    );
   }
 
-  Future<void> setDefaultFontSize(double fontSize) async {
+  Future<bool> setDefaultFontSize(double fontSize) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    state = state.copyWith(defaultFontSize: fontSize);
-    await service.saveDefaultFontSize(fontSize);
+    if (service == null) return false;
+    final normalizedFontSize = SettingsState.normalizeDefaultFontSize(fontSize);
+    return _saveAndApply(
+      save: () => service.saveDefaultFontSize(normalizedFontSize),
+      nextState: state.copyWith(defaultFontSize: normalizedFontSize),
+      failureMessage: 'Failed to save default font size',
+    );
   }
 
-  Future<void> addMirror(FreediumMirror mirror) async {
+  Future<bool> addMirror(FreediumMirror mirror) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    final updatedMirrors = [...state.mirrors, mirror];
-    state = state.copyWith(mirrors: updatedMirrors);
-    await service.saveMirrors(updatedMirrors);
-  }
-
-  Future<void> removeMirror(FreediumMirror mirror) async {
-    if (mirror.isDefault) return;
-    final service = await _ensureSettingsService();
-    if (service == null) return;
-    final updatedMirrors = state.mirrors.where((m) => m != mirror).toList();
-    state = state.copyWith(mirrors: updatedMirrors);
-    await service.saveMirrors(updatedMirrors);
-
-    if (state.selectedMirrorUrl == mirror.url && updatedMirrors.isNotEmpty) {
-      await setSelectedMirror(updatedMirrors.first.url);
+    if (service == null) return false;
+    final normalizedMirror = _normalizeMirror(mirror);
+    if (normalizedMirror == null ||
+        state.mirrors.any((m) => m.url == normalizedMirror.url)) {
+      return false;
     }
+    final updatedMirrors = [...state.mirrors, normalizedMirror];
+    return _saveAndApply(
+      save: () => service.saveMirrors(updatedMirrors),
+      nextState: state.copyWith(mirrors: updatedMirrors),
+      failureMessage: 'Failed to add mirror',
+      invalidateCache: true,
+    );
   }
 
-  Future<void> updateMirror(
+  Future<bool> removeMirror(FreediumMirror mirror) async {
+    if (mirror.isDefault) return false;
+    final service = await _ensureSettingsService();
+    if (service == null) return false;
+    if (!state.mirrors.contains(mirror)) return false;
+    final selectedMirrorUrl = state.selectedMirrorUrl;
+    final remainingMirrors = state.mirrors.where((m) => m != mirror).toList();
+    final updatedMirrors = remainingMirrors.isEmpty
+        ? SettingsState.defaultMirrors
+        : remainingMirrors;
+    final updatedSelectedMirrorUrl = selectedMirrorUrl == mirror.url
+        ? updatedMirrors.first.url
+        : selectedMirrorUrl;
+
+    return _saveAndApply(
+      save: () async {
+        await service.saveMirrors(updatedMirrors);
+        if (updatedSelectedMirrorUrl != selectedMirrorUrl) {
+          await service.saveSelectedMirrorUrl(updatedSelectedMirrorUrl);
+        }
+      },
+      nextState: state.copyWith(
+        mirrors: updatedMirrors,
+        selectedMirrorUrl: updatedSelectedMirrorUrl,
+      ),
+      failureMessage: 'Failed to remove mirror',
+      invalidateCache: true,
+    );
+  }
+
+  Future<bool> updateMirror(
     FreediumMirror oldMirror,
     FreediumMirror newMirror,
   ) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
+    if (service == null) return false;
+    if (!state.mirrors.contains(oldMirror)) return false;
+    final normalizedMirror = _normalizeMirror(newMirror);
+    if (normalizedMirror == null ||
+        state.mirrors.any(
+          (m) => m != oldMirror && m.url == normalizedMirror.url,
+        )) {
+      return false;
+    }
     final updatedMirrors = state.mirrors.map((m) {
-      if (m == oldMirror) return newMirror;
+      if (m == oldMirror) return normalizedMirror;
       return m;
     }).toList();
-    state = state.copyWith(mirrors: updatedMirrors);
-    await service.saveMirrors(updatedMirrors);
+    final selectedMirrorUrl = state.selectedMirrorUrl;
+    final updatedSelectedMirrorUrl = selectedMirrorUrl == oldMirror.url
+        ? normalizedMirror.url
+        : selectedMirrorUrl;
 
-    if (state.selectedMirrorUrl == oldMirror.url) {
-      await setSelectedMirror(newMirror.url);
+    return _saveAndApply(
+      save: () async {
+        await service.saveMirrors(updatedMirrors);
+        if (updatedSelectedMirrorUrl != selectedMirrorUrl) {
+          await service.saveSelectedMirrorUrl(updatedSelectedMirrorUrl);
+        }
+      },
+      nextState: state.copyWith(
+        mirrors: updatedMirrors,
+        selectedMirrorUrl: updatedSelectedMirrorUrl,
+      ),
+      failureMessage: 'Failed to update mirror',
+      invalidateCache: true,
+    );
+  }
+
+  Future<bool> setSelectedMirror(String url) async {
+    final service = await _ensureSettingsService();
+    if (service == null) return false;
+    final normalizedUrl = normalizeMirrorUrl(url);
+    if (normalizedUrl == null ||
+        !state.mirrors.any((mirror) => mirror.url == normalizedUrl)) {
+      return false;
     }
+    return _saveAndApply(
+      save: () => service.saveSelectedMirrorUrl(normalizedUrl),
+      nextState: state.copyWith(selectedMirrorUrl: normalizedUrl),
+      failureMessage: 'Failed to save selected mirror',
+      invalidateCache: true,
+    );
   }
 
-  Future<void> setSelectedMirror(String url) async {
+  Future<bool> setAutoSwitchMirror(bool autoSwitch) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    state = state.copyWith(selectedMirrorUrl: url);
-    await service.saveSelectedMirrorUrl(url);
-    ref.read(freediumUrlServiceProvider).invalidateCache();
+    if (service == null) return false;
+    return _saveAndApply(
+      save: () => service.saveAutoSwitchMirror(autoSwitch),
+      nextState: state.copyWith(autoSwitchMirror: autoSwitch),
+      failureMessage: 'Failed to save auto-switch mirror',
+      invalidateCache: true,
+    );
   }
 
-  Future<void> setAutoSwitchMirror(bool autoSwitch) async {
+  Future<bool> setMirrorTimeout(int timeout) async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    state = state.copyWith(autoSwitchMirror: autoSwitch);
-    await service.saveAutoSwitchMirror(autoSwitch);
+    if (service == null) return false;
+    final normalizedTimeout = SettingsState.normalizeMirrorTimeout(timeout);
+    return _saveAndApply(
+      save: () => service.saveMirrorTimeout(normalizedTimeout),
+      nextState: state.copyWith(mirrorTimeout: normalizedTimeout),
+      failureMessage: 'Failed to save mirror timeout',
+      invalidateCache: true,
+    );
   }
 
-  Future<void> setMirrorTimeout(int timeout) async {
+  Future<bool> resetToDefaults() async {
     final service = await _ensureSettingsService();
-    if (service == null) return;
-    state = state.copyWith(mirrorTimeout: timeout);
-    await service.saveMirrorTimeout(timeout);
-  }
-
-  Future<void> resetToDefaults() async {
-    final service = await _ensureSettingsService();
-    if (service == null) return;
+    if (service == null) return false;
     final defaultState = SettingsState(
       mirrors: SettingsState.defaultMirrors,
       selectedMirrorUrl: SettingsState.defaultMirrors.first.url,
     );
-    state = defaultState;
-    await service.saveThemeMode(defaultState.themeMode);
-    await service.saveDefaultFontSize(defaultState.defaultFontSize);
-    await service.saveMirrors(defaultState.mirrors);
-    await service.saveSelectedMirrorUrl(defaultState.selectedMirrorUrl);
-    await service.saveAutoSwitchMirror(defaultState.autoSwitchMirror);
-    await service.saveMirrorTimeout(defaultState.mirrorTimeout);
+    return _saveAndApply(
+      save: () async {
+        await service.saveThemeMode(defaultState.themeMode);
+        await service.saveDefaultFontSize(defaultState.defaultFontSize);
+        await service.saveMirrors(defaultState.mirrors);
+        await service.saveSelectedMirrorUrl(defaultState.selectedMirrorUrl);
+        await service.saveAutoSwitchMirror(defaultState.autoSwitchMirror);
+        await service.saveMirrorTimeout(defaultState.mirrorTimeout);
+      },
+      nextState: defaultState,
+      failureMessage: 'Failed to reset settings',
+      invalidateCache: true,
+    );
+  }
+
+  Future<bool> _saveAndApply({
+    required Future<void> Function() save,
+    required SettingsState nextState,
+    required String failureMessage,
+    bool invalidateCache = false,
+  }) async {
+    try {
+      await save();
+      state = nextState;
+      if (invalidateCache) {
+        ref.read(freediumUrlServiceProvider).invalidateCache();
+      }
+      return true;
+    } catch (e) {
+      debugPrint('$failureMessage: $e');
+      return false;
+    }
   }
 
   Future<MirrorTestResult> testMirror(String url) async {
@@ -255,6 +395,13 @@ class SettingsNotifier extends Notifier<SettingsState> {
     }
     return null;
   }
+}
+
+FreediumMirror? _normalizeMirror(FreediumMirror mirror) {
+  final name = mirror.name.trim();
+  final url = normalizeMirrorUrl(mirror.url);
+  if (name.isEmpty || url == null) return null;
+  return mirror.copyWith(name: name, url: url);
 }
 
 class MirrorTestResult {
@@ -351,23 +498,7 @@ class FreediumUrlService {
 
   bool isFreediumUrl(String url) {
     final settings = _ref.read(settingsProvider);
-    for (final mirror in settings.mirrors) {
-      if (url.startsWith(mirror.url)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool isFreediumHost(String host) {
-    final settings = _ref.read(settingsProvider);
-    for (final mirror in settings.mirrors) {
-      final mirrorHost = Uri.parse(mirror.url).host;
-      if (host == mirrorHost) {
-        return true;
-      }
-    }
-    return false;
+    return isFreediumMirrorUrl(url, settings.mirrors);
   }
 }
 

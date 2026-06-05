@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
@@ -14,10 +15,19 @@ class BookmarksService {
     if (json == null) return [];
 
     final List<BookmarkedArticle> bookmarks = [];
+    final seenUrls = <String>{};
     for (final entry in json) {
       try {
         final decoded = jsonDecode(entry) as Map<String, dynamic>;
-        bookmarks.add(BookmarkedArticle.fromJson(decoded));
+        final bookmark = BookmarkedArticle.fromJson(decoded);
+        final url = normalizeHttpUrl(bookmark.url);
+        if (url == null || !seenUrls.add(url)) {
+          continue;
+        }
+        final title = bookmark.title.trim();
+        bookmarks.add(
+          bookmark.copyWith(url: url, title: title.isNotEmpty ? title : url),
+        );
       } catch (e) {
         debugPrint('Failed to parse bookmark entry: $e');
       }

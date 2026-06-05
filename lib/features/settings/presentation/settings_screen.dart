@@ -1,9 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/cache_service.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
@@ -11,7 +14,6 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/settings/presentation/widgets/mirror_list_tile.dart';
 import 'package:freedium_mobile/features/settings/presentation/widgets/add_mirror_dialog.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -45,10 +47,20 @@ class SettingsScreen extends ConsumerWidget {
           ),
           RadioGroup<String>(
             groupValue: settings.selectedMirrorUrl,
-            onChanged: (url) {
+            onChanged: (url) async {
               if (url != null) {
                 HapticFeedback.selectionClick();
-                settingsNotifier.setSelectedMirror(url);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final didSave = await settingsNotifier.setSelectedMirror(url);
+                if (!context.mounted) return;
+                if (!didSave) {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to save selected mirror'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               }
             },
             child: Column(
@@ -106,7 +118,8 @@ class SettingsScreen extends ConsumerWidget {
             leading: const Icon(Icons.code),
             title: const Text('Source Code'),
             subtitle: const Text('View on GitHub'),
-            onTap: () => _launchUrl(AppConstants.appSourceUrl),
+            onTap: () =>
+                unawaited(_launchUrl(context, ref, AppConstants.appSourceUrl)),
           ),
           ListTile(
             leading: const Icon(Icons.restore),
@@ -169,7 +182,19 @@ class SettingsScreen extends ConsumerWidget {
       onTap: () => showFontSettingsSheet(
         context,
         initialFontSize: settings.defaultFontSize,
-        onFontSizeChanged: (newSize) => notifier.setDefaultFontSize(newSize),
+        onFontSizeChanged: (newSize) async {
+          final scaffoldMessenger = ScaffoldMessenger.of(context);
+          final didSave = await notifier.setDefaultFontSize(newSize);
+          if (!context.mounted) return;
+          if (!didSave) {
+            scaffoldMessenger.showSnackBar(
+              const SnackBar(
+                content: Text('Failed to save default font size'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
       ),
     );
   }
@@ -184,9 +209,19 @@ class SettingsScreen extends ConsumerWidget {
       title: const Text('Auto-Switch Mirror'),
       subtitle: const Text('Automatically use working mirror'),
       value: settings.autoSwitchMirror,
-      onChanged: (value) {
+      onChanged: (value) async {
         HapticFeedback.lightImpact();
-        notifier.setAutoSwitchMirror(value);
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        final didSave = await notifier.setAutoSwitchMirror(value);
+        if (!context.mounted) return;
+        if (!didSave) {
+          scaffoldMessenger.showSnackBar(
+            const SnackBar(
+              content: Text('Failed to save auto-switch mirror'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       },
     );
   }
@@ -209,7 +244,7 @@ class SettingsScreen extends ConsumerWidget {
     SettingsState settings,
     SettingsNotifier notifier,
   ) {
-    int timeout = settings.mirrorTimeout;
+    int timeout = SettingsState.normalizeMirrorTimeout(settings.mirrorTimeout);
 
     showDialog(
       context: context,
@@ -225,9 +260,11 @@ class SettingsScreen extends ConsumerWidget {
               ),
               Slider(
                 value: timeout.toDouble(),
-                min: 2,
-                max: 15,
-                divisions: 13,
+                min: SettingsState.minMirrorTimeout.toDouble(),
+                max: SettingsState.maxMirrorTimeout.toDouble(),
+                divisions:
+                    SettingsState.maxMirrorTimeout -
+                    SettingsState.minMirrorTimeout,
                 onChanged: (value) {
                   HapticFeedback.selectionClick();
                   setState(() => timeout = value.toInt());
@@ -241,10 +278,22 @@ class SettingsScreen extends ConsumerWidget {
               child: const Text('Cancel'),
             ),
             FilledButton(
-              onPressed: () {
+              onPressed: () async {
                 HapticFeedback.lightImpact();
-                notifier.setMirrorTimeout(timeout);
-                Navigator.pop(context);
+                final scaffoldMessenger = ScaffoldMessenger.of(context);
+                final navigator = Navigator.of(context);
+                final didSave = await notifier.setMirrorTimeout(timeout);
+                if (!context.mounted) return;
+                if (didSave) {
+                  navigator.pop();
+                } else {
+                  scaffoldMessenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Failed to save mirror timeout'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
               child: const Text('Save'),
             ),
@@ -259,7 +308,7 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (context) => AddMirrorDialog(
         onAdd: (mirror) {
-          ref.read(settingsProvider.notifier).addMirror(mirror);
+          return ref.read(settingsProvider.notifier).addMirror(mirror);
         },
       ),
     );
@@ -275,7 +324,7 @@ class SettingsScreen extends ConsumerWidget {
       builder: (context) => AddMirrorDialog(
         existingMirror: mirror,
         onAdd: (updatedMirror) {
-          ref
+          return ref
               .read(settingsProvider.notifier)
               .updateMirror(mirror, updatedMirror);
         },
@@ -299,10 +348,24 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              ref.read(settingsProvider.notifier).removeMirror(mirror);
-              Navigator.pop(context);
+              final scaffoldMessenger = ScaffoldMessenger.of(context);
+              final navigator = Navigator.of(context);
+              final didRemove = await ref
+                  .read(settingsProvider.notifier)
+                  .removeMirror(mirror);
+              if (!context.mounted) return;
+              if (didRemove) {
+                navigator.pop();
+              } else {
+                scaffoldMessenger.showSnackBar(
+                  const SnackBar(
+                    content: Text('Failed to remove mirror'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
             },
             child: const Text('Delete'),
           ),
@@ -325,13 +388,24 @@ class SettingsScreen extends ConsumerWidget {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              ref.read(settingsProvider.notifier).resetToDefaults();
               final scaffoldMessenger = ScaffoldMessenger.of(context);
-              Navigator.pop(context);
+              final navigator = Navigator.of(context);
+              final didReset = await ref
+                  .read(settingsProvider.notifier)
+                  .resetToDefaults();
+              if (!context.mounted) return;
+              navigator.pop();
               scaffoldMessenger.showSnackBar(
-                const SnackBar(content: Text('Settings reset to defaults')),
+                SnackBar(
+                  content: Text(
+                    didReset
+                        ? 'Settings reset to defaults'
+                        : 'Failed to reset settings',
+                  ),
+                  backgroundColor: didReset ? Colors.green : Colors.red,
+                ),
               );
             },
             child: const Text('Reset'),
@@ -381,22 +455,40 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     final updateService = ref.read(updateServiceProvider);
-    final updateInfo = await updateService.checkForUpdate();
+    final UpdateInfo? updateInfo;
+    try {
+      updateInfo = await updateService.checkForUpdate();
+    } on UpdateCheckException {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Failed to check for updates'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      return;
+    }
 
     if (!context.mounted) return;
 
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
-    if (updateInfo != null) {
+    final availableUpdate = updateInfo;
+    if (availableUpdate != null) {
       showDialog(
         context: context,
-        builder: (context) => AlertDialog(
+        builder: (dialogContext) => AlertDialog(
           title: const Text('Update Available'),
           content: Column(
             mainAxisSize: .min,
             crossAxisAlignment: .start,
             children: [
-              Text('A new version is available: ${updateInfo.latestVersion}'),
+              Text(
+                'A new version is available: ${availableUpdate.latestVersion}',
+              ),
               const SizedBox(height: 8),
               Text(
                 'Current version: ${AppConstants.appVersion}',
@@ -406,17 +498,20 @@ class SettingsScreen extends ConsumerWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () => Navigator.pop(dialogContext),
               child: const Text('Later'),
             ),
             TextButton(
-              onPressed: () => showChangelogBottomSheet(context, updateInfo),
+              onPressed: () {
+                Navigator.pop(dialogContext);
+                showChangelogBottomSheet(context, availableUpdate);
+              },
               child: const Text('Changelog'),
             ),
             FilledButton(
               onPressed: () {
-                Navigator.pop(context);
-                launchUrl(Uri.parse(updateInfo.releaseUrl));
+                Navigator.pop(dialogContext);
+                unawaited(_launchUrl(context, ref, availableUpdate.releaseUrl));
               },
               child: const Text('Update'),
             ),
@@ -433,9 +528,20 @@ class SettingsScreen extends ConsumerWidget {
     }
   }
 
-  Future<void> _launchUrl(String url) async {
-    try {
-      await launchUrl(Uri.parse(url));
-    } catch (_) {}
+  Future<void> _launchUrl(
+    BuildContext context,
+    WidgetRef ref,
+    String url,
+  ) async {
+    final launched = await ref.read(externalUrlLauncherProvider)(url);
+    if (!context.mounted || launched) return;
+
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not open link'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 }

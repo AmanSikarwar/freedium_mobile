@@ -28,6 +28,10 @@ final themeProvider = Provider<AppThemeProvider>((ref) {
   );
 });
 
+final dynamicCorePaletteLoaderProvider = Provider(
+  (ref) => DynamicColorPlugin.getCorePalette,
+);
+
 final dynamicThemeProvider = FutureProvider<AppThemeProvider>((ref) async {
   final textTheme = createTextTheme("Roboto", "Roboto");
   final appTheme = AppTheme(textTheme);
@@ -35,7 +39,15 @@ final dynamicThemeProvider = FutureProvider<AppThemeProvider>((ref) async {
   ColorScheme? lightColorScheme;
   ColorScheme? darkColorScheme;
 
-  final lightDynamic = await DynamicColorPlugin.getCorePalette();
+  final loadDynamicCorePalette = ref.watch(dynamicCorePaletteLoaderProvider);
+  final lightDynamic = await () async {
+    try {
+      return await loadDynamicCorePalette();
+    } catch (e) {
+      debugPrint('Failed to load dynamic colors: $e');
+      return null;
+    }
+  }();
   if (lightDynamic != null) {
     lightColorScheme = lightDynamic.toColorScheme().harmonized();
     darkColorScheme = lightDynamic

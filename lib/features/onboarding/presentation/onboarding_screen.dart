@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -67,9 +66,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       );
       return;
     }
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const HomeScreen()));
   }
 
   @override

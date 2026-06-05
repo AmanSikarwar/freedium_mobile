@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 
@@ -45,13 +46,22 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
   Future<void> addHistory(String url, String title) async {
     final service = await _ensureHistoryService();
     if (service == null) return;
+    final normalizedUrl = normalizeHttpUrl(url);
+    if (normalizedUrl == null) return;
+    final normalizedTitle = title.trim().isNotEmpty
+        ? title.trim()
+        : normalizedUrl;
 
     final prevState = state;
-    final newList = state.where((item) => item.url != url).toList();
+    final newList = state.where((item) => item.url != normalizedUrl).toList();
 
     newList.insert(
       0,
-      ReadingHistory(url: url, title: title, timestamp: DateTime.now()),
+      ReadingHistory(
+        url: normalizedUrl,
+        title: normalizedTitle,
+        timestamp: DateTime.now(),
+      ),
     );
 
     if (newList.length > 100) {
@@ -67,9 +77,9 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
     }
   }
 
-  Future<void> removeHistory(ReadingHistory item) async {
+  Future<bool> removeHistory(ReadingHistory item) async {
     final service = await _ensureHistoryService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
     final newList = state.where((element) => element.url != item.url).toList();
@@ -77,24 +87,28 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
     try {
       await service.saveHistory(newList);
       state = newList;
+      return true;
     } catch (e) {
       debugPrint('Failed to remove history entry: $e');
       state = prevState;
+      return false;
     }
   }
 
-  Future<void> clearHistory() async {
+  Future<bool> clearHistory() async {
     final service = await _ensureHistoryService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
 
     try {
       await service.clearHistory();
       state = [];
+      return true;
     } catch (e) {
       debugPrint('Failed to clear history: $e');
       state = prevState;
+      return false;
     }
   }
 }

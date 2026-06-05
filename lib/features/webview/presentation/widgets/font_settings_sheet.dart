@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/services/font_size_service.dart';
 
 void showFontSettingsSheet(
   BuildContext context, {
@@ -40,7 +41,9 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
   @override
   void initState() {
     super.initState();
-    _currentFontSize = widget.initialFontSize;
+    _currentFontSize = FontSizeService.normalizeFontSize(
+      widget.initialFontSize,
+    );
   }
 
   @override
@@ -101,7 +104,7 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
                   onPressed: () {
                     HapticFeedback.mediumImpact();
                     setState(() {
-                      _currentFontSize = 18.0;
+                      _currentFontSize = FontSizeService.defaultFontSize;
                     });
                     widget.onFontSizeChanged(_currentFontSize);
                   },
@@ -120,9 +123,12 @@ class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
                 Expanded(
                   child: Slider(
                     value: _currentFontSize,
-                    min: 14,
-                    max: 28,
-                    divisions: 14,
+                    min: FontSizeService.minFontSize,
+                    max: FontSizeService.maxFontSize,
+                    divisions:
+                        (FontSizeService.maxFontSize -
+                                FontSizeService.minFontSize)
+                            .toInt(),
                     label: '${_currentFontSize.toInt()}px',
                     onChanged: (value) {
                       HapticFeedback.selectionClick();

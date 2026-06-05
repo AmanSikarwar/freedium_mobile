@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
+import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
@@ -19,7 +21,8 @@ class HomeScreen extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen> {
+class _HomeScreenState extends ConsumerState<HomeScreen>
+    with WidgetsBindingObserver {
   bool _isUpdateCardDismissed = false;
   late final TextEditingController _urlController;
   final _formKey = GlobalKey<FormState>();
@@ -27,13 +30,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _urlController = TextEditingController();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_autofillFromClipboard());
+    });
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _urlController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      unawaited(_autofillFromClipboard());
+    }
+  }
+
+  Future<void> _autofillFromClipboard() async {
+    if (_urlController.text.trim().isNotEmpty) return;
+
+    final url = await ref
+        .read(homeProvider.notifier)
+        .detectArticleUrlFromClipboard();
+    if (!mounted || url == null || _urlController.text.trim().isNotEmpty) {
+      return;
+    }
+
+    _urlController.text = url;
+  }
+
+  Future<void> _pasteFromClipboard() async {
+    final text = await ref.read(homeProvider.notifier).pasteFromClipboard();
+    if (!mounted) return;
+    if (text == null) {
+      HapticFeedback.heavyImpact();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Could not paste from clipboard'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    _urlController.text = text;
   }
 
   @override
@@ -156,9 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               icon: const Icon(Icons.paste),
                               onPressed: () {
                                 HapticFeedback.lightImpact();
-                                homeNotifier.pasteFromClipboard((text) {
-                                  _urlController.text = text;
-                                });
+                                unawaited(_pasteFromClipboard());
                               },
                             ),
                           ),
@@ -166,14 +209,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           textInputAction: .done,
                           scrollPadding: const .only(bottom: 120),
                           validator: (value) {
-                            if (value == null || value.isEmpty) {
+                            if (value == null || value.trim().isEmpty) {
                               return 'Please enter a URL';
                             }
-                            final urlRegExp = RegExp(
-                              AppConstants.urlRegExp,
-                              caseSensitive: false,
-                            );
-                            if (!urlRegExp.hasMatch(value)) {
+                            if (extractArticleUrl(value) == null) {
                               return 'Please enter a valid URL';
                             }
                             return null;
@@ -186,7 +225,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           onPressed: () {
                             HapticFeedback.mediumImpact();
                             if (_formKey.currentState!.validate()) {
-                              final url = _urlController.text;
+                              final url = extractArticleUrl(
+                                _urlController.text,
+                              )!;
+                              _urlController.text = url;
                               homeNotifier.setUrl(url);
                               Navigator.of(context).push(
                                 MaterialPageRoute(
@@ -195,7 +237,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               );
                             }
                           },
-                          child: const Text('Get Article'),
+                          child: const Text('Read Article'),
                         ),
                       ),
                     ],

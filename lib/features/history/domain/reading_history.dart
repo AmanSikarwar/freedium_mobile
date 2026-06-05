@@ -23,7 +23,7 @@ class ReadingHistory {
   factory ReadingHistory.fromJson(Map<String, dynamic> json) {
     return ReadingHistory(
       url: json['url'] as String,
-      title: json['title'] as String,
+      title: json['title'] as String? ?? '',
       timestamp: DateTime.parse(json['timestamp'] as String).toLocal(),
     );
   }

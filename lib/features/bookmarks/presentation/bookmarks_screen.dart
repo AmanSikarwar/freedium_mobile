@@ -23,9 +23,18 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
     super.dispose();
   }
 
+  void _clearSearch() {
+    if (_query.isEmpty && _searchController.text.isEmpty) return;
+    _searchController.clear();
+    setState(() => _query = '');
+  }
+
   @override
   Widget build(BuildContext context) {
     final bookmarks = ref.watch(bookmarksProvider);
+    const searchBarHeight = 56.0;
+    const searchBarBottomPadding = 8.0;
+    const searchAreaHeight = searchBarHeight + searchBarBottomPadding;
 
     final filtered = _query.isEmpty
         ? bookmarks
@@ -55,9 +64,14 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
         ],
         bottom: bookmarks.isNotEmpty
             ? PreferredSize(
-                preferredSize: const Size.fromHeight(56),
+                preferredSize: Size.fromHeight(searchAreaHeight),
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
+                  padding: const EdgeInsets.fromLTRB(
+                    12,
+                    0,
+                    12,
+                    searchBarBottomPadding,
+                  ),
                   child: SearchBar(
                     controller: _searchController,
                     hintText: 'Search bookmarks…',
@@ -136,10 +150,20 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                   ),
                   confirmDismiss: (_) async {
                     HapticFeedback.lightImpact();
-                    await ref
+                    final didRemove = await ref
                         .read(bookmarksProvider.notifier)
                         .removeBookmark(item);
-                    return true;
+                    if (!context.mounted) return false;
+
+                    if (!didRemove) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Failed to remove bookmark'),
+                        ),
+                      );
+                    }
+
+                    return didRemove;
                   },
                   child: ArticleCard(
                     title: item.title,
@@ -177,10 +201,22 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.mediumImpact();
-              ref.read(bookmarksProvider.notifier).clearBookmarks();
-              Navigator.pop(context);
+              final didClear = await ref
+                  .read(bookmarksProvider.notifier)
+                  .clearBookmarks();
+              if (!context.mounted) return;
+
+              if (didClear) {
+                _clearSearch();
+                Navigator.pop(context);
+                return;
+              }
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Failed to clear bookmarks')),
+              );
             },
             child: const Text('Clear'),
           ),

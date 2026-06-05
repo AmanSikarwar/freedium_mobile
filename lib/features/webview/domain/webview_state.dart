@@ -74,6 +74,7 @@ class WebviewState {
     String? activeBaseUrl,
     bool? hasError,
     String? errorMessage,
+    bool clearErrorMessage = false,
     String? userMessage,
 
     /// Pass [clearUserMessage] = true to null-out [userMessage] after display.
@@ -91,7 +92,9 @@ class WebviewState {
       currentUrl: currentUrl ?? this.currentUrl,
       activeBaseUrl: activeBaseUrl ?? this.activeBaseUrl,
       hasError: hasError ?? this.hasError,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage
+          ? null
+          : (errorMessage ?? this.errorMessage),
       userMessage: clearUserMessage ? null : (userMessage ?? this.userMessage),
       articleMeta: clearArticleMeta ? null : (articleMeta ?? this.articleMeta),
     );

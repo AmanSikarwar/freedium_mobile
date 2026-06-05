@@ -3,13 +3,11 @@ class AppConstants {
   static const String freediumMirrorUrl = 'https://freedium-mirror.cfd';
   static const String appName = 'Freedium';
   static const String appDescription = 'Your paywall breakthrough for Medium!';
-  static const String appPackageName = 'com.amansikarwar.freedium';
-  static const String appSourceUrl = 'https://github.com/amansikarwar/freedium';
+  static const String appPackageName = 'io.github.amansikarwar.freedium_mobile';
+  static const String appSourceUrl =
+      'https://github.com/AmanSikarwar/freedium_mobile';
   static const String appVersion = .fromEnvironment(
     'APP_VERSION',
     defaultValue: '0.10.0',
   );
-
-  static const String urlRegExp =
-      r'^https?:\/\/([\w-]+\.)+[\w-]+(\/[\w-./?%&=@]*)?$';
 }

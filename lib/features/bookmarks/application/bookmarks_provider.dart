@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
@@ -43,20 +44,29 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
   }
 
   /// Returns true if the given [url] is already bookmarked.
-  bool isBookmarked(String url) => state.any((b) => b.url == url);
+  bool isBookmarked(String url) {
+    final normalizedUrl = normalizeHttpUrl(url);
+    if (normalizedUrl == null) return false;
+    return state.any((b) => b.url == normalizedUrl);
+  }
 
-  Future<void> addBookmark(String url, String title) async {
+  Future<bool> addBookmark(String url, String title) async {
     final service = await _ensureService();
-    if (service == null) return;
-    if (isBookmarked(url)) return; // already saved
+    if (service == null) return false;
+    final normalizedUrl = normalizeHttpUrl(url);
+    if (normalizedUrl == null) return false;
+    if (isBookmarked(normalizedUrl)) return true; // already saved
+    final normalizedTitle = title.trim().isNotEmpty
+        ? title.trim()
+        : normalizedUrl;
 
     final prevState = state;
     final newList = List<BookmarkedArticle>.from(state);
     newList.insert(
       0,
       BookmarkedArticle(
-        url: url,
-        title: title.isNotEmpty ? title : url,
+        url: normalizedUrl,
+        title: normalizedTitle,
         savedAt: DateTime.now(),
       ),
     );
@@ -68,15 +78,17 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
     try {
       await service.saveBookmarks(newList);
       state = newList;
+      return true;
     } catch (e) {
       debugPrint('Failed to save bookmark: $e');
       state = prevState;
+      return false;
     }
   }
 
-  Future<void> removeBookmark(BookmarkedArticle item) async {
+  Future<bool> removeBookmark(BookmarkedArticle item) async {
     final service = await _ensureService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
     final newList = state.where((b) => b.url != item.url).toList();
@@ -84,35 +96,39 @@ class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
     try {
       await service.saveBookmarks(newList);
       state = newList;
+      return true;
     } catch (e) {
       debugPrint('Failed to remove bookmark: $e');
       state = prevState;
+      return false;
     }
   }
 
   /// Toggles the bookmark state for [url]. Adds if absent, removes if present.
-  Future<void> toggleBookmark(String url, String title) async {
-    if (await _ensureService() == null) return;
+  Future<bool> toggleBookmark(String url, String title) async {
+    final normalizedUrl = normalizeHttpUrl(url);
+    if (normalizedUrl == null) return false;
 
-    if (isBookmarked(url)) {
-      final item = state.firstWhere((b) => b.url == url);
-      await removeBookmark(item);
-    } else {
-      await addBookmark(url, title);
+    if (isBookmarked(normalizedUrl)) {
+      final item = state.firstWhere((b) => b.url == normalizedUrl);
+      return removeBookmark(item);
     }
+    return addBookmark(normalizedUrl, title);
   }
 
-  Future<void> clearBookmarks() async {
+  Future<bool> clearBookmarks() async {
     final service = await _ensureService();
-    if (service == null) return;
+    if (service == null) return false;
 
     final prevState = state;
     try {
       await service.clearBookmarks();
       state = [];
+      return true;
     } catch (e) {
       debugPrint('Failed to clear bookmarks: $e');
       state = prevState;
+      return false;
     }
   }
 }

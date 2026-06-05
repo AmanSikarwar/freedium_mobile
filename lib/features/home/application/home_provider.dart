@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
+import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/home/domain/home_state.dart';
 
 export 'package:freedium_mobile/features/home/domain/home_state.dart';
@@ -12,12 +13,24 @@ class HomeNotifier extends Notifier<HomeState> {
     state = state.copyWith(url: url);
   }
 
-  Future<void> pasteFromClipboard(void Function(String) onPaste) async {
+  Future<String?> pasteFromClipboard() async {
     final clipboardText = await ref.read(clipboardServiceProvider).paste();
-    if (clipboardText != null) {
-      state = state.copyWith(url: clipboardText);
-      onPaste(clipboardText);
-    }
+    if (clipboardText == null) return null;
+
+    final url = extractArticleUrl(clipboardText) ?? clipboardText.trim();
+    state = state.copyWith(url: url);
+    return url;
+  }
+
+  Future<String?> detectArticleUrlFromClipboard() async {
+    final clipboardText = await ref.read(clipboardServiceProvider).paste();
+    if (clipboardText == null) return null;
+
+    final url = extractArticleUrl(clipboardText);
+    if (url == null) return null;
+
+    state = state.copyWith(url: url);
+    return url;
   }
 }
 

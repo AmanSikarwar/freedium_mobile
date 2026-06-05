@@ -1,21 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
 void showAppAboutDialog(BuildContext context, WidgetRef ref) {
-  Future<void> launchUri(Uri uri) async {
-    try {
-      await launchUrl(uri);
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Could not launch URL: $e')));
-      }
-    }
-  }
-
   showAboutDialog(
     context: context,
     applicationIcon: Image.asset('assets/icon/icon.png', width: 48, height: 48),
@@ -32,7 +23,7 @@ void showAppAboutDialog(BuildContext context, WidgetRef ref) {
           const Text('Source code available on '),
           GestureDetector(
             onTap: () =>
-                launchUri(Uri.https('github.com', 'amansikarwar/freedium')),
+                unawaited(_launchUrl(context, ref, AppConstants.appSourceUrl)),
             child: Text(
               'GitHub',
               style: TextStyle(color: Theme.of(context).colorScheme.primary),
@@ -46,11 +37,26 @@ void showAppAboutDialog(BuildContext context, WidgetRef ref) {
         children: [
           const Text('Made with ❤️ by', style: TextStyle(fontSize: 12)),
           TextButton(
-            onPressed: () => launchUri(.https('github.com', 'amansikarwar')),
+            onPressed: () => unawaited(
+              _launchUrl(context, ref, 'https://github.com/amansikarwar'),
+            ),
             child: const Text('Aman Sikarwar', style: TextStyle(fontSize: 12)),
           ),
         ],
       ),
     ],
+  );
+}
+
+Future<void> _launchUrl(BuildContext context, WidgetRef ref, String url) async {
+  final launched = await ref.read(externalUrlLauncherProvider)(url);
+  if (!context.mounted || launched) return;
+
+  HapticFeedback.heavyImpact();
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(
+      content: Text('Could not open link'),
+      backgroundColor: Colors.red,
+    ),
   );
 }

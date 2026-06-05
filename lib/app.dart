@@ -5,13 +5,66 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
+import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+@visibleForTesting
+class CurrentRouteNameObserver extends NavigatorObserver {
+  final List<Route<dynamic>> _routeStack = [];
+
+  String? get currentRouteName =>
+      _routeStack.isEmpty ? null : _routeStack.last.settings.name;
+
+  @override
+  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPush(route, previousRoute);
+    _routeStack.add(route);
+  }
+
+  @override
+  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didPop(route, previousRoute);
+    _routeStack.remove(route);
+  }
+
+  @override
+  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
+    super.didRemove(route, previousRoute);
+    _routeStack.remove(route);
+  }
+
+  @override
+  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
+    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
+    if (oldRoute == null) {
+      if (newRoute != null) {
+        _routeStack.add(newRoute);
+      }
+      return;
+    }
+
+    final index = _routeStack.indexOf(oldRoute);
+    if (index == -1) return;
+
+    if (newRoute == null) {
+      _routeStack.removeAt(index);
+    } else {
+      _routeStack[index] = newRoute;
+    }
+  }
+
+  @visibleForTesting
+  void reset() {
+    _routeStack.clear();
+  }
+}
+
+final currentRouteNameObserver = CurrentRouteNameObserver();
 
 class InitialIntentHandledNotifier extends Notifier<bool> {
   @override
@@ -45,6 +98,17 @@ final pendingIntentUrlProvider =
       PendingIntentUrlNotifier.new,
     );
 
+@visibleForTesting
+String incomingWebviewRouteName(String url) => '/webview/$url';
+
+@visibleForTesting
+bool shouldSkipIncomingWebviewNavigation({
+  required String? currentRouteName,
+  required String targetUrl,
+}) {
+  return currentRouteName == incomingWebviewRouteName(targetUrl);
+}
+
 class App extends ConsumerWidget {
   const App({super.key});
 
@@ -52,23 +116,26 @@ class App extends ConsumerWidget {
     final navigator = navigatorKey.currentState;
     if (navigator != null) {
       if (navigator.context.mounted) {
-        final currentRoute = ModalRoute.of(navigator.context);
-        if (currentRoute?.settings.name != null) {
+        if (shouldSkipIncomingWebviewNavigation(
+          currentRouteName: currentRouteNameObserver.currentRouteName,
+          targetUrl: url,
+        )) {
           return;
         }
 
         navigator.push(
           MaterialPageRoute(
             builder: (context) => WebviewScreen(url: url),
-            settings: RouteSettings(name: '/webview/$url'),
+            settings: RouteSettings(name: incomingWebviewRouteName(url)),
           ),
         );
       }
     }
   }
 
-  void _handleIncomingIntent(WidgetRef ref, String url) {
-    if (url.isEmpty) return;
+  void _handleIncomingIntent(WidgetRef ref, String value) {
+    final url = extractArticleUrl(value);
+    if (url == null) return;
 
     final onboarding = ref.read(onboardingProvider);
     if (onboarding.isLoading || !onboarding.hasSeenOnboarding) {
@@ -77,18 +144,27 @@ class App extends ConsumerWidget {
     }
 
     _navigateToWebview(url);
-    ReceiveSharingIntent.instance.reset();
+    unawaited(ref.read(intentServiceProvider).reset());
   }
 
-  Future<void> _processInitialIntent(WidgetRef ref) async {
+  Future<void> _processInitialIntent(
+    BuildContext context,
+    WidgetRef ref,
+  ) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
-    final value = await ref.read(intentServiceProvider).getInitialIntent();
-    if (value.isEmpty) return;
+    if (!context.mounted) return;
 
-    final url = value.first.path;
-    if (url.isEmpty) return;
+    try {
+      final value = await ref.read(intentServiceProvider).getInitialIntent();
+      if (!context.mounted) return;
 
-    _handleIncomingIntent(ref, url);
+      final url = extractFirstArticleUrl(value.map((item) => item.path));
+      if (url == null) return;
+
+      _handleIncomingIntent(ref, url);
+    } catch (e) {
+      debugPrint('Failed to process initial intent: $e');
+    }
   }
 
   @override
@@ -107,7 +183,7 @@ class App extends ConsumerWidget {
 
       ref.read(pendingIntentUrlProvider.notifier).clear();
       _navigateToWebview(pendingUrl);
-      ReceiveSharingIntent.instance.reset();
+      unawaited(ref.read(intentServiceProvider).reset());
     });
 
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {
@@ -119,7 +195,7 @@ class App extends ConsumerWidget {
     if (!hasHandledInitialIntent) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         ref.read(initialIntentHandledProvider.notifier).setHandled();
-        unawaited(_processInitialIntent(ref));
+        unawaited(_processInitialIntent(context, ref));
       });
     }
 
@@ -130,6 +206,7 @@ class App extends ConsumerWidget {
         theme: theme.lightTheme,
         darkTheme: theme.darkTheme,
         themeMode: themeMode,
+        navigatorObservers: [currentRouteNameObserver],
         home: onboarding.isLoading
             ? const Scaffold(body: Center(child: CircularProgressIndicator()))
             : hasSeenOnboarding

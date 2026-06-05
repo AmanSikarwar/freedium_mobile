@@ -21,7 +21,8 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: "main"
+          channel: "stable"
+          flutter-version: "3.44.x"
           cache: true
 
       - name: Cache pub dependencies
@@ -38,11 +39,8 @@ jobs:
           java-version: "17"
           cache: "gradle"
 
-      - name: Flutter Pub Get
-        run: flutter pub get
-
-      - name: Flutter Pub Upgrade
-        run: flutter pub upgrade
+      - name: Install locked dependencies
+        run: flutter pub get --enforce-lockfile
 
       - name: Update Version in pubspec.yaml
         run: |

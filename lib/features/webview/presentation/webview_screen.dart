@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
+import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 class WebviewScreen extends ConsumerStatefulWidget {
@@ -26,10 +26,12 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
   WebViewController? _controller;
   ColorScheme? _prevColorScheme;
+  late final IntentService _intentService;
 
   @override
   void initState() {
     super.initState();
+    _intentService = ref.read(intentServiceProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeWebView();
     });
@@ -40,26 +42,16 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final themeInjector = ref.read(themeInjectorServiceProvider);
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
     final settings = ref.read(settingsProvider);
-
-    webviewNotifier.setThemeInjector(themeInjector);
-    _controller = webviewNotifier.createController(
-      baseUrl: settings.selectedMirrorUrl,
+    final initialMirrorUrl = await resolveInitialMirrorUrl(
+      autoSwitchMirror: settings.autoSwitchMirror,
+      selectedMirrorUrl: settings.selectedMirrorUrl,
+      getActiveUrl: freediumUrlService.getActiveUrl,
     );
-    if (mounted) {
-      setState(() {});
-    }
 
-    if (settings.autoSwitchMirror) {
-      unawaited(_warmMirrorCache(freediumUrlService));
-    }
-  }
-
-  Future<void> _warmMirrorCache(FreediumUrlService freediumUrlService) async {
-    try {
-      await freediumUrlService.getActiveUrl();
-    } catch (e) {
-      debugPrint('Mirror warm-up failed: $e');
-    }
+    if (!mounted) return;
+    webviewNotifier.setThemeInjector(themeInjector);
+    _controller = webviewNotifier.createController(baseUrl: initialMirrorUrl);
+    setState(() {});
   }
 
   @override
@@ -75,8 +67,31 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
 
   @override
   void dispose() {
-    ReceiveSharingIntent.instance.reset();
+    _resetSharingIntent();
     super.dispose();
+  }
+
+  void _resetSharingIntent() {
+    unawaited(_intentService.reset());
+  }
+
+  Future<void> _toggleBookmark(
+    BookmarksNotifier bookmarksNotifier,
+    WebviewState webviewState,
+  ) async {
+    final didSave = await bookmarksNotifier.toggleBookmark(
+      widget.url,
+      webviewState.articleMeta?.title ?? '',
+    );
+    if (!mounted || didSave) return;
+
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Failed to update bookmark'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   @override
@@ -121,7 +136,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                ReceiveSharingIntent.instance.reset();
+                _resetSharingIntent();
                 navigator.pop();
               }
             });
@@ -133,7 +148,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                ReceiveSharingIntent.instance.reset();
+                _resetSharingIntent();
                 navigator.pushReplacement(
                   MaterialPageRoute(builder: (context) => const HomeScreen()),
                 );
@@ -323,10 +338,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
               borderRadius: BorderRadius.zero,
               onTap: () {
                 HapticFeedback.lightImpact();
-                bookmarksNotifier.toggleBookmark(
-                  widget.url,
-                  webviewState.articleMeta?.title ?? '',
-                );
+                unawaited(_toggleBookmark(bookmarksNotifier, webviewState));
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
@@ -354,15 +366,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                 right: Radius.circular(30),
               ),
               onTap: () {
-                SharePlus.instance.share(
-                  ShareParams(
-                    subject: 'Read this article without Paywall',
-                    title: 'Share Freedium link',
-                    uri: Uri.parse(
-                      webviewState.activeBaseUrl,
-                    ).replace(path: widget.url),
-                  ),
-                );
+                unawaited(webviewNotifier.shareArticle());
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(

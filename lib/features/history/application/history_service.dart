@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 
@@ -14,10 +15,23 @@ class HistoryService {
     if (historyJson == null) return [];
 
     final List<ReadingHistory> history = [];
+    final seenUrls = <String>{};
     for (final json in historyJson) {
       try {
         final decoded = jsonDecode(json) as Map<String, dynamic>;
-        history.add(ReadingHistory.fromJson(decoded));
+        final item = ReadingHistory.fromJson(decoded);
+        final url = normalizeHttpUrl(item.url);
+        if (url == null || !seenUrls.add(url)) {
+          continue;
+        }
+        final title = item.title.trim();
+        history.add(
+          ReadingHistory(
+            url: url,
+            title: title.isNotEmpty ? title : url,
+            timestamp: item.timestamp,
+          ),
+        );
       } catch (e) {
         debugPrint('Failed to parse history entry: $e');
       }

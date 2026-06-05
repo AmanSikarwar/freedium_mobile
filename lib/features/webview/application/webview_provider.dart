@@ -6,18 +6,43 @@ import 'package:flutter/material.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
+typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
+
+@visibleForTesting
+enum WebviewNavigationAction { navigate, launchExternal, block }
+
+@visibleForTesting
+WebviewNavigationAction resolveWebviewNavigationAction({
+  required String requestUrl,
+  required bool Function(String url) isFreediumUrl,
+}) {
+  final uri = parseExternalHttpUrl(requestUrl);
+  if (uri == null) {
+    return WebviewNavigationAction.block;
+  }
+
+  if (isFreediumUrl(uri.toString())) {
+    return WebviewNavigationAction.navigate;
+  }
+
+  return WebviewNavigationAction.launchExternal;
+}
+
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
-  late FontSizeService _fontSizeService;
+  FontSizeService? _fontSizeService;
   late FreediumUrlService _freediumUrlService;
+  WebViewController? _controller;
   ColorScheme? _colorScheme;
   final String url;
   int _currentMirrorIndex = 0;
@@ -36,16 +61,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
     final prefsAsync = ref.watch(sharedPreferencesProvider);
     _freediumUrlService = ref.read(freediumUrlServiceProvider);
 
-    prefsAsync.whenData((prefs) {
-      _fontSizeService = FontSizeService(prefs);
-      final savedFontSize = _fontSizeService.loadFontSize();
-      if (ref.mounted) {
-        state = state.copyWith(fontSize: savedFontSize);
-      }
-    });
-
     ref.onDispose(() {
-      final controller = state.controller;
+      final controller = _controller;
       if (controller != null) {
         controller.removeJavaScriptChannel('themeApplied');
         controller.removeJavaScriptChannel('Toaster');
@@ -54,7 +71,33 @@ class WebviewNotifier extends Notifier<WebviewState> {
       }
     });
 
-    return WebviewState();
+    return prefsAsync.when(
+      data: (prefs) {
+        final service = FontSizeService(prefs);
+        _fontSizeService = service;
+        return WebviewState(fontSize: service.loadFontSize());
+      },
+      loading: WebviewState.new,
+      error: (e, _) {
+        debugPrint('Failed to load SharedPreferences for WebView: $e');
+        return WebviewState();
+      },
+    );
+  }
+
+  Future<FontSizeService?> _ensureFontSizeService() async {
+    final existingService = _fontSizeService;
+    if (existingService != null) return existingService;
+
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final service = FontSizeService(prefs);
+      _fontSizeService = service;
+      return service;
+    } catch (e) {
+      debugPrint('FontSizeService unavailable: $e');
+      return null;
+    }
   }
 
   void setThemeInjector(ThemeInjectorService themeInjector) {
@@ -85,13 +128,17 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   WebViewController createController({String? baseUrl}) {
     final activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
-    final initialUrl = Uri.parse(activeBaseUrl).replace(path: url);
+    final initialUrl = buildFreediumArticleUri(
+      mirrorUrl: activeBaseUrl,
+      articleUrl: url,
+    );
     _hasSwitchedMirror = false;
     _articleRequestUrls.clear();
     _rememberArticleRequestUrl(activeBaseUrl);
     _setCurrentMirrorIndex(activeBaseUrl);
 
     final controller = WebViewController();
+    _controller = controller;
     controller
       ..setJavaScriptMode(.unrestricted)
       ..setBackgroundColor(Colors.transparent)
@@ -143,6 +190,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
               isPageLoaded: false,
               progress: 0,
               currentUrl: url,
+              hasError: false,
+              clearErrorMessage: true,
               clearArticleMeta: true,
             );
             // Inject the pre-theme script as early as possible so the page's
@@ -179,31 +228,28 @@ class WebviewNotifier extends Notifier<WebviewState> {
             }
           },
           onNavigationRequest: (NavigationRequest request) async {
-            final uri = Uri.parse(request.url);
+            final action = resolveWebviewNavigationAction(
+              requestUrl: request.url,
+              isFreediumUrl: _freediumUrlService.isFreediumUrl,
+            );
 
-            if (!["http", "https"].contains(uri.scheme)) {
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri);
+            switch (action) {
+              case WebviewNavigationAction.navigate:
+                return .navigate;
+              case WebviewNavigationAction.launchExternal:
+                final launched = await launchExternalHttpUrl(request.url);
+                if (!launched && ref.mounted) {
+                  state = state.copyWith(
+                    userMessage: 'Could not open link: ${request.url.trim()}',
+                  );
+                }
                 return .prevent;
-              }
+              case WebviewNavigationAction.block:
+                debugPrint(
+                  'Blocked unsupported WebView navigation: ${request.url}',
+                );
+                return .prevent;
             }
-
-            if (_freediumUrlService.isFreediumHost(uri.host)) {
-              return .navigate;
-            }
-
-            try {
-              if (await canLaunchUrl(uri)) {
-                await launchUrl(uri, mode: .externalApplication);
-              }
-            } catch (e) {
-              debugPrint('Failed to launch URL: $e');
-              state = state.copyWith(
-                userMessage: 'Could not open link: ${uri.toString()}',
-              );
-            }
-
-            return .prevent;
           },
         ),
       )
@@ -229,16 +275,20 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   void _rememberArticleRequestUrl(String baseUrl) {
-    final articleUrl = Uri.parse(baseUrl).replace(path: url).toString();
+    final articleUrl = buildFreediumArticleUri(
+      mirrorUrl: baseUrl,
+      articleUrl: url,
+    ).toString();
     _articleRequestUrls.add(_normalizeUrl(articleUrl));
   }
 
   String _normalizeUrl(String value) {
     try {
       final uri = Uri.parse(value);
-      final normalizedPath = uri.path.endsWith('/') && uri.path.length > 1
-          ? uri.path.substring(0, uri.path.length - 1)
-          : uri.path;
+      var normalizedPath = uri.path;
+      while (normalizedPath.length > 1 && normalizedPath.endsWith('/')) {
+        normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
+      }
       return uri.replace(path: normalizedPath, fragment: '').toString();
     } catch (_) {
       return value;
@@ -272,7 +322,10 @@ class WebviewNotifier extends Notifier<WebviewState> {
         userMessage: 'Trying mirror: ${nextMirror.name}...',
       );
 
-      final newUrl = Uri.parse(nextMirror.url).replace(path: url);
+      final newUrl = buildFreediumArticleUri(
+        mirrorUrl: nextMirror.url,
+        articleUrl: url,
+      );
       state = state.copyWith(activeBaseUrl: nextMirror.url);
       state.controller?.loadRequest(newUrl);
     } else {
@@ -330,20 +383,15 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   String _extractOriginalUrl(String fullUrl) {
     try {
-      final uri = Uri.parse(fullUrl);
-      if (!_freediumUrlService.isFreediumHost(uri.host)) {
+      if (!_freediumUrlService.isFreediumUrl(fullUrl)) {
         return fullUrl;
       }
-      final queryStr = uri.hasQuery ? '?${uri.query}' : '';
-      if (uri.path.startsWith('/http')) {
-        // Mirror URL explicitly encodes the original URL in its path.
-        return '${uri.path.substring(1)}$queryStr';
-      } else {
-        // Fall back to the original user-entered article URL, which is
-        // preserved on this notifier instance and works for any domain
-        // (not just medium.com).
-        return url;
-      }
+
+      return extractOriginalArticleUrlFromFreediumUri(
+            mirrorUrl: state.activeBaseUrl,
+            freediumUrl: fullUrl,
+          ) ??
+          url;
     } catch (e) {
       return url;
     }
@@ -406,8 +454,38 @@ class WebviewNotifier extends Notifier<WebviewState> {
       activeBaseUrl: nextMirror.url,
     );
 
-    final newUrl = Uri.parse(nextMirror.url).replace(path: url);
+    final newUrl = buildFreediumArticleUri(
+      mirrorUrl: nextMirror.url,
+      articleUrl: url,
+    );
     state.controller?.loadRequest(newUrl);
+  }
+
+  Future<void> shareArticle() async {
+    final shareUri = buildFreediumArticleUri(
+      mirrorUrl: state.activeBaseUrl,
+      articleUrl: url,
+    );
+
+    try {
+      final result = await ref.read(shareLauncherProvider)(
+        ShareParams(
+          subject: 'Read this article without Paywall',
+          title: 'Share Freedium link',
+          uri: shareUri,
+        ),
+      );
+      if (!ref.mounted || result.status != ShareResultStatus.unavailable) {
+        return;
+      }
+
+      state = state.copyWith(userMessage: 'Could not share article');
+    } catch (e) {
+      debugPrint('Failed to share article: $e');
+      if (ref.mounted) {
+        state = state.copyWith(userMessage: 'Could not share article');
+      }
+    }
   }
 
   Future<void> _injectTheme() async {
@@ -452,14 +530,34 @@ class WebviewNotifier extends Notifier<WebviewState> {
     state.controller?.reload();
   }
 
-  Future<void> updateFontSize(double fontSize) async {
-    state = state.copyWith(fontSize: fontSize);
-    await _fontSizeService.saveFontSize(fontSize);
-
-    if (state.controller != null && state.isPageLoaded) {
-      final script = _themeInjector.getFontSizeUpdateScript(fontSize);
-      state.controller!.runJavaScript(script);
+  Future<bool> updateFontSize(double fontSize) async {
+    final service = await _ensureFontSizeService();
+    if (service == null) {
+      state = state.copyWith(userMessage: 'Failed to save font size');
+      return false;
     }
+    final normalizedFontSize = FontSizeService.normalizeFontSize(fontSize);
+
+    try {
+      await service.saveFontSize(normalizedFontSize);
+    } catch (e) {
+      debugPrint('Failed to save font size: $e');
+      state = state.copyWith(userMessage: 'Failed to save font size');
+      return false;
+    }
+
+    state = state.copyWith(fontSize: normalizedFontSize);
+
+    final controller = state.controller;
+    if (controller != null && state.isPageLoaded) {
+      final script = _themeInjector.getFontSizeUpdateScript(normalizedFontSize);
+      try {
+        await controller.runJavaScript(script);
+      } catch (e) {
+        debugPrint('Failed to update font size script: $e');
+      }
+    }
+    return true;
   }
 }
 
@@ -469,3 +567,7 @@ final webviewProvider =
     );
 
 final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
+
+final shareLauncherProvider = Provider<ShareLauncher>(
+  (ref) => SharePlus.instance.share,
+);

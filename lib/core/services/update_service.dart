@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 
@@ -18,7 +19,25 @@ class UpdateInfo {
   });
 }
 
+class UpdateCheckException implements Exception {
+  const UpdateCheckException(this.message, [this.cause]);
+
+  final String message;
+  final Object? cause;
+
+  @override
+  String toString() {
+    final cause = this.cause;
+    if (cause == null) return 'UpdateCheckException: $message';
+    return 'UpdateCheckException: $message ($cause)';
+  }
+}
+
 class UpdateService {
+  final http.Client _client;
+
+  UpdateService({http.Client? client}) : _client = client ?? http.Client();
+
   static const String _repoOwner = 'AmanSikarwar';
   static const String _repoName = 'freedium_mobile';
   static const String _apiUrl =
@@ -26,12 +45,24 @@ class UpdateService {
 
   Future<UpdateInfo?> checkForUpdate() async {
     try {
-      final response = await http.get(.parse(_apiUrl));
+      final response = await _client.get(.parse(_apiUrl));
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
-        final latestVersionStr = (data['tag_name'] as String).replaceAll(
-          'v',
+        final tagName = data['tag_name'];
+        final releaseUrl = data['html_url'];
+        if (tagName is! String || releaseUrl is! String) {
+          throw const UpdateCheckException(
+            'Latest release metadata is invalid',
+          );
+        }
+        final normalizedReleaseUrl = _normalizeReleaseUrl(releaseUrl);
+        if (normalizedReleaseUrl == null) {
+          throw const UpdateCheckException('Latest release URL is invalid');
+        }
+
+        final latestVersionStr = tagName.trim().replaceFirst(
+          RegExp('^v', caseSensitive: false),
           '',
         );
         const currentVersionStr = AppConstants.appVersion;
@@ -42,17 +73,28 @@ class UpdateService {
         if (latestVersion > currentVersion) {
           return UpdateInfo(
             latestVersion: 'v$latestVersionStr',
-            releaseUrl: data['html_url'] as String,
-            releaseNotes: data['body'] as String,
+            releaseUrl: normalizedReleaseUrl,
+            releaseNotes: data['body'] is String ? data['body'] as String : '',
           );
         }
+        return null;
       }
-      return null;
+
+      throw UpdateCheckException(
+        'GitHub update check failed with status ${response.statusCode}',
+      );
+    } on UpdateCheckException catch (e) {
+      debugPrint('Update check failed: $e');
+      rethrow;
     } catch (e) {
       debugPrint('Update check failed: $e');
-      return null;
+      throw UpdateCheckException('Failed to check for updates', e);
     }
   }
+}
+
+String? _normalizeReleaseUrl(String value) {
+  return normalizeHttpUrl(value);
 }
 
 final updateServiceProvider = Provider((ref) => UpdateService());

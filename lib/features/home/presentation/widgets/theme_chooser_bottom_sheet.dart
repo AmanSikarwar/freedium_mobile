@@ -13,6 +13,28 @@ void showThemeChooserBottomSheet(BuildContext context) {
 class ThemeChooserBottomSheet extends ConsumerWidget {
   const ThemeChooserBottomSheet({super.key});
 
+  Future<void> _selectTheme(
+    BuildContext context,
+    SettingsNotifier settingsNotifier,
+    ThemeMode themeMode,
+  ) async {
+    HapticFeedback.selectionClick();
+    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final navigator = Navigator.of(context);
+    final didSave = await settingsNotifier.setThemeMode(themeMode);
+    if (!context.mounted) return;
+    if (didSave) {
+      navigator.pop();
+    } else {
+      scaffoldMessenger.showSnackBar(
+        const SnackBar(
+          content: Text('Failed to save theme'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);
@@ -43,11 +65,7 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.primary,
                     )
                   : null,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                settingsNotifier.setThemeMode(.light);
-                Navigator.pop(context);
-              },
+              onTap: () => _selectTheme(context, settingsNotifier, .light),
             ),
             ListTile(
               leading: const Icon(Icons.dark_mode),
@@ -58,11 +76,7 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.primary,
                     )
                   : null,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                settingsNotifier.setThemeMode(.dark);
-                Navigator.pop(context);
-              },
+              onTap: () => _selectTheme(context, settingsNotifier, .dark),
             ),
             ListTile(
               leading: const Icon(Icons.brightness_auto),
@@ -73,11 +87,7 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
                       color: Theme.of(context).colorScheme.primary,
                     )
                   : null,
-              onTap: () {
-                HapticFeedback.selectionClick();
-                settingsNotifier.setThemeMode(.system);
-                Navigator.pop(context);
-              },
+              onTap: () => _selectTheme(context, settingsNotifier, .system),
             ),
           ],
         ),

@@ -141,11 +141,11 @@ button.text-gray-800 {
 /* Emergency transponder code box */
 .bg-black {
   background-color: var(--app-inverse-surface) !important;
-  color: var(--app-inverse-on-surface) !important;
+  color: var(--app-on-inverse-surface) !important;
 }
 .bg-black .text-white,
 .bg-black p {
-  color: var(--app-inverse-on-surface) !important;
+  color: var(--app-on-inverse-surface) !important;
 }
 
 /* Form container styling */
