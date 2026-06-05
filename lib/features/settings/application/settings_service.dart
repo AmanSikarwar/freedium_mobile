@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:freedium_mobile/features/settings/application/mirror_url_normalizer.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class SettingsService {
@@ -75,7 +76,7 @@ class SettingsService {
           jsonDecode(entry) as Map<String, dynamic>,
         );
         final name = mirror.name.trim();
-        final url = _normalizeMirrorUrl(mirror.url);
+        final url = normalizeMirrorUrl(mirror.url);
         if (name.isEmpty || url == null || !seenUrls.add(url)) {
           continue;
         }
@@ -100,7 +101,7 @@ class SettingsService {
     final selectedMirrorUrl = _prefs.getString(_selectedMirrorUrlKey);
     return selectedMirrorUrl == null
         ? SettingsState.defaultMirrors.first.url
-        : _normalizeMirrorUrl(selectedMirrorUrl) ??
+        : normalizeMirrorUrl(selectedMirrorUrl) ??
               SettingsState.defaultMirrors.first.url;
   }
 
@@ -166,32 +167,4 @@ Future<void> _savePreference(
     debugPrint('Failed to save setting "$key": $e');
     rethrow;
   }
-}
-
-String? _normalizeMirrorUrl(String value) {
-  final uri = Uri.tryParse(value.trim());
-  final scheme = uri?.scheme.toLowerCase();
-  if (uri == null ||
-      !uri.hasScheme ||
-      uri.host.isEmpty ||
-      (scheme != 'http' && scheme != 'https')) {
-    return null;
-  }
-
-  return Uri(
-    scheme: scheme,
-    userInfo: uri.userInfo,
-    host: uri.host.toLowerCase(),
-    port: uri.hasPort ? uri.port : null,
-    path: _trimTrailingSlash(uri.path),
-  ).toString();
-}
-
-String _trimTrailingSlash(String value) {
-  var trimmed = value;
-  while (trimmed.length > 1 && trimmed.endsWith('/')) {
-    trimmed = trimmed.substring(0, trimmed.length - 1);
-  }
-
-  return trimmed == '/' ? '' : trimmed;
 }

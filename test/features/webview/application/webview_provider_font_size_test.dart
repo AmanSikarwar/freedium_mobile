@@ -62,10 +62,14 @@ void main() {
     });
 
     test('keeps font size and reports message when saving fails', () async {
+      final previousStore = SharedPreferencesStorePlatform.instance;
       SharedPreferencesStorePlatform.instance =
           _FailingSharedPreferencesStore();
       SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      addTearDown(() {
+        SharedPreferences.setMockInitialValues({});
+        SharedPreferencesStorePlatform.instance = previousStore;
+      });
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [

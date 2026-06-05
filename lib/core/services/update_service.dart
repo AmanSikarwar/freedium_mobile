@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 
@@ -93,15 +94,7 @@ class UpdateService {
 }
 
 String? _normalizeReleaseUrl(String value) {
-  final url = value.trim();
-  final uri = Uri.tryParse(url);
-  final scheme = uri?.scheme.toLowerCase();
-  if (uri == null ||
-      uri.host.isEmpty ||
-      (scheme != 'http' && scheme != 'https')) {
-    return null;
-  }
-  return url;
+  return normalizeHttpUrl(value);
 }
 
 final updateServiceProvider = Provider((ref) => UpdateService());

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/features/settings/application/mirror_url_normalizer.dart';
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
@@ -119,7 +120,7 @@ bool _hasSameOrigin(Uri url, Uri mirror) {
 }
 
 bool _hasMirrorPathPrefix(String path, String mirrorPath) {
-  final normalizedMirrorPath = _trimTrailingSlash(mirrorPath);
+  final normalizedMirrorPath = trimTrailingSlash(mirrorPath);
 
   if (normalizedMirrorPath.isEmpty) {
     return true;
@@ -274,7 +275,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
   Future<bool> setSelectedMirror(String url) async {
     final service = await _ensureSettingsService();
     if (service == null) return false;
-    final normalizedUrl = _normalizeMirrorUrl(url);
+    final normalizedUrl = normalizeMirrorUrl(url);
     if (normalizedUrl == null ||
         !state.mirrors.any((mirror) => mirror.url == normalizedUrl)) {
       return false;
@@ -398,37 +399,9 @@ class SettingsNotifier extends Notifier<SettingsState> {
 
 FreediumMirror? _normalizeMirror(FreediumMirror mirror) {
   final name = mirror.name.trim();
-  final url = _normalizeMirrorUrl(mirror.url);
+  final url = normalizeMirrorUrl(mirror.url);
   if (name.isEmpty || url == null) return null;
   return mirror.copyWith(name: name, url: url);
-}
-
-String? _normalizeMirrorUrl(String value) {
-  final uri = Uri.tryParse(value.trim());
-  final scheme = uri?.scheme.toLowerCase();
-  if (uri == null ||
-      !uri.hasScheme ||
-      uri.host.isEmpty ||
-      (scheme != 'http' && scheme != 'https')) {
-    return null;
-  }
-
-  return Uri(
-    scheme: scheme,
-    userInfo: uri.userInfo,
-    host: uri.host.toLowerCase(),
-    port: uri.hasPort ? uri.port : null,
-    path: _trimTrailingSlash(uri.path),
-  ).toString();
-}
-
-String _trimTrailingSlash(String value) {
-  var trimmed = value;
-  while (trimmed.length > 1 && trimmed.endsWith('/')) {
-    trimmed = trimmed.substring(0, trimmed.length - 1);
-  }
-
-  return trimmed == '/' ? '' : trimmed;
 }
 
 class MirrorTestResult {
