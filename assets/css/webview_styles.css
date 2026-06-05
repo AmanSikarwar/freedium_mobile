@@ -2,6 +2,9 @@ body {
   background-color: var(--app-surface) !important;
   color: var(--app-on-surface) !important;
 }
+html {
+  background-color: var(--app-surface) !important;
+}
 #header {
   background-color: var(--app-surface) !important;
   color: var(--app-on-surface) !important;
@@ -13,6 +16,52 @@ body {
     var(--app-primary) var(--scroll),
     transparent 0
   ) !important;
+}
+
+/* Updated Svelte Freedium layout */
+article,
+article.bg-white,
+.dark article[class*="dark:bg-zinc-900"] {
+  background-color: var(--app-surface) !important;
+  color: var(--app-on-surface) !important;
+}
+article header,
+article header.bg-gray-50,
+article [class*="bg-gray-50"],
+.dark article [class*="dark:bg-zinc-800"] {
+  background-color: var(--app-surface-container-low) !important;
+  color: var(--app-on-surface) !important;
+}
+article [class*="bg-gray-100"],
+article [class*="bg-gray-200"],
+.dark article [class*="dark:bg-zinc-700"] {
+  background-color: var(--app-surface-container) !important;
+  color: var(--app-on-surface-variant) !important;
+}
+article [class*="border-gray-200"],
+article [class*="divide-gray-200"] > :not(:last-child),
+.dark article [class*="dark:border-zinc-700"],
+.dark article [class*="dark:divide-zinc-700"] > :not(:last-child) {
+  border-color: var(--app-outline-variant) !important;
+}
+.text-zinc-400,
+.text-zinc-500,
+.text-zinc-600,
+.text-zinc-700,
+.dark [class*="dark:text-zinc-300"],
+.dark [class*="dark:text-zinc-400"],
+.dark [class*="dark:text-zinc-500"],
+.dark [class*="dark:text-gray-300"],
+.dark [class*="dark:text-gray-400"] {
+  color: var(--app-on-surface-variant) !important;
+}
+.dark [class*="dark:text-white"],
+.dark [class*="dark:hover:text-white"]:hover {
+  color: var(--app-on-surface) !important;
+}
+a[class*="hover:bg-accent"]:hover,
+button[class*="hover:bg-accent"]:hover {
+  background-color: var(--app-surface-container) !important;
 }
 a {
   color: var(--app-primary) !important;
@@ -289,6 +338,27 @@ code:not(pre *) {
   color: var(--app-on-primary) !important;
   filter: brightness(1.1) !important;
 }
+.code-copy-btn {
+  background-color: var(--app-primary-container) !important;
+  color: var(--app-on-primary-container) !important;
+  border: 1px solid var(--app-outline-variant) !important;
+}
+.code-copy-btn:hover {
+  background-color: var(--app-primary) !important;
+  color: var(--app-on-primary) !important;
+  filter: brightness(1.05) !important;
+}
+pre.shiki {
+  background-color: var(--app-surface-container-high) !important;
+  color: var(--app-on-surface) !important;
+}
+pre.shiki code {
+  background-color: transparent !important;
+  padding: 0 !important;
+}
+pre.shiki .line:before {
+  color: var(--app-outline) !important;
+}
 .bg-green-100,
 .dark .bg-green-800 {
   color: var(--app-on-primary-container) !important;
@@ -327,11 +397,15 @@ svg {
 #darkModeToggle svg {
   fill: var(--app-on-primary) !important;
 }
+.theme-toggle svg {
+  fill: currentColor !important;
+}
 .notification-container > div {
   background-color: var(--app-surface-container-low) !important;
   border-color: var(--app-outline-variant) !important;
   color: var(--app-on-surface) !important;
 }
+.theme-toggle,
 #darkModeToggle {
   display: none !important;
   pointer-events: none !important;

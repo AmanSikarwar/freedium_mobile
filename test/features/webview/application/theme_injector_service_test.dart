@@ -30,5 +30,38 @@ void main() {
         expect(script, isNot(contains('var(--app-inverse-on-surface)')));
       },
     );
+
+    test('targets updated Freedium theme and interaction selectors', () async {
+      final service = ThemeInjectorService();
+      final script = await service.getThemeInjectionScript(
+        ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+      );
+
+      expect(script, contains('mode-watcher-mode'));
+      expect(script, contains('.theme-toggle'));
+      expect(script, contains('button.code-copy-btn[data-code]'));
+      expect(script, contains('article header'));
+      expect(script, contains("img[alt='Post cover image']"));
+    });
+
+    test('pre-theme script primes mode-watcher and Freedium tokens', () {
+      final service = ThemeInjectorService();
+      final script = service.getPreThemeScript(
+        ColorScheme.fromSeed(
+          seedColor: Colors.teal,
+          brightness: Brightness.dark,
+        ),
+      );
+
+      expect(script, contains('localStorage.setItem("theme", "dark")'));
+      expect(
+        script,
+        contains('localStorage.setItem("mode-watcher-mode", "dark")'),
+      );
+      expect(script, contains('root.classList.add("dark")'));
+      expect(script, contains('root.style.colorScheme = "dark"'));
+      expect(script, contains("root.style.setProperty('--bg'"));
+      expect(script, contains("root.style.setProperty('--accent'"));
+    });
   });
 }
