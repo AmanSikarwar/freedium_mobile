@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/settings/application/mirror_url_normalizer.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class SettingsService {
   static const String _themeModeKey = 'theme_mode';
-  static const String _defaultFontSizeKey = 'default_font_size';
   static const String _mirrorsKey = 'freedium_mirrors';
   static const String _selectedMirrorUrlKey = 'selected_mirror_url';
   static const String _autoSwitchMirrorKey = 'auto_switch_mirror';
@@ -36,21 +36,11 @@ class SettingsService {
   }
 
   Future<void> saveDefaultFontSize(double fontSize) async {
-    await _savePreference(
-      () => _prefs.setDouble(
-        _defaultFontSizeKey,
-        SettingsState.normalizeDefaultFontSize(fontSize),
-      ),
-      methodName: 'setDouble',
-      key: _defaultFontSizeKey,
-    );
+    await FontSizeService(_prefs).saveFontSize(fontSize);
   }
 
   double loadDefaultFontSize() {
-    return SettingsState.normalizeDefaultFontSize(
-      _prefs.getDouble(_defaultFontSizeKey) ??
-          SettingsState.defaultDefaultFontSize,
-    );
+    return FontSizeService(_prefs).loadFontSize();
   }
 
   Future<void> saveMirrors(List<FreediumMirror> mirrors) async {

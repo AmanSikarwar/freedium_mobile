@@ -40,7 +40,6 @@ WebviewNavigationAction resolveWebviewNavigationAction({
 
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
-  FontSizeService? _fontSizeService;
   late FreediumUrlService _freediumUrlService;
   WebViewController? _controller;
   ColorScheme? _colorScheme;
@@ -58,8 +57,18 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
   @override
   WebviewState build() {
-    final prefsAsync = ref.watch(sharedPreferencesProvider);
     _freediumUrlService = ref.read(freediumUrlServiceProvider);
+
+    ref.listen<double>(
+      settingsProvider.select((settings) => settings.defaultFontSize),
+      (previous, next) {
+        final normalizedFontSize = FontSizeService.normalizeFontSize(next);
+        if (!ref.mounted || state.fontSize == normalizedFontSize) {
+          return;
+        }
+        unawaited(_applyFontSize(normalizedFontSize));
+      },
+    );
 
     ref.onDispose(() {
       final controller = _controller;
@@ -71,33 +80,11 @@ class WebviewNotifier extends Notifier<WebviewState> {
       }
     });
 
-    return prefsAsync.when(
-      data: (prefs) {
-        final service = FontSizeService(prefs);
-        _fontSizeService = service;
-        return WebviewState(fontSize: service.loadFontSize());
-      },
-      loading: WebviewState.new,
-      error: (e, _) {
-        debugPrint('Failed to load SharedPreferences for WebView: $e');
-        return WebviewState();
-      },
+    return WebviewState(
+      fontSize: FontSizeService.normalizeFontSize(
+        ref.read(settingsProvider).defaultFontSize,
+      ),
     );
-  }
-
-  Future<FontSizeService?> _ensureFontSizeService() async {
-    final existingService = _fontSizeService;
-    if (existingService != null) return existingService;
-
-    try {
-      final prefs = await ref.read(sharedPreferencesProvider.future);
-      final service = FontSizeService(prefs);
-      _fontSizeService = service;
-      return service;
-    } catch (e) {
-      debugPrint('FontSizeService unavailable: $e');
-      return null;
-    }
   }
 
   void setThemeInjector(ThemeInjectorService themeInjector) {
@@ -531,23 +518,25 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   Future<bool> updateFontSize(double fontSize) async {
-    final service = await _ensureFontSizeService();
-    if (service == null) {
-      state = state.copyWith(userMessage: 'Failed to save font size');
-      return false;
-    }
     final normalizedFontSize = FontSizeService.normalizeFontSize(fontSize);
-
-    try {
-      await service.saveFontSize(normalizedFontSize);
-    } catch (e) {
-      debugPrint('Failed to save font size: $e');
+    final didSave = await ref
+        .read(settingsProvider.notifier)
+        .setDefaultFontSize(normalizedFontSize);
+    if (!didSave) {
       state = state.copyWith(userMessage: 'Failed to save font size');
       return false;
     }
 
-    state = state.copyWith(fontSize: normalizedFontSize);
+    if (state.fontSize != normalizedFontSize) {
+      await _applyFontSize(normalizedFontSize);
+    }
 
+    return true;
+  }
+
+  Future<void> _applyFontSize(double fontSize) async {
+    final normalizedFontSize = FontSizeService.normalizeFontSize(fontSize);
+    state = state.copyWith(fontSize: normalizedFontSize);
     final controller = state.controller;
     if (controller != null && state.isPageLoaded) {
       final script = _themeInjector.getFontSizeUpdateScript(normalizedFontSize);
@@ -557,7 +546,6 @@ class WebviewNotifier extends Notifier<WebviewState> {
         debugPrint('Failed to update font size script: $e');
       }
     }
-    return true;
   }
 }
 

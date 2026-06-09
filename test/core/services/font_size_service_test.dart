@@ -12,6 +12,14 @@ void main() {
       expect(service.loadFontSize(), FontSizeService.maxFontSize);
     });
 
+    test('loadFontSize falls back to legacy settings key', () async {
+      SharedPreferences.setMockInitialValues({'default_font_size': 22.0});
+      final prefs = await SharedPreferences.getInstance();
+      final service = FontSizeService(prefs);
+
+      expect(service.loadFontSize(), 22.0);
+    });
+
     test('saveFontSize clamps out-of-range values', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
