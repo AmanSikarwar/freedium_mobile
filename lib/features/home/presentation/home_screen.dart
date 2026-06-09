@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
@@ -79,6 +80,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
     }
 
     _urlController.text = text;
+  }
+
+  Future<void> _launchSourceOnGithub() async {
+    final launched = await ref.read(externalUrlLauncherProvider)(
+      AppConstants.appSourceUrl,
+    );
+    if (!mounted || launched) return;
+
+    HapticFeedback.heavyImpact();
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Could not open GitHub'),
+        backgroundColor: Colors.red,
+      ),
+    );
   }
 
   @override
@@ -239,6 +255,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                           },
                           child: const Text('Read Article'),
                         ),
+                      ),
+                      ActionChip(
+                        avatar: const Icon(Icons.star_border, size: 18),
+                        label: const Text('Star on Github'),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          unawaited(_launchSourceOnGithub());
+                        },
                       ),
                     ],
                   ),
