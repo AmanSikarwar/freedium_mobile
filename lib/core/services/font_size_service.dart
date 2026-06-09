@@ -36,20 +36,21 @@ class FontSizeService {
   }
 
   Future<void> resetFontSize() async {
-    final success = await _prefs.remove(_fontSizeKey);
-    if (!success) {
-      throw Exception('remove returned false for key "$_fontSizeKey"');
-    }
-    final legacySuccess = await _prefs.remove(_legacyDefaultFontSizeKey);
-    if (!legacySuccess) {
-      throw Exception(
-        'remove returned false for key "$_legacyDefaultFontSizeKey"',
-      );
-    }
+    await _removeIfPresent(_fontSizeKey);
+    await _removeIfPresent(_legacyDefaultFontSizeKey);
   }
 
   static double normalizeFontSize(double fontSize) {
     if (!fontSize.isFinite) return defaultFontSize;
     return fontSize.clamp(minFontSize, maxFontSize).toDouble();
+  }
+
+  Future<void> _removeIfPresent(String key) async {
+    if (!_prefs.containsKey(key)) return;
+
+    final success = await _prefs.remove(key);
+    if (!success) {
+      throw Exception('remove returned false for key "$key"');
+    }
   }
 }
