@@ -258,7 +258,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ),
                       ActionChip(
                         avatar: const Icon(Icons.star_border, size: 18),
-                        label: const Text('Star on Github'),
+                        label: const Text('Star on GitHub'),
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           unawaited(_launchSourceOnGithub());
