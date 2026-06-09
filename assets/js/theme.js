@@ -401,7 +401,10 @@
           heroEl.getAttribute("data-zoom-src"));
       if (heroSrc && !heroSrc.startsWith("data:")) {
         try {
-          heroImg = new URL(heroSrc, window.location.origin).href;
+          heroImg = new URL(
+            heroSrc,
+            document.baseURI || window.location.href
+          ).href;
         } catch (_) {
           heroImg = heroSrc;
         }

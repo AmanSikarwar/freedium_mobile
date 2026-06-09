@@ -62,6 +62,13 @@ void main() {
       expect(script, contains('root.style.colorScheme = "dark"'));
       expect(script, contains("root.style.setProperty('--bg'"));
       expect(script, contains("root.style.setProperty('--accent'"));
+      expect(
+        script,
+        contains(
+          'console.warn(\'Failed to persist pre-theme mode "dark" to localStorage:\', e)',
+        ),
+      );
+      expect(script, contains('console.error("Pre-theme script error:", e)'));
     });
   });
 }

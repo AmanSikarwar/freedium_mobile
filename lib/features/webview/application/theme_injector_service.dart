@@ -136,7 +136,7 @@ class ThemeInjectorService {
       localStorage.setItem("theme", "$themeValue");
       localStorage.setItem("mode-watcher-mode", "$themeValue");
     } catch (e) {
-      // localStorage may be unavailable.
+      console.warn('Failed to persist pre-theme mode "$themeValue" to localStorage:', e);
     }
     var root = document.documentElement;
     if ($isDark) {
@@ -147,6 +147,7 @@ class ThemeInjectorService {
     root.style.colorScheme = "$themeValue";
 $freediumTokenAssignments
   } catch (e) {
+    console.error("Pre-theme script error:", e);
     // The full theme script will retry after the page finishes loading.
   }
 })();

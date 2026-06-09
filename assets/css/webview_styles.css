@@ -398,7 +398,7 @@ svg {
   fill: var(--app-on-primary) !important;
 }
 .theme-toggle svg {
-  fill: currentColor !important;
+  fill: currentcolor !important;
 }
 .notification-container > div {
   background-color: var(--app-surface-container-low) !important;
