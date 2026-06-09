@@ -3,7 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
+import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 
 class _FakeClipboardService extends ClipboardService {
@@ -50,6 +52,34 @@ void main() {
 
       expect(find.text('Read Article'), findsOneWidget);
       expect(find.text('Get Article'), findsNothing);
+    });
+
+    testWidgets('opens the source repository from the GitHub star chip', (
+      tester,
+    ) async {
+      final clipboard = _FakeClipboardService(null);
+      final launchedUrls = <String?>[];
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+            externalUrlLauncherProvider.overrideWith((ref) {
+              return (url) async {
+                launchedUrls.add(url);
+                return true;
+              };
+            }),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Star on GitHub'));
+      await tester.pumpAndSettle();
+
+      expect(launchedUrls, [AppConstants.appSourceUrl]);
     });
 
     testWidgets('auto-fills a valid article URL from the clipboard', (

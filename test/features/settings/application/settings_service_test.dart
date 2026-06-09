@@ -135,7 +135,7 @@ void main() {
 
     test('loadAllSettings clamps persisted numeric preferences', () async {
       SharedPreferences.setMockInitialValues({
-        'default_font_size': 100.0,
+        'webview_font_size': 100.0,
         'mirror_timeout': 0,
       });
 
@@ -148,6 +148,15 @@ void main() {
       expect(settings.mirrorTimeout, SettingsState.minMirrorTimeout);
     });
 
+    test('loadAllSettings reads legacy default font size key', () async {
+      SharedPreferences.setMockInitialValues({'default_font_size': 22.0});
+
+      final prefs = await SharedPreferences.getInstance();
+      final service = SettingsService(prefs);
+
+      expect(service.loadAllSettings().defaultFontSize, 22.0);
+    });
+
     test('save numeric preferences clamps out-of-range values', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
@@ -157,7 +166,7 @@ void main() {
       await service.saveMirrorTimeout(100);
 
       expect(
-        prefs.getDouble('default_font_size'),
+        prefs.getDouble('webview_font_size'),
         SettingsState.minDefaultFontSize,
       );
       expect(prefs.getInt('mirror_timeout'), SettingsState.maxMirrorTimeout);

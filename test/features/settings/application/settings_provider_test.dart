@@ -176,7 +176,7 @@ void main() {
       expect(settings.defaultFontSize, SettingsState.maxDefaultFontSize);
       expect(settings.mirrorTimeout, SettingsState.minMirrorTimeout);
       expect(
-        prefs.getDouble('default_font_size'),
+        prefs.getDouble('webview_font_size'),
         SettingsState.maxDefaultFontSize,
       );
       expect(prefs.getInt('mirror_timeout'), SettingsState.minMirrorTimeout);
