@@ -76,7 +76,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Star on Github'));
+      await tester.tap(find.text('Star on GitHub'));
       await tester.pumpAndSettle();
 
       expect(launchedUrls, [AppConstants.appSourceUrl]);
