@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.12.0] - 2026-08-10
+
+### Added
+
+- Expanded article support to Medium, The New York Times, The Washington Post, Bloomberg, Reuters, The Economist, and Financial Times.
+- Added Android **Open with Freedium** handling for the seven supported publishers and their common short-link domains.
+- Added persistent reading progress, automatic position restoration, and a home-screen **Continue Reading** section.
+- Added reading progress and completion status to History and Bookmarks.
+- Added a setting to hide Freedium announcement popups while reading.
+
+### Improved
+
+- Redesigned History and Bookmarks with responsive content widths, richer article cards, source labels, collection counts, clearer swipe actions, and improved empty/search states.
+- Updated home, onboarding, About, and README copy for all seven supported sources.
+- Updated injected article typography and theme selectors for the current Freedium page structure.
+
+### Fixed
+
+- Prevented themed WebView content from appearing before theme injection completes.
+- Normalized article author metadata extracted from Freedium pages.
+
+### Dependencies
+
+- Updated `webview_flutter` to `4.14.1`, `flutter_markdown_plus` to `1.0.12`, and `share_plus` to `13.3.0`.
+- Updated Riverpod packages and GitHub Actions dependencies.
+
 ## [0.11.0] - 2026-06-09
 
 ### Added
@@ -62,3 +88,4 @@ All notable changes to this project will be documented in this file.
 
 [0.10.0]: https://github.com/AmanSikarwar/freedium_mobile/compare/v0.9.0...v0.10.0
 [0.11.0]: https://github.com/AmanSikarwar/freedium_mobile/compare/v0.10.0...v0.11.0
+[0.12.0]: https://github.com/AmanSikarwar/freedium_mobile/compare/v0.11.0...v0.12.0
