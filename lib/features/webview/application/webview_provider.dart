@@ -8,6 +8,7 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
+import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
@@ -38,6 +39,25 @@ WebviewNavigationAction resolveWebviewNavigationAction({
   return WebviewNavigationAction.launchExternal;
 }
 
+@visibleForTesting
+String buildReadingProgressRestoreScript(double progress) {
+  final normalizedProgress = normalizeReadingProgress(progress);
+  return '''
+    (function () {
+      const progress = $normalizedProgress;
+      const restore = function () {
+        const root = document.documentElement;
+        const height = Math.max(root.scrollHeight, document.body.scrollHeight);
+        const scrollable = Math.max(0, height - window.innerHeight);
+        window.scrollTo(0, Math.round(scrollable * progress));
+      };
+      requestAnimationFrame(restore);
+      setTimeout(restore, 300);
+      setTimeout(restore, 1000);
+    })();
+  ''';
+}
+
 class WebviewNotifier extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
   late FreediumUrlService _freediumUrlService;
@@ -50,6 +70,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   final Set<String> _articleRequestUrls = <String>{};
   int _historyRecordToken = 0;
   bool _hasRecordedHistoryForCurrentPage = false;
+  double _latestReadingProgress = 0;
   static const Duration _articleMetaWaitDuration = Duration(milliseconds: 900);
   static const int _maxRetries = 3;
 
@@ -76,6 +97,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
         controller.removeJavaScriptChannel('themeApplied');
         controller.removeJavaScriptChannel('Toaster');
         controller.removeJavaScriptChannel('ArticleMeta');
+        controller.removeJavaScriptChannel('ReadingProgress');
         controller.clearCache();
       }
     });
@@ -164,6 +186,12 @@ class WebviewNotifier extends Notifier<WebviewState> {
           }
         },
       )
+      ..addJavaScriptChannel(
+        'ReadingProgress',
+        onMessageReceived: (JavaScriptMessage message) {
+          _saveReadingProgress(message.message);
+        },
+      )
       ..setNavigationDelegate(
         NavigationDelegate(
           onProgress: (int progress) {
@@ -172,6 +200,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
           onPageStarted: (String url) {
             _historyRecordToken++;
             _hasRecordedHistoryForCurrentPage = false;
+            _latestReadingProgress = 0;
             state = state.copyWith(
               isThemeApplied: false,
               isPageLoaded: false,
@@ -199,6 +228,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
             if (_freediumUrlService.isFreediumUrl(url)) {
               _retryCount = 0;
               await _injectTheme();
+              await _restoreReadingProgress(url);
               await _recordHistoryWhenReady(url);
             } else {
               state = state.copyWith(isThemeApplied: false);
@@ -362,9 +392,59 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _hasRecordedHistoryForCurrentPage = true;
     try {
       await ref.read(historyProvider.notifier).addHistory(originalUrl, title);
+      if (_latestReadingProgress > 0) {
+        await ref
+            .read(historyProvider.notifier)
+            .updateReadingProgress(originalUrl, _latestReadingProgress);
+      }
     } catch (e) {
       debugPrint('Failed to save history entry: $e');
       _hasRecordedHistoryForCurrentPage = false;
+    }
+  }
+
+  void _saveReadingProgress(String message) {
+    final currentUrl = state.currentUrl;
+    final progress = double.tryParse(message);
+    if (!ref.mounted ||
+        currentUrl == null ||
+        progress == null ||
+        !_freediumUrlService.isFreediumUrl(currentUrl)) {
+      return;
+    }
+
+    final normalizedProgress = normalizeReadingProgress(progress);
+    if (normalizedProgress == 0) return;
+
+    _latestReadingProgress = normalizedProgress;
+    unawaited(
+      ref
+          .read(historyProvider.notifier)
+          .updateReadingProgress(
+            _extractOriginalUrl(currentUrl),
+            normalizedProgress,
+          ),
+    );
+  }
+
+  Future<void> _restoreReadingProgress(String currentUrl) async {
+    final progress = await ref
+        .read(historyProvider.notifier)
+        .readingProgressFor(_extractOriginalUrl(currentUrl));
+    if (!ref.mounted ||
+        state.currentUrl != currentUrl ||
+        progress <= readingProgressRestoreThreshold ||
+        progress >= readingCompletionThreshold) {
+      return;
+    }
+
+    _latestReadingProgress = progress;
+    try {
+      await state.controller?.runJavaScript(
+        buildReadingProgressRestoreScript(progress),
+      );
+    } catch (e) {
+      debugPrint('Failed to restore reading progress: $e');
     }
   }
 

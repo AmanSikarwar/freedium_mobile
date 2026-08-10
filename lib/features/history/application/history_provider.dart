@@ -53,6 +53,10 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
         : normalizedUrl;
 
     final prevState = state;
+    final existingIndex = state.indexWhere((item) => item.url == normalizedUrl);
+    final existingProgress = existingIndex < 0
+        ? 0.0
+        : state[existingIndex].progress;
     final newList = state.where((item) => item.url != normalizedUrl).toList();
 
     newList.insert(
@@ -61,6 +65,7 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
         url: normalizedUrl,
         title: normalizedTitle,
         timestamp: DateTime.now(),
+        progress: existingProgress,
       ),
     );
 
@@ -74,6 +79,39 @@ class HistoryNotifier extends Notifier<List<ReadingHistory>> {
     } catch (e) {
       debugPrint('Failed to save history entry: $e');
       state = prevState;
+    }
+  }
+
+  Future<double> readingProgressFor(String url) async {
+    await _ensureHistoryService();
+    final normalizedUrl = normalizeHttpUrl(url);
+    if (normalizedUrl == null) return 0;
+
+    final index = state.indexWhere((item) => item.url == normalizedUrl);
+    return index < 0 ? 0 : state[index].progress;
+  }
+
+  Future<void> updateReadingProgress(String url, double progress) async {
+    final service = await _ensureHistoryService();
+    final normalizedUrl = normalizeHttpUrl(url);
+    final normalizedProgress = normalizeReadingProgress(progress);
+    if (service == null || normalizedUrl == null || normalizedProgress == 0) {
+      return;
+    }
+
+    final index = state.indexWhere((item) => item.url == normalizedUrl);
+    if (index < 0 || state[index].progress == normalizedProgress) return;
+
+    final previousState = state;
+    final newList = List<ReadingHistory>.from(state);
+    newList[index] = newList[index].copyWith(progress: normalizedProgress);
+
+    try {
+      await service.saveHistory(newList);
+      state = newList;
+    } catch (e) {
+      debugPrint('Failed to save reading progress: $e');
+      state = previousState;
     }
   }
 

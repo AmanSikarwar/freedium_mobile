@@ -42,6 +42,7 @@ void main() {
       expect(script, contains('button.code-copy-btn[data-code]'));
       expect(script, contains('article header'));
       expect(script, contains("img[alt='Post cover image']"));
+      expect(script, contains('ReadingProgress.postMessage'));
     });
 
     test('pre-theme script primes mode-watcher and Freedium tokens', () {

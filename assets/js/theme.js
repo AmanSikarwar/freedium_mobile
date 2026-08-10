@@ -49,6 +49,7 @@
       syncLegacyHighlightTheme(isDark);
       lockNativeThemeControls(isDark);
       installCopyButtonOverrides();
+      installReadingProgressTracking();
       notifyThemeApplied();
 
       setTimeout(extractArticleMeta, 800);
@@ -351,6 +352,35 @@
     } catch (e) {
       console.warn("Failed to call Flutter handler:", e);
     }
+  }
+
+  function installReadingProgressTracking() {
+    if (!window.ReadingProgress || !window.ReadingProgress.postMessage) {
+      return;
+    }
+
+    if (window._freediumReadingProgressHandler) {
+      window.removeEventListener(
+        "scroll",
+        window._freediumReadingProgressHandler
+      );
+    }
+    clearTimeout(window._freediumReadingProgressTimer);
+
+    window._freediumReadingProgressHandler = function () {
+      clearTimeout(window._freediumReadingProgressTimer);
+      window._freediumReadingProgressTimer = setTimeout(function () {
+        const root = document.documentElement;
+        const height = Math.max(root.scrollHeight, document.body.scrollHeight);
+        const scrollable = Math.max(1, height - window.innerHeight);
+        const progress = Math.min(1, Math.max(0, window.scrollY / scrollable));
+        window.ReadingProgress.postMessage(progress.toFixed(3));
+      }, 400);
+    };
+
+    window.addEventListener("scroll", window._freediumReadingProgressHandler, {
+      passive: true,
+    });
   }
 
   function extractArticleMeta() {

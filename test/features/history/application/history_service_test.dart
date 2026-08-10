@@ -83,5 +83,32 @@ void main() {
       expect(history, hasLength(1));
       expect(history.single.title, 'https://medium.com/example/story');
     });
+
+    test('getHistory loads progress and supports legacy entries', () async {
+      final timestamp = DateTime.utc(2026, 2, 3);
+      SharedPreferences.setMockInitialValues({
+        'reading_history': [
+          jsonEncode({
+            'url': 'https://medium.com/with-progress',
+            'title': 'With progress',
+            'timestamp': timestamp.toIso8601String(),
+            'progress': 0.42,
+          }),
+          jsonEncode({
+            'url': 'https://medium.com/legacy',
+            'title': 'Legacy',
+            'timestamp': timestamp
+                .subtract(const Duration(minutes: 1))
+                .toIso8601String(),
+          }),
+        ],
+      });
+
+      final prefs = await SharedPreferences.getInstance();
+      final history = HistoryService(prefs).getHistory();
+
+      expect(history.first.progress, 0.42);
+      expect(history.last.progress, 0);
+    });
   });
 }

@@ -30,6 +30,7 @@ class HistoryService {
             url: url,
             title: title.isNotEmpty ? title : url,
             timestamp: item.timestamp,
+            progress: item.progress,
           ),
         );
       } catch (e) {

@@ -91,6 +91,43 @@ void main() {
       expect(history.single.title, 'Second');
     });
 
+    test('updates and preserves reading progress when reopening', () async {
+      final notifier = container.read(historyProvider.notifier);
+      await notifier.addHistory('https://medium.com/example/story', 'First');
+      await notifier.updateReadingProgress(
+        'https://medium.com/example/story',
+        0.42,
+      );
+      await notifier.addHistory('https://medium.com/example/story', 'Second');
+
+      final history = container.read(historyProvider);
+      expect(history.single.title, 'Second');
+      expect(history.single.progress, 0.42);
+      expect(
+        await notifier.readingProgressFor(
+          ' HTTPS://Medium.COM/example/story/ ',
+        ),
+        0.42,
+      );
+    });
+
+    test('normalizes reading progress thresholds', () async {
+      final notifier = container.read(historyProvider.notifier);
+      await notifier.addHistory('https://medium.com/example/story', 'Story');
+
+      await notifier.updateReadingProgress(
+        'https://medium.com/example/story',
+        0.04,
+      );
+      expect(container.read(historyProvider).single.progress, 0);
+
+      await notifier.updateReadingProgress(
+        'https://medium.com/example/story',
+        0.96,
+      );
+      expect(container.read(historyProvider).single.progress, 1);
+    });
+
     test('reports failure and preserves history when removing fails', () async {
       container.dispose();
       final history = ReadingHistory(
