@@ -135,6 +135,24 @@
                 <data android:host="blog.mlreview.com" />
                 <data android:host="jtbd.info" />
                 <data android:host="blog.blockswap.network" />
+                <data android:host="nytimes.com" />
+                <data android:host="www.nytimes.com" />
+                <data android:host="nyti.ms" />
+                <data android:host="washingtonpost.com" />
+                <data android:host="www.washingtonpost.com" />
+                <data android:host="wapo.st" />
+                <data android:host="bloomberg.com" />
+                <data android:host="www.bloomberg.com" />
+                <data android:host="bloom.bg" />
+                <data android:host="reuters.com" />
+                <data android:host="www.reuters.com" />
+                <data android:host="reut.rs" />
+                <data android:host="economist.com" />
+                <data android:host="www.economist.com" />
+                <data android:host="econ.st" />
+                <data android:host="ft.com" />
+                <data android:host="www.ft.com" />
+                <data android:host="on.ft.com" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />

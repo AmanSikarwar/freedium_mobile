@@ -50,6 +50,8 @@ void main() {
       await tester.pumpAndSettle();
       observer.reset();
 
+      expect(find.textContaining('Medium, NYT, WaPo'), findsOneWidget);
+
       await tester.tap(find.text('Skip'));
       await tester.pumpAndSettle();
 

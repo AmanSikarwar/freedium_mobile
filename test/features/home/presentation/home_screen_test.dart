@@ -51,6 +51,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Read Article'), findsOneWidget);
+      expect(find.text('Article URL'), findsOneWidget);
       expect(find.text('Get Article'), findsNothing);
     });
 

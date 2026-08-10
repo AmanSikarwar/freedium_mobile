@@ -14,7 +14,8 @@ void showAppAboutDialog(BuildContext context, WidgetRef ref) {
     applicationVersion: AppConstants.appVersion,
     children: [
       const Text(
-        'Freedium is a paywall bypasser for Medium articles.\n\n'
+        'Freedium supports Medium, NYT, WaPo, Bloomberg, Reuters, '
+        'The Economist, and Financial Times articles.\n\n'
         'Just paste the URL of the article you want to read and '
         'Freedium will take care of the rest!\n\n',
       ),

@@ -211,7 +211,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                         child: TextFormField(
                           controller: _urlController,
                           decoration: InputDecoration(
-                            hintText: 'Medium URL',
+                            hintText: 'Article URL',
                             prefixIcon: const Icon(Icons.link),
                             border: const OutlineInputBorder(
                               borderRadius: .all(.circular(24)),

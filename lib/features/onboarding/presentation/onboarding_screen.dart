@@ -18,19 +18,19 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       imagePath: 'assets/icon/icon.png',
       title: 'Welcome to Freedium',
       body:
-          'Read any Medium article for free. Paste a link or share one from your browser to get started.',
+          'Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times.',
     ),
     _OnboardingPage(
       icon: Icons.share,
       title: 'Share from Anywhere',
       body:
-          'Open a Medium article in Chrome or any app, tap Share, and choose Freedium from the share sheet.',
+          'Open a supported article in Chrome or any app, tap Share, and choose Freedium from the share sheet.',
     ),
     _OnboardingPage(
       icon: Icons.content_paste,
       title: 'Clipboard Detection',
       body:
-          'Copy a Medium URL to your clipboard, then open Freedium — it auto-fills the link for you instantly.',
+          'Copy a supported article URL, then open Freedium — it auto-fills the link for you instantly.',
     ),
   ];
 

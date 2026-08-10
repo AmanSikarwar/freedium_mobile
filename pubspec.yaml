@@ -1,5 +1,5 @@
 name: freedium_mobile
-description: "An app to read Medium articles without hitting the paywall"
+description: "Read articles from seven supported publishers without hitting the paywall"
 publish_to: "none"
 version: 0.11.0+11
 
