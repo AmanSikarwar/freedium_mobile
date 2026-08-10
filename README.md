@@ -14,20 +14,30 @@
 </p>
 
 <p align="center">
-  <strong>Read Medium articles without a subscription</strong>
+  <strong>Read articles from seven leading publishers without a subscription</strong>
 </p>
 
 <p align="center">
-  <em>Your paywall breakthrough for Medium!</em>
+  <em>Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times</em>
 </p>
 
 ---
 
 ## Overview
 
-Freedium Mobile is an Android application that bypasses Medium's paywall, allowing you to read member-only articles for free. The app redirects Medium articles through [Freedium.cfd](https://freedium.cfd) to provide unrestricted access.
+Freedium Mobile is an Android reader for paywalled articles from Medium, The New York Times, The Washington Post, Bloomberg, Reuters, The Economist, and Financial Times. It sends supported article links through [Freedium.cfd](https://freedium.cfd) and presents the result in a native reading experience.
 
 Built with **Flutter** and featuring **Material You** design, Freedium Mobile offers a native reading experience with dynamic theming and dark mode support.
+
+## Supported Sources
+
+- **Medium**, including many custom publication domains
+- **The New York Times**
+- **The Washington Post**
+- **Bloomberg**
+- **Reuters**
+- **The Economist**
+- **Financial Times**
 
 ## Demo
 
@@ -39,13 +49,15 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 
 ## Features
 
-- **Paywall Bypass** - Read any Medium article without hitting the paywall or needing a subscription
-- **Local Reading History** - Keep track of articles you've read, with offline storage and easy history management
-- **Share Integration** - Share Medium articles directly to Freedium from Chrome, Twitter, or any browser
-- **Clipboard Detection** - Automatically detects Medium URLs in your clipboard for quick access
+- **Seven Supported Sources** - Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times
+- **Share and Open With** - Share or open supported links directly in Freedium from Android browsers and apps
+- **Clipboard Detection** - Automatically detects article URLs in your clipboard for quick access
+- **Continue Reading** - Resume unfinished articles from the home screen at your saved reading position
+- **Bookmarks** - Save articles locally and search or manage them from the Bookmarks screen
+- **Reading History** - Track article progress, completion state, and recently opened stories locally
 - **Configurable Mirrors** - Multiple Freedium server mirrors with automatic failover
-- **Material You Theming** - Dynamic color schemes that adapt to your Android 12+ wallpaper
-- **Dark Mode** - Comfortable reading with automatic or manual theme switching
+- **Material You Theming** - Dynamic app colors and matching light or dark article styling
+- **Site Popup Control** - Optionally hide Freedium announcement popups while reading
 - **Font Size Control** - Adjust text size for better readability
 - **Auto-Update Checker** - Get notified when new versions are available
 
@@ -67,7 +79,7 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 <details>
 <summary><strong>Method 1: Paste URL (Recommended)</strong></summary>
 
-1. Copy a Medium article URL
+1. Copy a supported article URL
 2. Open Freedium Mobile
 3. The URL will be auto-detected in the input field
 4. Tap **"Read Article"**
@@ -77,7 +89,7 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 <details>
 <summary><strong>Method 2: Share from Browser or App</strong></summary>
 
-1. Open a Medium article in any browser or app
+1. Open a supported article in any browser or app
 2. Tap the **Share** button
 3. Select **"Freedium"** from the share menu
 4. Article opens automatically
@@ -88,7 +100,7 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 <summary><strong>Method 3: Manual Entry</strong></summary>
 
 1. Open Freedium Mobile
-2. Type or paste any Medium article URL
+2. Type or paste a supported article URL
 3. Tap **"Read Article"**
 
 </details>
@@ -285,6 +297,6 @@ This project is licensed under the **MIT License**. See the [LICENSE](LICENSE) f
 
 <p align="center">
   <sub>
-    <strong>Keywords:</strong> Medium paywall bypass, read Medium free, Medium article reader, Android Medium app, Flutter app, open source, Medium subscription alternative, paywall remover, free Medium access
+    <strong>Keywords:</strong> Freedium Android, Medium reader, NYT reader, Washington Post reader, Bloomberg reader, Reuters reader, Economist reader, Financial Times reader, Flutter app, open source article reader
   </sub>
 </p>
