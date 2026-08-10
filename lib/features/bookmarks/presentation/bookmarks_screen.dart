@@ -57,7 +57,19 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bookmarks'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Bookmarks'),
+            if (bookmarks.isNotEmpty)
+              Text(
+                '${bookmarks.length} ${bookmarks.length == 1 ? 'article' : 'articles'}',
+                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+          ],
+        ),
         actions: [
           if (bookmarks.isNotEmpty)
             IconButton(
@@ -69,136 +81,129 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
         bottom: bookmarks.isNotEmpty
             ? PreferredSize(
                 preferredSize: Size.fromHeight(searchAreaHeight),
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(
-                    12,
-                    0,
-                    12,
-                    searchBarBottomPadding,
-                  ),
-                  child: SearchBar(
-                    controller: _searchController,
-                    hintText: 'Search bookmarks…',
-                    leading: const Icon(Icons.search),
-                    trailing: [
-                      if (_query.isNotEmpty)
-                        IconButton(
-                          icon: const Icon(Icons.close),
-                          onPressed: () {
-                            _searchController.clear();
-                            setState(() => _query = '');
-                          },
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: libraryContentMaxWidth,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(
+                        12,
+                        0,
+                        12,
+                        searchBarBottomPadding,
+                      ),
+                      child: SearchBar(
+                        controller: _searchController,
+                        hintText: 'Search bookmarks…',
+                        leading: const Icon(Icons.search),
+                        trailing: [
+                          if (_query.isNotEmpty)
+                            IconButton(
+                              icon: const Icon(Icons.close),
+                              tooltip: 'Clear search',
+                              onPressed: _clearSearch,
+                            ),
+                        ],
+                        onChanged: (v) => setState(() => _query = v),
+                        elevation: const WidgetStatePropertyAll(0),
+                        side: WidgetStatePropertyAll(
+                          BorderSide(
+                            color: Theme.of(context).colorScheme.outlineVariant,
+                          ),
                         ),
-                    ],
-                    onChanged: (v) => setState(() => _query = v),
-                    elevation: const WidgetStatePropertyAll(0),
+                      ),
+                    ),
                   ),
                 ),
               )
             : null,
       ),
-      body: filtered.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    _query.isNotEmpty
-                        ? Icons.search_off
-                        : Icons.bookmark_border,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.outlineVariant,
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    _query.isNotEmpty
-                        ? 'No results for "$_query"'
-                        : 'No saved articles yet.',
-                  ),
-                  if (_query.isEmpty) ...[
-                    const SizedBox(height: 8),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40),
-                      child: Text(
-                        'Tap the bookmark icon while reading to save articles.',
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            )
-          : ListView.builder(
-              itemCount: grouped.length,
-              itemBuilder: (context, index) {
-                final entry = grouped[index];
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: libraryContentMaxWidth),
+          child: filtered.isEmpty
+              ? LibraryEmptyState(
+                  icon: _query.isNotEmpty
+                      ? Icons.search_off
+                      : Icons.bookmark_border,
+                  title: _query.isNotEmpty
+                      ? 'No results for "$_query"'
+                      : 'No saved articles yet.',
+                  message: _query.isNotEmpty
+                      ? 'Try another title or URL.'
+                      : 'Tap the bookmark icon while reading to save articles.',
+                  actionLabel: _query.isNotEmpty ? 'Clear search' : null,
+                  onAction: _query.isNotEmpty ? _clearSearch : null,
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.only(top: 4, bottom: 24),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  itemCount: grouped.length,
+                  itemBuilder: (context, index) {
+                    final entry = grouped[index];
 
-                if (entry is String) {
-                  return DateGroupHeader(label: entry);
-                }
-
-                final item = entry as BookmarkedArticle;
-                final historyItem = historyByUrl[item.url];
-                final progress = historyItem?.progress ?? 0;
-                final relativeTime = du.relativeTime(item.savedAt);
-                final readingStatus = historyItem?.isFinished ?? false
-                    ? 'Finished'
-                    : progress > 0
-                    ? '${(progress * 100).round()}% read'
-                    : null;
-                return Dismissible(
-                  key: ValueKey(
-                    '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
-                  ),
-                  direction: DismissDirection.endToStart,
-                  background: Container(
-                    color: Theme.of(context).colorScheme.errorContainer,
-                    alignment: Alignment.centerRight,
-                    padding: const EdgeInsets.only(right: 16),
-                    child: Icon(
-                      Icons.delete,
-                      color: Theme.of(context).colorScheme.onErrorContainer,
-                    ),
-                  ),
-                  confirmDismiss: (_) async {
-                    HapticFeedback.lightImpact();
-                    final didRemove = await ref
-                        .read(bookmarksProvider.notifier)
-                        .removeBookmark(item);
-                    if (!context.mounted) return false;
-
-                    if (!didRemove) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Failed to remove bookmark'),
-                        ),
-                      );
+                    if (entry is String) {
+                      return DateGroupHeader(label: entry);
                     }
 
-                    return didRemove;
-                  },
-                  child: ArticleCard(
-                    title: item.title,
-                    subtitle: readingStatus == null
-                        ? relativeTime
-                        : '$readingStatus • $relativeTime',
-                    url: item.url,
-                    progress: progress > 0 ? progress : null,
-                    onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => WebviewScreen(url: item.url),
+                    final item = entry as BookmarkedArticle;
+                    final historyItem = historyByUrl[item.url];
+                    final progress = historyItem?.progress ?? 0;
+                    final relativeTime = du.relativeTime(item.savedAt);
+                    final readingStatus = historyItem?.isFinished ?? false
+                        ? 'Finished'
+                        : progress > 0
+                        ? '${(progress * 100).round()}% read'
+                        : null;
+                    return Dismissible(
+                      key: ValueKey(
+                        '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
                       ),
-                    ),
-                    trailingIcon: Icon(
-                      Icons.bookmark,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                );
-              },
-            ),
+                      direction: DismissDirection.endToStart,
+                      background: const ArticleDismissBackground(),
+                      confirmDismiss: (_) async {
+                        HapticFeedback.lightImpact();
+                        final didRemove = await ref
+                            .read(bookmarksProvider.notifier)
+                            .removeBookmark(item);
+                        if (!context.mounted) return false;
+
+                        if (!didRemove) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('Failed to remove bookmark'),
+                            ),
+                          );
+                        }
+
+                        return didRemove;
+                      },
+                      child: ArticleCard(
+                        title: item.title,
+                        subtitle: readingStatus == null
+                            ? relativeTime
+                            : '$readingStatus • $relativeTime',
+                        url: item.url,
+                        progress: progress > 0 ? progress : null,
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => WebviewScreen(url: item.url),
+                          ),
+                        ),
+                        trailingIcon: Icon(
+                          Icons.bookmark,
+                          size: 16,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+        ),
+      ),
     );
   }
 

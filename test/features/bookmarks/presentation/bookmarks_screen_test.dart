@@ -83,6 +83,8 @@ void main() {
       expect(find.textContaining('42% read'), findsOneWidget);
       expect(find.textContaining('Finished •'), findsOneWidget);
       expect(find.byType(LinearProgressIndicator), findsNWidgets(2));
+      expect(find.text('2 articles'), findsOneWidget);
+      expect(find.text('medium.com'), findsNWidgets(2));
     });
 
     testWidgets('reserves enough app bar height for padded search', (

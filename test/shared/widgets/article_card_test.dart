@@ -24,6 +24,32 @@ void main() {
       );
       expect(indicator.value, 0.42);
       expect(indicator.semanticsValue, '42');
+      expect(find.text('medium.com'), findsOneWidget);
+      expect(find.byType(Card), findsOneWidget);
+    });
+  });
+
+  group('LibraryEmptyState', () {
+    testWidgets('offers a recovery action', (tester) async {
+      var cleared = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: LibraryEmptyState(
+              icon: Icons.search_off,
+              title: 'No results',
+              message: 'Try another title or URL.',
+              actionLabel: 'Clear search',
+              onAction: () => cleared = true,
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.widgetWithText(FilledButton, 'Clear search'));
+
+      expect(cleared, isTrue);
     });
   });
 
