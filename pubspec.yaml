@@ -1,7 +1,7 @@
 name: freedium_mobile
 description: "Read articles from seven supported publishers without hitting the paywall"
 publish_to: "none"
-version: 0.11.0+11
+version: 0.12.0+12
 
 environment:
   sdk: ^3.12.0
