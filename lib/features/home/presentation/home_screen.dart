@@ -8,9 +8,11 @@ import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
+import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
+import 'package:freedium_mobile/features/home/presentation/widgets/continue_reading_section.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
@@ -101,6 +103,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final homeNotifier = ref.read(homeProvider.notifier);
     final updateAsync = ref.watch(updateCheckProvider);
+    final history = ref.watch(historyProvider);
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
@@ -254,6 +257,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                             }
                           },
                           child: const Text('Read Article'),
+                        ),
+                      ),
+                      ContinueReadingSection(
+                        history: history,
+                        onArticleTap: (article) => Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => WebviewScreen(url: article.url),
+                          ),
                         ),
                       ),
                       ActionChip(

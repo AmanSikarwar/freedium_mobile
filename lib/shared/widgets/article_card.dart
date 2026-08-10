@@ -9,6 +9,7 @@ class ArticleCard extends StatelessWidget {
   final String url;
   final VoidCallback onTap;
   final Widget? trailingIcon;
+  final double? progress;
 
   const ArticleCard({
     super.key,
@@ -17,6 +18,7 @@ class ArticleCard extends StatelessWidget {
     required this.url,
     required this.onTap,
     this.trailingIcon,
+    this.progress,
   });
 
   @override
@@ -71,6 +73,16 @@ class ArticleCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (progress case final progress?) ...[
+                      const SizedBox(height: 6),
+                      LinearProgressIndicator(
+                        value: progress.clamp(0, 1),
+                        minHeight: 3,
+                        borderRadius: BorderRadius.circular(2),
+                        semanticsLabel: 'Reading progress',
+                        semanticsValue: '${(progress * 100).round()}',
+                      ),
+                    ],
                   ],
                 ),
               ),
