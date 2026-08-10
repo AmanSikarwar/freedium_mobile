@@ -125,6 +125,12 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                 }
 
                 final item = entry as ReadingHistory;
+                final relativeTime = du.relativeTime(item.timestamp);
+                final readingStatus = item.isFinished
+                    ? 'Finished'
+                    : item.progress > 0
+                    ? '${(item.progress * 100).round()}% read'
+                    : null;
                 return Dismissible(
                   key: ValueKey(
                     '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
@@ -158,8 +164,11 @@ class _HistoryScreenState extends ConsumerState<HistoryScreen> {
                   },
                   child: ArticleCard(
                     title: item.title,
-                    subtitle: du.relativeTime(item.timestamp),
+                    subtitle: readingStatus == null
+                        ? relativeTime
+                        : '$readingStatus • $relativeTime',
                     url: item.url,
+                    progress: item.progress > 0 ? item.progress : null,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

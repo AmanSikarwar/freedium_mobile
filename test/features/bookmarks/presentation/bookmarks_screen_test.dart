@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
+import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
@@ -31,6 +32,59 @@ class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
 
 void main() {
   group('BookmarksScreen', () {
+    testWidgets('shows progress from matching history entries', (tester) async {
+      final timestamp = DateTime.utc(2026, 8, 10);
+      final bookmarks = [
+        BookmarkedArticle(
+          url: 'https://medium.com/in-progress',
+          title: 'In progress',
+          savedAt: timestamp,
+        ),
+        BookmarkedArticle(
+          url: 'https://medium.com/finished',
+          title: 'Finished story',
+          savedAt: timestamp.subtract(const Duration(minutes: 1)),
+        ),
+      ];
+      final history = [
+        ReadingHistory(
+          url: bookmarks.first.url,
+          title: bookmarks.first.title,
+          timestamp: timestamp,
+          progress: 0.42,
+        ),
+        ReadingHistory(
+          url: bookmarks.last.url,
+          title: bookmarks.last.title,
+          timestamp: timestamp,
+          progress: 1,
+        ),
+      ];
+      SharedPreferences.setMockInitialValues({
+        'bookmarked_articles': [
+          for (final item in bookmarks) jsonEncode(item.toJson()),
+        ],
+        'reading_history': [
+          for (final item in history) jsonEncode(item.toJson()),
+        ],
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: BookmarksScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('42% read'), findsOneWidget);
+      expect(find.textContaining('Finished •'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsNWidgets(2));
+    });
+
     testWidgets('reserves enough app bar height for padded search', (
       tester,
     ) async {

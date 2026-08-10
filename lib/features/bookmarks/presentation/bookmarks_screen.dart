@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
@@ -32,6 +33,9 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
   @override
   Widget build(BuildContext context) {
     final bookmarks = ref.watch(bookmarksProvider);
+    final historyByUrl = {
+      for (final item in ref.watch(historyProvider)) item.url: item,
+    };
     const searchBarHeight = 56.0;
     const searchBarBottomPadding = 8.0;
     const searchAreaHeight = searchBarHeight + searchBarBottomPadding;
@@ -134,6 +138,14 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                 }
 
                 final item = entry as BookmarkedArticle;
+                final historyItem = historyByUrl[item.url];
+                final progress = historyItem?.progress ?? 0;
+                final relativeTime = du.relativeTime(item.savedAt);
+                final readingStatus = historyItem?.isFinished ?? false
+                    ? 'Finished'
+                    : progress > 0
+                    ? '${(progress * 100).round()}% read'
+                    : null;
                 return Dismissible(
                   key: ValueKey(
                     '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
@@ -167,8 +179,11 @@ class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
                   },
                   child: ArticleCard(
                     title: item.title,
-                    subtitle: du.relativeTime(item.savedAt),
+                    subtitle: readingStatus == null
+                        ? relativeTime
+                        : '$readingStatus • $relativeTime',
                     url: item.url,
+                    progress: progress > 0 ? progress : null,
                     onTap: () => Navigator.push(
                       context,
                       MaterialPageRoute(

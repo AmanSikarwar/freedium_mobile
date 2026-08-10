@@ -31,6 +31,46 @@ class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
 
 void main() {
   group('HistoryScreen', () {
+    testWidgets('shows in-progress and finished reading states', (
+      tester,
+    ) async {
+      final timestamp = DateTime.utc(2026, 8, 10);
+      final history = [
+        ReadingHistory(
+          url: 'https://medium.com/in-progress',
+          title: 'In progress',
+          timestamp: timestamp,
+          progress: 0.42,
+        ),
+        ReadingHistory(
+          url: 'https://medium.com/finished',
+          title: 'Finished story',
+          timestamp: timestamp.subtract(const Duration(minutes: 1)),
+          progress: 1,
+        ),
+      ];
+      SharedPreferences.setMockInitialValues({
+        'reading_history': [
+          for (final item in history) jsonEncode(item.toJson()),
+        ],
+      });
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: HistoryScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('42% read'), findsOneWidget);
+      expect(find.textContaining('Finished •'), findsOneWidget);
+      expect(find.byType(LinearProgressIndicator), findsNWidgets(2));
+    });
+
     testWidgets('keeps history entry visible when swipe removal fails', (
       tester,
     ) async {
