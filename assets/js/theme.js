@@ -403,7 +403,9 @@
           (articleHeader.querySelector("img + div .font-semibold") ||
             articleHeader.querySelector(".font-semibold"))) ||
         document.querySelector("div.flex-grow > a[href*='medium.com']");
-      const author = authorEl ? authorEl.innerText.trim() : "";
+      const author = authorEl
+        ? authorEl.innerText.trim().replace(/^By\s+/i, "")
+        : "";
 
       let readTime = "";
       const readTimeScope = articleHeader || document;

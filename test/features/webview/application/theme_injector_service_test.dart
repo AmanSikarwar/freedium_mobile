@@ -43,6 +43,7 @@ void main() {
       expect(script, contains('article header'));
       expect(script, contains('article .prose h3'));
       expect(script, contains('article h1'));
+      expect(script, contains(r'.replace(/^By\s+/i, "")'));
       expect(script, contains("img[alt='Post cover image']"));
       expect(script, contains('ReadingProgress.postMessage'));
     });
