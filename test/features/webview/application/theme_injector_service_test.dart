@@ -41,6 +41,8 @@ void main() {
       expect(script, contains('.theme-toggle'));
       expect(script, contains('button.code-copy-btn[data-code]'));
       expect(script, contains('article header'));
+      expect(script, contains('article .prose h3'));
+      expect(script, contains('article h1'));
       expect(script, contains("img[alt='Post cover image']"));
       expect(script, contains('ReadingProgress.postMessage'));
     });
