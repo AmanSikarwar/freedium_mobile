@@ -186,6 +186,16 @@ class SettingsNotifier extends Notifier<SettingsState> {
     );
   }
 
+  Future<bool> setShowSitePopups(bool show) async {
+    final service = await _ensureSettingsService();
+    if (service == null) return false;
+    return _saveAndApply(
+      save: () => service.saveShowSitePopups(show),
+      nextState: state.copyWith(showSitePopups: show),
+      failureMessage: 'Failed to save site popup setting',
+    );
+  }
+
   Future<bool> addMirror(FreediumMirror mirror) async {
     final service = await _ensureSettingsService();
     if (service == null) return false;
@@ -326,6 +336,7 @@ class SettingsNotifier extends Notifier<SettingsState> {
         await service.saveSelectedMirrorUrl(defaultState.selectedMirrorUrl);
         await service.saveAutoSwitchMirror(defaultState.autoSwitchMirror);
         await service.saveMirrorTimeout(defaultState.mirrorTimeout);
+        await service.saveShowSitePopups(defaultState.showSitePopups);
       },
       nextState: defaultState,
       failureMessage: 'Failed to reset settings',

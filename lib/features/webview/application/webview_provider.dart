@@ -561,6 +561,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
       final script = await _themeInjector.getThemeInjectionScript(
         _colorScheme!,
         fontSize: state.fontSize,
+        showSitePopups: ref.read(settingsProvider).showSitePopups,
       );
 
       if (!ref.mounted) return;

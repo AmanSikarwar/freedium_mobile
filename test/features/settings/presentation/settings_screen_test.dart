@@ -35,6 +35,30 @@ class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
 
 void main() {
   group('SettingsScreen', () {
+    testWidgets('toggles Freedium site popups', (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+          child: const MaterialApp(home: SettingsScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final tile = find.widgetWithText(SwitchListTile, 'Freedium Popups');
+      expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+
+      await tester.tap(tile);
+      await tester.pumpAndSettle();
+
+      expect(prefs.getBool('show_site_popups'), isFalse);
+      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+    });
+
     testWidgets('closes the update dialog before opening changelog', (
       tester,
     ) async {

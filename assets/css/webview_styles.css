@@ -5,6 +5,10 @@ body {
 html {
   background-color: var(--app-surface) !important;
 }
+html[data-freedium-hide-site-popups]
+  section[aria-label^="Notifications"] {
+  display: none !important;
+}
 #header {
   background-color: var(--app-surface) !important;
   color: var(--app-on-surface) !important;

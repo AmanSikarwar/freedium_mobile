@@ -35,6 +35,7 @@ class ThemeInjectorService {
   Future<String> getThemeInjectionScript(
     ColorScheme colorScheme, {
     double fontSize = 18.0,
+    bool showSitePopups = true,
   }) async {
     final isDark = colorScheme.brightness == .dark;
 
@@ -104,6 +105,7 @@ class ThemeInjectorService {
 
     return scriptTemplate
         .replaceFirst('%IS_DARK_MODE%', isDark.toString())
+        .replaceFirst('%SHOW_SITE_POPUPS%', showSitePopups.toString())
         .replaceFirst(
           '%CSS_VARS%',
           cssVars.replaceAll("'", r"\'").replaceAll("\n", r'\n'),

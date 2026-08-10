@@ -30,6 +30,7 @@ class SettingsScreen extends ConsumerWidget {
           _buildSectionHeader(context, 'Appearance'),
           _buildThemeTile(context, settings, settingsNotifier),
           _buildFontSizeTile(context, settings, settingsNotifier),
+          _buildSitePopupsTile(context, settings, settingsNotifier),
           const Divider(),
 
           _buildSectionHeader(context, 'Freedium Mirrors'),
@@ -222,6 +223,31 @@ class SettingsScreen extends ConsumerWidget {
             ),
           );
         }
+      },
+    );
+  }
+
+  Widget _buildSitePopupsTile(
+    BuildContext context,
+    SettingsState settings,
+    SettingsNotifier notifier,
+  ) {
+    return SwitchListTile(
+      secondary: const Icon(Icons.notifications_outlined),
+      title: const Text('Freedium Popups'),
+      subtitle: const Text('Show site announcements and notifications'),
+      value: settings.showSitePopups,
+      onChanged: (value) async {
+        HapticFeedback.lightImpact();
+        final scaffoldMessenger = ScaffoldMessenger.of(context);
+        final didSave = await notifier.setShowSitePopups(value);
+        if (!context.mounted || didSave) return;
+        scaffoldMessenger.showSnackBar(
+          const SnackBar(
+            content: Text('Failed to save site popup setting'),
+            backgroundColor: Colors.red,
+          ),
+        );
       },
     );
   }

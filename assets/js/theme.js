@@ -33,6 +33,7 @@
     try {
       const isDarkMode = "%IS_DARK_MODE%";
       const isDark = isDarkMode === "true";
+      const showSitePopups = "%SHOW_SITE_POPUPS%" === "true";
 
       const styleSheet = document.createElement("style");
       styleSheet.setAttribute("data-freedium-injected", "vars");
@@ -46,6 +47,7 @@
       customCSS.textContent = `%CUSTOM_CSS_CONTENT%`;
       document.head.appendChild(customCSS);
 
+      setSitePopupsVisibility(showSitePopups);
       syncLegacyHighlightTheme(isDark);
       lockNativeThemeControls(isDark);
       installCopyButtonOverrides();
@@ -109,6 +111,15 @@
       }
     } catch (e) {
       console.warn("Failed to update theme-color meta:", e);
+    }
+  }
+
+  function setSitePopupsVisibility(show) {
+    const root = document.documentElement;
+    if (show) {
+      root.removeAttribute("data-freedium-hide-site-popups");
+    } else {
+      root.setAttribute("data-freedium-hide-site-popups", "true");
     }
   }
 

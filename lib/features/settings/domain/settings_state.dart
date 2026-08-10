@@ -73,6 +73,7 @@ class SettingsState {
   final String selectedMirrorUrl;
   final bool autoSwitchMirror;
   final int mirrorTimeout;
+  final bool showSitePopups;
 
   const SettingsState({
     this.themeMode = .system,
@@ -81,6 +82,7 @@ class SettingsState {
     this.selectedMirrorUrl = AppConstants.freediumMirrorUrl,
     this.autoSwitchMirror = true,
     this.mirrorTimeout = defaultMirrorTimeout,
+    this.showSitePopups = true,
   });
 
   static double normalizeDefaultFontSize(double fontSize) {
@@ -99,6 +101,7 @@ class SettingsState {
     String? selectedMirrorUrl,
     bool? autoSwitchMirror,
     int? mirrorTimeout,
+    bool? showSitePopups,
   }) {
     return SettingsState(
       themeMode: themeMode ?? this.themeMode,
@@ -107,6 +110,7 @@ class SettingsState {
       selectedMirrorUrl: selectedMirrorUrl ?? this.selectedMirrorUrl,
       autoSwitchMirror: autoSwitchMirror ?? this.autoSwitchMirror,
       mirrorTimeout: mirrorTimeout ?? this.mirrorTimeout,
+      showSitePopups: showSitePopups ?? this.showSitePopups,
     );
   }
 

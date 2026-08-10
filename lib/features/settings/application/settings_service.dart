@@ -11,6 +11,7 @@ class SettingsService {
   static const String _selectedMirrorUrlKey = 'selected_mirror_url';
   static const String _autoSwitchMirrorKey = 'auto_switch_mirror';
   static const String _mirrorTimeoutKey = 'mirror_timeout';
+  static const String _showSitePopupsKey = 'show_site_popups';
 
   final SharedPreferences _prefs;
 
@@ -124,6 +125,18 @@ class SettingsService {
     );
   }
 
+  Future<void> saveShowSitePopups(bool show) async {
+    await _savePreference(
+      () => _prefs.setBool(_showSitePopupsKey, show),
+      methodName: 'setBool',
+      key: _showSitePopupsKey,
+    );
+  }
+
+  bool loadShowSitePopups() {
+    return _prefs.getBool(_showSitePopupsKey) ?? true;
+  }
+
   SettingsState loadAllSettings() {
     final mirrors = loadMirrors();
     final selectedMirrorUrl = loadSelectedMirrorUrl();
@@ -139,6 +152,7 @@ class SettingsService {
       selectedMirrorUrl: resolvedSelectedMirrorUrl,
       autoSwitchMirror: loadAutoSwitchMirror(),
       mirrorTimeout: loadMirrorTimeout(),
+      showSitePopups: loadShowSitePopups(),
     );
   }
 }

@@ -74,5 +74,18 @@ void main() {
       );
       expect(script, contains('console.error("Pre-theme script error:", e)'));
     });
+
+    test('can hide Freedium notification popups', () async {
+      final service = ThemeInjectorService();
+      final script = await service.getThemeInjectionScript(
+        ColorScheme.fromSeed(seedColor: Colors.teal),
+        showSitePopups: false,
+      );
+
+      expect(script, contains('const showSitePopups = "false" === "true"'));
+      expect(script, contains('data-freedium-hide-site-popups'));
+      expect(script, contains('section[aria-label^="Notifications"]'));
+      expect(script, isNot(contains('%SHOW_SITE_POPUPS%')));
+    });
   });
 }

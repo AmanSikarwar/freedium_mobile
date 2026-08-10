@@ -157,6 +157,19 @@ void main() {
       expect(service.loadAllSettings().defaultFontSize, 22.0);
     });
 
+    test('site popups default to shown and persist changes', () async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final service = SettingsService(prefs);
+
+      expect(service.loadShowSitePopups(), isTrue);
+
+      await service.saveShowSitePopups(false);
+
+      expect(prefs.getBool('show_site_popups'), isFalse);
+      expect(service.loadAllSettings().showSitePopups, isFalse);
+    });
+
     test('save numeric preferences clamps out-of-range values', () async {
       SharedPreferences.setMockInitialValues({});
       final prefs = await SharedPreferences.getInstance();
