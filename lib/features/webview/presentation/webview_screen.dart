@@ -13,6 +13,16 @@ import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+@visibleForTesting
+bool shouldRevealWebView({
+  required bool isPageLoaded,
+  required bool isThemeApplied,
+  required bool isThemedPage,
+  required bool hasError,
+}) {
+  return isPageLoaded && !hasError && (!isThemedPage || isThemeApplied);
+}
+
 class WebviewScreen extends ConsumerStatefulWidget {
   const WebviewScreen({required this.url, super.key});
 
@@ -174,10 +184,13 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final bool isThemedPage = freediumUrlService.isFreediumUrl(
       webviewState.currentUrl ?? '',
     );
-    final bool showWebView =
-        webviewState.isPageLoaded &&
-        (isThemedPage ? webviewState.isThemeApplied : true) &&
-        !webviewState.hasError;
+    final showWebView = shouldRevealWebView(
+      isPageLoaded: webviewState.isPageLoaded,
+      isThemeApplied: webviewState.isThemeApplied,
+      isThemedPage: isThemedPage,
+      hasError: webviewState.hasError,
+    );
+    final hideThemedWebView = isThemedPage && !showWebView;
 
     return Scaffold(
       backgroundColor: showWebView ? backgroundColor : null,
@@ -185,15 +198,19 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         child: Stack(
           children: [
             if (_controller != null && !webviewState.hasError)
-              WebViewWidget(controller: _controller!),
+              Visibility(
+                visible: !hideThemedWebView,
+                maintainState: true,
+                child: WebViewWidget(controller: _controller!),
+              ),
             if (!webviewState.isPageLoaded &&
                 webviewState.progress < 1.0 &&
                 !webviewState.hasError)
               LinearProgressIndicator(
                 value: webviewState.progress > 0 ? webviewState.progress : null,
               ),
-            if (!webviewState.isPageLoaded &&
-                webviewState.progress < 0.7 &&
+            if ((!webviewState.isPageLoaded && webviewState.progress < 0.7 ||
+                    hideThemedWebView) &&
                 !webviewState.hasError)
               const ArticleShimmer(),
             if (webviewState.hasError)
