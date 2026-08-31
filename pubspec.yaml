@@ -18,7 +18,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
   http: ^1.6.0
   listen_sharing_intent: ^1.9.2
-  pub_semver: ^2.2.0
+  pub_semver: ^2.2.1
   share_plus: ^13.3.0
   shared_preferences: ^2.5.5
   shimmer: ^3.0.0
