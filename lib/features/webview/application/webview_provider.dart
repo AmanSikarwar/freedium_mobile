@@ -14,55 +14,26 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
+import 'package:freedium_mobile/features/webview/application/webview_error_mapper.dart'
+    show getUserFriendlyWebviewErrorMessage;
+import 'package:freedium_mobile/features/webview/application/webview_navigation_policy.dart'
+    show
+        WebviewNavigationAction,
+        buildReadingProgressRestoreScript,
+        resolveWebviewNavigationAction;
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
+export 'webview_error_mapper.dart' show getUserFriendlyWebviewErrorMessage;
+export 'webview_navigation_policy.dart'
+    show
+        WebviewNavigationAction,
+        buildReadingProgressRestoreScript,
+        resolveWebviewNavigationAction;
+
 typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
-
-@visibleForTesting
-enum WebviewNavigationAction() {
-  navigate,
-  launchExternal,
-  block,
-}
-
-@visibleForTesting
-WebviewNavigationAction resolveWebviewNavigationAction({
-  required String requestUrl,
-  required bool Function(String url) isFreediumUrl,
-}) {
-  final uri = parseExternalHttpUrl(requestUrl);
-  if (uri == null) {
-    return WebviewNavigationAction.block;
-  }
-
-  if (isFreediumUrl(uri.toString())) {
-    return WebviewNavigationAction.navigate;
-  }
-
-  return WebviewNavigationAction.launchExternal;
-}
-
-@visibleForTesting
-String buildReadingProgressRestoreScript(double progress) {
-  final normalizedProgress = normalizeReadingProgress(progress);
-  return '''
-    (function () {
-      const progress = $normalizedProgress;
-      const restore = function () {
-        const root = document.documentElement;
-        const height = Math.max(root.scrollHeight, document.body.scrollHeight);
-        const scrollable = Math.max(0, height - window.innerHeight);
-        window.scrollTo(0, Math.round(scrollable * progress));
-      };
-      requestAnimationFrame(restore);
-      setTimeout(restore, 300);
-      setTimeout(restore, 1000);
-    })();
-  ''';
-}
 
 class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
@@ -466,43 +437,10 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 
   String _getUserFriendlyErrorMessage(WebResourceError error) {
-    final rawDescription = error.description.toLowerCase();
-
-    // Android (Chromium) errors
-    if (rawDescription.contains('err_internet_disconnected')) {
-      return 'No internet connection. Please check your network and try again.';
-    } else if (rawDescription.contains('err_name_not_resolved') ||
-        rawDescription.contains('err_connection_refused') ||
-        rawDescription.contains('err_connection_timed_out') ||
-        rawDescription.contains('err_connection_reset')) {
-      return 'Could not connect to the server. The current mirror might be down or blocked.';
-    } else if (rawDescription.contains('err_cert_') ||
-        rawDescription.contains('ssl')) {
-      return 'Security certificate issue with the server. Connection might not be secure.';
-    }
-
-    // iOS (WebKit) errors
-    if (rawDescription.contains('nsurlerrordomain') ||
-        rawDescription.contains('webkit')) {
-      if (rawDescription.contains('-1009')) {
-        return 'No internet connection. Please check your network and try again.';
-      } else if (rawDescription.contains('-1001') ||
-          rawDescription.contains('-1003') ||
-          rawDescription.contains('-1004')) {
-        return 'Could not connect to the server. The current mirror might be down or timed out.';
-      } else if (rawDescription.contains('-1200') ||
-          rawDescription.contains('-1202')) {
-        return 'A secure connection could not be established with the server.';
-      }
-    }
-
-    // Default formatting if it doesn't match known patterns
-    if (error.errorType != null) {
-      final typeString = error.errorType.toString().split('.').last;
-      return 'Connection failed: $typeString\n\nPlease try another mirror.';
-    }
-
-    return 'Failed to load page.\n\nPlease try another mirror or check your connection.';
+    return getUserFriendlyWebviewErrorMessage(
+      description: error.description,
+      errorTypeLabel: error.errorType?.toString().split('.').last,
+    );
   }
 
   Future<void> retryWithNextMirror() async {
