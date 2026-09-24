@@ -6,6 +6,8 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
+import 'package:freedium_mobile/shared/widgets/library_clear_dialog.dart';
+import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
 
 class const HistoryScreen({super.key}) extends ConsumerStatefulWidget {
   @override
@@ -33,9 +35,6 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
     final historyAsync = ref.watch(historyProvider);
     final history = historyAsync.value ?? const <ReadingHistory>[];
     final lowercaseQuery = _query.toLowerCase();
-    const searchBarHeight = 56.0;
-    const searchBarBottomPadding = 8.0;
-    const searchAreaHeight = searchBarHeight + searchBarBottomPadding;
 
     final filtered = _query.isEmpty
         ? List<ReadingHistory>.from(history)
@@ -77,43 +76,12 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
             ),
         ],
         bottom: history.isNotEmpty
-            ? PreferredSize(
-                preferredSize: Size.fromHeight(searchAreaHeight),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: libraryContentMaxWidth,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        12,
-                        0,
-                        12,
-                        searchBarBottomPadding,
-                      ),
-                      child: SearchBar(
-                        controller: _searchController,
-                        hintText: 'Search history…',
-                        leading: const Icon(Icons.search),
-                        trailing: [
-                          if (_query.isNotEmpty)
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              tooltip: 'Clear search',
-                              onPressed: _clearSearch,
-                            ),
-                        ],
-                        onChanged: (v) => setState(() => _query = v),
-                        elevation: const WidgetStatePropertyAll(0),
-                        side: WidgetStatePropertyAll(
-                          BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+            ? LibrarySearchHeader(
+                controller: _searchController,
+                hintText: 'Search history…',
+                query: _query,
+                onChanged: (v) => setState(() => _query = v),
+                onClear: _clearSearch,
               )
             : null,
       ),
@@ -211,40 +179,13 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
   }
 
   void _confirmClear(BuildContext context) {
-    showDialog(
+    showLibraryClearDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Clear History'),
-        content: const Text(
-          'Are you sure you want to clear all reading history?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              HapticFeedback.mediumImpact();
-              final didClear = await ref
-                  .read(historyProvider.notifier)
-                  .clearHistory();
-              if (!context.mounted || !dialogContext.mounted) return;
-
-              if (didClear) {
-                _clearSearch();
-                Navigator.pop(dialogContext);
-                return;
-              }
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Failed to clear history')),
-              );
-            },
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
+      title: 'Clear History',
+      content: 'Are you sure you want to clear all reading history?',
+      failMessage: 'Failed to clear history',
+      onClear: () => ref.read(historyProvider.notifier).clearHistory(),
+      onCleared: _clearSearch,
     );
   }
 }

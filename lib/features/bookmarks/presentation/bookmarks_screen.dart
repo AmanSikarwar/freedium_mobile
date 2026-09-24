@@ -7,6 +7,8 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
+import 'package:freedium_mobile/shared/widgets/library_clear_dialog.dart';
+import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
 
 class const BookmarksScreen({super.key}) extends ConsumerStatefulWidget {
   @override
@@ -38,10 +40,6 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
           in ref.watch(historyProvider).value ?? const <ReadingHistory>[])
         item.url: item,
     };
-    const searchBarHeight = 56.0;
-    const searchBarBottomPadding = 8.0;
-    const searchAreaHeight = searchBarHeight + searchBarBottomPadding;
-
     final filtered = _query.isEmpty
         ? bookmarks
         : bookmarks
@@ -81,43 +79,12 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
             ),
         ],
         bottom: bookmarks.isNotEmpty
-            ? PreferredSize(
-                preferredSize: Size.fromHeight(searchAreaHeight),
-                child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(
-                      maxWidth: libraryContentMaxWidth,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(
-                        12,
-                        0,
-                        12,
-                        searchBarBottomPadding,
-                      ),
-                      child: SearchBar(
-                        controller: _searchController,
-                        hintText: 'Search bookmarks…',
-                        leading: const Icon(Icons.search),
-                        trailing: [
-                          if (_query.isNotEmpty)
-                            IconButton(
-                              icon: const Icon(Icons.close),
-                              tooltip: 'Clear search',
-                              onPressed: _clearSearch,
-                            ),
-                        ],
-                        onChanged: (v) => setState(() => _query = v),
-                        elevation: const WidgetStatePropertyAll(0),
-                        side: WidgetStatePropertyAll(
-                          BorderSide(
-                            color: Theme.of(context).colorScheme.outlineVariant,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+            ? LibrarySearchHeader(
+                controller: _searchController,
+                hintText: 'Search bookmarks…',
+                query: _query,
+                onChanged: (v) => setState(() => _query = v),
+                onClear: _clearSearch,
               )
             : null,
       ),
@@ -220,40 +187,13 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
   }
 
   void _confirmClear(BuildContext context) {
-    showDialog(
+    showLibraryClearDialog(
       context: context,
-      builder: (_) => AlertDialog(
-        title: const Text('Clear Bookmarks'),
-        content: const Text(
-          'Are you sure you want to remove all saved articles?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              HapticFeedback.mediumImpact();
-              final didClear = await ref
-                  .read(bookmarksProvider.notifier)
-                  .clearBookmarks();
-              if (!context.mounted) return;
-
-              if (didClear) {
-                _clearSearch();
-                Navigator.pop(context);
-                return;
-              }
-
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Failed to clear bookmarks')),
-              );
-            },
-            child: const Text('Clear'),
-          ),
-        ],
-      ),
+      title: 'Clear Bookmarks',
+      content: 'Are you sure you want to remove all saved articles?',
+      failMessage: 'Failed to clear bookmarks',
+      onClear: () => ref.read(bookmarksProvider.notifier).clearBookmarks(),
+      onCleared: _clearSearch,
     );
   }
 }
