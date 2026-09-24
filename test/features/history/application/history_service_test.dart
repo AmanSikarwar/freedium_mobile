@@ -4,13 +4,14 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../test_helpers.dart';
 
 void main() {
   group('HistoryService', () {
     test('getHistory skips invalid and duplicate history entries', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
+      final timestamp = TestFixtures.seedDate;
       final history = ReadingHistory(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
         timestamp: timestamp.toLocal(),
       );
@@ -46,7 +47,7 @@ void main() {
     });
 
     test('getHistory falls back to URL when title is blank', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
+      final timestamp = TestFixtures.seedDate;
       SharedPreferences.setMockInitialValues({
         'reading_history': [
           jsonEncode({
@@ -62,15 +63,15 @@ void main() {
 
       final history = service.getHistory();
       expect(history, hasLength(1));
-      expect(history.single.title, 'https://medium.com/example/story');
+      expect(history.single.title, TestFixtures.storyUrl);
     });
 
     test('getHistory falls back to URL when title is missing', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
+      final timestamp = TestFixtures.seedDate;
       SharedPreferences.setMockInitialValues({
         'reading_history': [
           jsonEncode({
-            'url': 'https://medium.com/example/story',
+            'url': TestFixtures.storyUrl,
             'timestamp': timestamp.toIso8601String(),
           }),
         ],
@@ -81,11 +82,11 @@ void main() {
 
       final history = service.getHistory();
       expect(history, hasLength(1));
-      expect(history.single.title, 'https://medium.com/example/story');
+      expect(history.single.title, TestFixtures.storyUrl);
     });
 
     test('getHistory loads progress and supports legacy entries', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
+      final timestamp = TestFixtures.seedDate;
       SharedPreferences.setMockInitialValues({
         'reading_history': [
           jsonEncode({

@@ -1,11 +1,12 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
+import '../../test_helpers.dart';
 
 void main() {
   group('extractArticleUrl', () {
     test('accepts every supported publisher', () {
       const urls = [
-        'https://medium.com/example/story',
+        TestFixtures.storyUrl,
         'https://www.nytimes.com/2026/08/10/world/example.html',
         'https://www.washingtonpost.com/example',
         'https://www.bloomberg.com/news/articles/example',
@@ -45,7 +46,7 @@ void main() {
     test('strips trailing punctuation added by message text', () {
       expect(
         extractArticleUrl('Open https://medium.com/example/story.'),
-        'https://medium.com/example/story',
+        TestFixtures.storyUrl,
       );
     });
 
@@ -59,7 +60,7 @@ void main() {
     test('strips unmatched closing delimiters from wrapped URLs', () {
       expect(
         extractArticleUrl('Open (https://medium.com/example/story).'),
-        'https://medium.com/example/story',
+        TestFixtures.storyUrl,
       );
     });
 
@@ -80,7 +81,7 @@ void main() {
           'Read https://medium.com/example/story',
           'https://towardsdatascience.com/other',
         ]),
-        'https://medium.com/example/story',
+        TestFixtures.storyUrl,
       );
     });
 

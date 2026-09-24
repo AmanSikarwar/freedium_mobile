@@ -12,26 +12,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import '../../../test_helpers.dart';
 
-class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
-    extends SharedPreferencesStorePlatform {
-  this : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
-
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
 
 void main() {
   group('SettingsScreen', () {
@@ -106,7 +88,7 @@ void main() {
       tester,
     ) async {
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -220,7 +202,7 @@ void main() {
 
     testWidgets('keeps timeout dialog open when saving fails', (tester) async {
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -255,7 +237,7 @@ void main() {
       tester,
     ) async {
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -283,7 +265,7 @@ void main() {
       tester,
     ) async {
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -313,7 +295,7 @@ void main() {
 
     testWidgets('shows auto-switch failure when saving fails', (tester) async {
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -346,7 +328,7 @@ void main() {
         'isDefault': false,
         'isCustom': true,
       };
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.freedium_mirrors': [jsonEncode(customMirror)],
       });
       SharedPreferences.resetStatic();

@@ -9,25 +9,6 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 
 import '../../../test_helpers.dart';
 
-class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
-    extends SharedPreferencesStorePlatform {
-  this : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
-
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
 
 void main() {
   group('BookmarksNotifier', () {
@@ -52,7 +33,7 @@ void main() {
       final bookmarks = container.read(bookmarksProvider).requireValue;
       expect(didAdd, isTrue);
       expect(bookmarks, hasLength(1));
-      expect(bookmarks.single.url, 'https://medium.com/example/story');
+      expect(bookmarks.single.url, TestFixtures.storyUrl);
       expect(bookmarks.single.title, 'Example story');
     });
 
@@ -63,7 +44,7 @@ void main() {
 
       final bookmarks = container.read(bookmarksProvider).requireValue;
       expect(bookmarks, hasLength(1));
-      expect(bookmarks.single.title, 'https://medium.com/example/story');
+      expect(bookmarks.single.title, TestFixtures.storyUrl);
     });
 
     test('ignores invalid bookmark URLs', () async {
@@ -84,7 +65,7 @@ void main() {
 
     test('deduplicates bookmarks by normalized URL', () async {
       final notifier = container.read(bookmarksProvider.notifier);
-      await notifier.addBookmark('https://medium.com/example/story', 'First');
+      await notifier.addBookmark(TestFixtures.storyUrl, 'First');
       await notifier.addBookmark(
         ' HTTPS://Medium.COM/example/story/ ',
         'Second',
@@ -97,7 +78,7 @@ void main() {
 
     test('toggles bookmarks by normalized URL', () async {
       final notifier = container.read(bookmarksProvider.notifier);
-      await notifier.addBookmark('https://medium.com/example/story', 'Story');
+      await notifier.addBookmark(TestFixtures.storyUrl, 'Story');
 
       final didToggle = await notifier.toggleBookmark(
         ' HTTPS://Medium.COM/example/story/ ',
@@ -110,7 +91,7 @@ void main() {
     test('reports failure and preserves bookmarks when adding fails', () async {
       container.dispose();
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -124,7 +105,7 @@ void main() {
       await container.read(bookmarksProvider.future);
 
       final didAdd = await notifier.addBookmark(
-        'https://medium.com/example/story',
+        TestFixtures.storyUrl,
         'Story',
       );
 
@@ -135,7 +116,7 @@ void main() {
     test('reports failure when toggling a bookmark add fails', () async {
       container.dispose();
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -149,7 +130,7 @@ void main() {
       await container.read(bookmarksProvider.future);
 
       final didToggle = await notifier.toggleBookmark(
-        'https://medium.com/example/story',
+        TestFixtures.storyUrl,
         'Story',
       );
 
@@ -162,12 +143,12 @@ void main() {
       () async {
         container.dispose();
         final bookmark = BookmarkedArticle(
-          url: 'https://medium.com/example/story',
+          url: TestFixtures.storyUrl,
           title: 'Story',
-          savedAt: DateTime.utc(2026, 2, 3),
+          savedAt: TestFixtures.seedDate,
         );
         SharedPreferencesStorePlatform.instance =
-            _FailingSharedPreferencesStore({
+            FailingPrefsStore({
               'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
             });
         SharedPreferences.resetStatic();
@@ -195,12 +176,12 @@ void main() {
       () async {
         container.dispose();
         final bookmark = BookmarkedArticle(
-          url: 'https://medium.com/example/story',
+          url: TestFixtures.storyUrl,
           title: 'Story',
-          savedAt: DateTime.utc(2026, 2, 3),
+          savedAt: TestFixtures.seedDate,
         );
         SharedPreferencesStorePlatform.instance =
-            _FailingSharedPreferencesStore({
+            FailingPrefsStore({
               'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
             });
         SharedPreferences.resetStatic();

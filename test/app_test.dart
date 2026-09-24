@@ -11,16 +11,9 @@ import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'test_helpers.dart';
 
-class _FakeClipboardService() extends ClipboardService {
-  @override
-  Future<String?> paste() async => null;
-}
 
-class _FakeIntentService() extends IntentService {
-  @override
-  Future<List<SharedMediaFile>> getInitialIntent() async => <SharedMediaFile>[];
-}
 
 class _FailingIntentService() extends IntentService {
   @override
@@ -52,9 +45,9 @@ Widget _buildApp({
     overrides: [
       sharedPreferencesProvider.overrideWith((ref) async => prefs),
       dynamicThemeProvider.overrideWith((ref) => ref.watch(themeProvider)),
-      clipboardServiceProvider.overrideWith((ref) => _FakeClipboardService()),
+      clipboardServiceProvider.overrideWith((ref) => FakeClipboardService()),
       intentServiceProvider.overrideWith(
-        (ref) => intentService ?? _FakeIntentService(),
+        (ref) => intentService ?? FakeIntentService(),
       ),
       intentStreamProvider.overrideWith((ref) => const Stream<String>.empty()),
       updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
@@ -68,7 +61,7 @@ void main() {
 
   group('incoming webview navigation', () {
     test('skips only duplicate incoming webview routes', () {
-      const targetUrl = 'https://medium.com/example/story';
+      const targetUrl = TestFixtures.storyUrl;
 
       expect(
         shouldSkipIncomingWebviewNavigation(
@@ -98,7 +91,7 @@ void main() {
     testWidgets('tracks the active route for duplicate share detection', (
       tester,
     ) async {
-      const targetUrl = 'https://medium.com/example/story';
+      const targetUrl = TestFixtures.storyUrl;
       final navigatorKey = GlobalKey<NavigatorState>();
       final observer = CurrentRouteNameObserver();
 

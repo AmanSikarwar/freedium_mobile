@@ -5,27 +5,14 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import '../../../../test_helpers.dart';
 
-class _FailingSharedPreferencesStore() extends SharedPreferencesStorePlatform {
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => {};
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
 
 void main() {
   group('ThemeChooserBottomSheet', () {
     testWidgets('keeps the sheet open when saving fails', (tester) async {
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();

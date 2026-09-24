@@ -5,21 +5,8 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import '../../../test_helpers.dart';
 
-class _FailingSharedPreferencesStore() extends SharedPreferencesStorePlatform {
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => {};
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
 
 void main() {
   group('WebviewNotifier font size', () {
@@ -33,7 +20,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);
@@ -51,7 +38,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);
@@ -76,7 +63,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);
@@ -90,7 +77,7 @@ void main() {
     test('keeps font size and reports message when saving fails', () async {
       final previousStore = SharedPreferencesStorePlatform.instance;
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() {
         SharedPreferences.setMockInitialValues({});
@@ -104,7 +91,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);

@@ -7,17 +7,8 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
+import '../../../test_helpers.dart';
 
-class _FakeClipboardService(this.text) extends ClipboardService {
-  String? text;
-  int pasteCount = 0;
-
-  @override
-  Future<String?> paste() async {
-    pasteCount++;
-    return text;
-  }
-}
 
 class _DelayedPasteClipboardService() extends ClipboardService {
   final pasteCompleter = Completer<String?>();
@@ -36,7 +27,7 @@ class _DelayedPasteClipboardService() extends ClipboardService {
 void main() {
   group('HomeScreen clipboard detection', () {
     testWidgets('renders the documented primary action', (tester) async {
-      final clipboard = _FakeClipboardService(null);
+      final clipboard = FakeClipboardService(null);
 
       await tester.pumpWidget(
         ProviderScope(
@@ -56,7 +47,7 @@ void main() {
     testWidgets('opens the source repository from the GitHub star chip', (
       tester,
     ) async {
-      final clipboard = _FakeClipboardService(null);
+      final clipboard = FakeClipboardService(null);
       final launchedUrls = <String?>[];
 
       await tester.pumpWidget(
@@ -84,7 +75,7 @@ void main() {
     testWidgets('auto-fills a valid article URL from the clipboard', (
       tester,
     ) async {
-      final clipboard = _FakeClipboardService(
+      final clipboard = FakeClipboardService(
         'Read HTTPS://Medium.COM/example/story/?sk=abc',
       );
 
@@ -111,7 +102,7 @@ void main() {
     testWidgets('ignores clipboard text that does not contain a URL', (
       tester,
     ) async {
-      final clipboard = _FakeClipboardService('plain text');
+      final clipboard = FakeClipboardService('plain text');
 
       await tester.pumpWidget(
         ProviderScope(
@@ -132,7 +123,7 @@ void main() {
     testWidgets('shows paste failure when clipboard has no text', (
       tester,
     ) async {
-      final clipboard = _FakeClipboardService(null);
+      final clipboard = FakeClipboardService(null);
 
       await tester.pumpWidget(
         ProviderScope(
@@ -159,7 +150,7 @@ void main() {
     testWidgets('does not overwrite typed input when the app resumes', (
       tester,
     ) async {
-      final clipboard = _FakeClipboardService(null);
+      final clipboard = FakeClipboardService(null);
 
       await tester.pumpWidget(
         ProviderScope(

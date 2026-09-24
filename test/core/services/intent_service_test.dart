@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+import '../../test_helpers.dart';
 
 class _ThrowingResetSharingIntent() extends ReceiveSharingIntent {
   int resetRequests = 0;
@@ -21,21 +22,6 @@ class _ThrowingResetSharingIntent() extends ReceiveSharingIntent {
   }
 }
 
-class _FakeIntentService(this._intentStream) extends IntentService {
-  final Stream<List<SharedMediaFile>> _intentStream;
-  int resetRequests = 0;
-
-  @override
-  Stream<List<SharedMediaFile>> get intentStream => _intentStream;
-
-  @override
-  Future<List<SharedMediaFile>> getInitialIntent() async => <SharedMediaFile>[];
-
-  @override
-  Future<void> reset() async {
-    resetRequests++;
-  }
-}
 
 void main() {
   group('IntentService', () {
@@ -52,7 +38,7 @@ void main() {
   group('intentStreamProvider', () {
     test('emits shared article URLs and resets consumed intents', () async {
       final mediaController = StreamController<List<SharedMediaFile>>();
-      final intentService = _FakeIntentService(mediaController.stream);
+      final intentService = FakeIntentService(mediaController.stream);
       final container = ProviderContainer(
         overrides: [intentServiceProvider.overrideWith((ref) => intentService)],
       );
@@ -83,14 +69,14 @@ void main() {
       ]);
       await Future<void>.delayed(Duration.zero);
 
-      expect(emittedUrls, ['https://medium.com/example/story']);
+      expect(emittedUrls, [TestFixtures.storyUrl]);
       expect(providerErrors, isEmpty);
       expect(intentService.resetRequests, 1);
     });
 
     test('keeps listening when the platform stream emits an error', () async {
       final mediaController = StreamController<List<SharedMediaFile>>();
-      final intentService = _FakeIntentService(mediaController.stream);
+      final intentService = FakeIntentService(mediaController.stream);
       final container = ProviderContainer(
         overrides: [intentServiceProvider.overrideWith((ref) => intentService)],
       );
@@ -117,14 +103,14 @@ void main() {
       await Future<void>.delayed(Duration.zero);
       mediaController.add([
         SharedMediaFile(
-          path: 'https://medium.com/example/story',
+          path: TestFixtures.storyUrl,
           type: SharedMediaType.text,
         ),
       ]);
       await Future<void>.delayed(Duration.zero);
 
       expect(providerErrors, isEmpty);
-      expect(emittedUrls, ['https://medium.com/example/story']);
+      expect(emittedUrls, [TestFixtures.storyUrl]);
       expect(intentService.resetRequests, 1);
     });
   });

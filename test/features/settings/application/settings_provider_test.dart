@@ -7,6 +7,7 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import '../../../test_helpers.dart';
 
 class _RecordingFreediumUrlService(super.ref) extends FreediumUrlService {
   int invalidateCount = 0;
@@ -17,20 +18,6 @@ class _RecordingFreediumUrlService(super.ref) extends FreediumUrlService {
   }
 }
 
-class _FailingSharedPreferencesStore() extends SharedPreferencesStorePlatform {
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => {};
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
 
 void main() {
   group('isFreediumMirrorUrl', () {
@@ -182,7 +169,7 @@ void main() {
 
     test('keeps state and mirror cache unchanged when saving fails', () async {
       SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+          FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();

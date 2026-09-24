@@ -12,30 +12,11 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 
 import '../../../test_helpers.dart';
 
-class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
-    extends SharedPreferencesStorePlatform {
-  this : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
-
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
 
 void main() {
   group('BookmarksScreen', () {
     testWidgets('shows progress from matching history entries', (tester) async {
-      final timestamp = DateTime.utc(2026, 8, 10);
+      final timestamp = TestFixtures.groupDate;
       final bookmarks = [
         BookmarkedArticle(
           url: 'https://medium.com/in-progress',
@@ -86,9 +67,9 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
       SharedPreferences.setMockInitialValues({
         'bookmarked_articles': [jsonEncode(bookmark.toJson())],
@@ -111,9 +92,9 @@ void main() {
 
     testWidgets('removes a bookmark after swipe dismissal', (tester) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
       SharedPreferences.setMockInitialValues({
         'bookmarked_articles': [jsonEncode(bookmark.toJson())],
@@ -144,11 +125,11 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
       SharedPreferences.resetStatic();
@@ -180,9 +161,9 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
       SharedPreferences.setMockInitialValues({
         'bookmarked_articles': [jsonEncode(bookmark.toJson())],
@@ -222,11 +203,11 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
       SharedPreferences.resetStatic();

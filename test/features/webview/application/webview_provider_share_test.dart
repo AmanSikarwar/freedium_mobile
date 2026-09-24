@@ -6,12 +6,13 @@ import 'package:freedium_mobile/features/webview/application/freedium_article_ur
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../test_helpers.dart';
 
 void main() {
   group('WebviewNotifier shareArticle', () {
     test('reports a message when sharing is unavailable', () async {
       final capturedParams = <ShareParams>[];
-      const articleUrl = 'https://medium.com/example/story';
+      const articleUrl = TestFixtures.storyUrl;
       final container = await _createContainer((params) async {
         capturedParams.add(params);
         return ShareResult.unavailable;
@@ -44,7 +45,7 @@ void main() {
     test(
       'does not report a message when the share sheet is dismissed',
       () async {
-        const articleUrl = 'https://medium.com/example/story';
+        const articleUrl = TestFixtures.storyUrl;
         final container = await _createContainer(
           (params) async => const ShareResult('', ShareResultStatus.dismissed),
         );
@@ -62,7 +63,7 @@ void main() {
     );
 
     test('reports a message when sharing throws', () async {
-      const articleUrl = 'https://medium.com/example/story';
+      const articleUrl = TestFixtures.storyUrl;
       final container = await _createContainer((params) async {
         throw Exception('share unavailable');
       });

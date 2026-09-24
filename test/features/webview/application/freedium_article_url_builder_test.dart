@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
+import '../../../test_helpers.dart';
 
 void main() {
   group('buildFreediumArticleUri', () {
@@ -7,7 +8,7 @@ void main() {
       expect(
         buildFreediumArticleUri(
           mirrorUrl: 'https://freedium.cfd',
-          articleUrl: 'https://medium.com/example/story',
+          articleUrl: TestFixtures.storyUrl,
         ).toString(),
         'https://freedium.cfd/https://medium.com/example/story',
       );
@@ -17,7 +18,7 @@ void main() {
       expect(
         buildFreediumArticleUri(
           mirrorUrl: 'https://freedium.cfd/',
-          articleUrl: 'https://medium.com/example/story',
+          articleUrl: TestFixtures.storyUrl,
         ).toString(),
         'https://freedium.cfd/https://medium.com/example/story',
       );
@@ -27,7 +28,7 @@ void main() {
       expect(
         buildFreediumArticleUri(
           mirrorUrl: 'https://mirror.example/base',
-          articleUrl: 'https://medium.com/example/story',
+          articleUrl: TestFixtures.storyUrl,
         ).toString(),
         'https://mirror.example/base/https://medium.com/example/story',
       );
@@ -37,7 +38,7 @@ void main() {
       expect(
         buildFreediumArticleUri(
           mirrorUrl: 'https://mirror.example/base///',
-          articleUrl: 'https://medium.com/example/story',
+          articleUrl: TestFixtures.storyUrl,
         ).toString(),
         'https://mirror.example/base/https://medium.com/example/story',
       );
@@ -47,7 +48,7 @@ void main() {
       expect(
         buildFreediumArticleUri(
           mirrorUrl: 'https://mirror.example/base?ref=home#top',
-          articleUrl: 'https://medium.com/example/story',
+          articleUrl: TestFixtures.storyUrl,
         ).toString(),
         'https://mirror.example/base/https://medium.com/example/story',
       );
