@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/url.dart'
     show hasSameOrigin, isHttpUri, normalizeMirrorUrl, trimTrailingSlash;
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:freedium_mobile/features/settings/application/mirror_probe.dart'
     show probeMirrorUrl;
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
@@ -13,6 +14,8 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 export 'mirror_probe.dart'
     show MirrorProbeResult, probeMirrorUrl, sendMirrorProbeRequest;
+
+part 'settings_provider.freezed.dart';
 
 /// Creates [HttpClient] instances for mirror reachability probes.
 /// Overridable in tests to avoid real network access.
@@ -337,16 +340,14 @@ FreediumMirror? _normalizeMirror(FreediumMirror mirror) {
   return mirror.copyWith(name: name, url: url);
 }
 
-class const MirrorTestResult({
-  required this.isReachable,
-  required this.responseTimeMs,
-  this.statusCode,
-  this.error,
-}) {
-  final bool isReachable;
-  final int responseTimeMs;
-  final int? statusCode;
-  final String? error;
+@freezed
+abstract class MirrorTestResult with _$MirrorTestResult {
+  const factory MirrorTestResult({
+    required bool isReachable,
+    required int responseTimeMs,
+    int? statusCode,
+    String? error,
+  }) = _MirrorTestResult;
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, SettingsState>(

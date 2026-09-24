@@ -2,20 +2,21 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 
-@immutable
-class const UpdateInfo({
-  required this.latestVersion,
-  required this.releaseUrl,
-  required this.releaseNotes,
-}) {
-  final String latestVersion;
-  final String releaseUrl;
-  final String releaseNotes;
+part 'update_service.freezed.dart';
+
+@freezed
+abstract class UpdateInfo with _$UpdateInfo {
+  const factory UpdateInfo({
+    required String latestVersion,
+    required String releaseUrl,
+    required String releaseNotes,
+  }) = _UpdateInfo;
 }
 
 class const UpdateCheckException(this.message, [this.cause])

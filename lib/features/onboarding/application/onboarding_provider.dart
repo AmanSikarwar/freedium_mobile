@@ -1,15 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_service.dart';
 
-@immutable
-class const OnboardingState({
-  this.hasSeenOnboarding = false,
-  this.isLoading = false,
-}) {
-  final bool hasSeenOnboarding;
-  final bool isLoading;
+part 'onboarding_provider.freezed.dart';
+
+@freezed
+abstract class OnboardingState with _$OnboardingState {
+  const factory OnboardingState({
+    @Default(false) bool hasSeenOnboarding,
+    @Default(false) bool isLoading,
+  }) = _OnboardingState;
 }
 
 class OnboardingNotifier() extends Notifier<OnboardingState> {

@@ -2,16 +2,18 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
+part 'mirror_probe.freezed.dart';
+
+@freezed
 @visibleForTesting
-class MirrorProbeResult({
-  required this.isReachable,
-  this.statusCode,
-  this.error,
-}) {
-  final bool isReachable;
-  final int? statusCode;
-  final String? error;
+abstract class MirrorProbeResult with _$MirrorProbeResult {
+  const factory MirrorProbeResult({
+    required bool isReachable,
+    int? statusCode,
+    String? error,
+  }) = _MirrorProbeResult;
 }
 
 bool isMirrorSuccessStatus(int statusCode) =>

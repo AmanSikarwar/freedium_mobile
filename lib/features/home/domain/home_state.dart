@@ -1,7 +1,8 @@
-class const HomeState({this.url = ''}) {
-  final String url;
+import 'package:freezed_annotation/freezed_annotation.dart';
 
-  HomeState copyWith({String? url}) {
-    return HomeState(url: url ?? this.url);
-  }
+part 'home_state.freezed.dart';
+
+@freezed
+abstract class HomeState with _$HomeState {
+  const factory HomeState({@Default('') String url}) = _HomeState;
 }

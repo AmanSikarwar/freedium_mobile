@@ -1,20 +1,22 @@
 import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 
+part 'webview_state.freezed.dart';
+
 /// Metadata extracted from the article DOM via the ArticleMeta JS channel.
 /// All fields default to empty string — extraction is best-effort.
-@immutable
-class const ArticleMeta({
-  this.title = '',
-  this.author = '',
-  this.readTime = '',
-  this.heroImageUrl = '',
-}) {
-  final String title;
-  final String author;
-  final String readTime;
-  final String heroImageUrl;
+@freezed
+abstract class ArticleMeta with _$ArticleMeta {
+  const factory ArticleMeta({
+    @Default('') String title,
+    @Default('') String author,
+    @Default('') String readTime,
+    @Default('') String heroImageUrl,
+  }) = _ArticleMeta;
+
+  const ArticleMeta._();
 
   bool get hasContent => author.isNotEmpty || readTime.isNotEmpty;
 }
