@@ -208,6 +208,10 @@ class App extends ConsumerWidget {
         themeMode: themeMode,
         navigatorObservers: [currentRouteNameObserver],
         builder: (context, child) {
+          // Bridge legacy deps still on package:flutter/material.dart
+          // (webview_flutter, flutter_markdown_plus, flutter_riverpod).
+          // Remove once they migrate to package:material_ui.
+          // ignore: deprecated_member_use
           return MaterialUiCompatibilityBridge(child: child!);
         },
         home: onboarding.isLoading
@@ -218,12 +222,14 @@ class App extends ConsumerWidget {
       ),
       loading: () => MaterialApp(
         builder: (context, child) {
+          // ignore: deprecated_member_use
           return MaterialUiCompatibilityBridge(child: child!);
         },
         home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
       error: (err, stack) => MaterialApp(
         builder: (context, child) {
+          // ignore: deprecated_member_use
           return MaterialUiCompatibilityBridge(child: child!);
         },
         home: Scaffold(body: Center(child: Text('Error: $err'))),
