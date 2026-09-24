@@ -51,7 +51,7 @@ void main() {
           .read(historyProvider.notifier)
           .addHistory(' HTTPS://Medium.COM/example/story/ ', ' Example story ');
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history, hasLength(1));
       expect(history.single.url, 'https://medium.com/example/story');
       expect(history.single.title, 'Example story');
@@ -62,7 +62,7 @@ void main() {
           .read(historyProvider.notifier)
           .addHistory(' HTTPS://Medium.COM/example/story/ ', '  ');
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history, hasLength(1));
       expect(history.single.title, 'https://medium.com/example/story');
     });
@@ -74,7 +74,7 @@ void main() {
       await notifier.addHistory('not a url', 'Invalid');
       await notifier.addHistory('', 'Invalid');
 
-      expect(container.read(historyProvider), isEmpty);
+      expect(container.read(historyProvider).requireValue, isEmpty);
     });
 
     test('deduplicates history by normalized URL', () async {
@@ -85,7 +85,7 @@ void main() {
         'Second',
       );
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history, hasLength(1));
       expect(history.single.url, 'https://medium.com/example/story');
       expect(history.single.title, 'Second');
@@ -100,7 +100,7 @@ void main() {
       );
       await notifier.addHistory('https://medium.com/example/story', 'Second');
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history.single.title, 'Second');
       expect(history.single.progress, 0.42);
       expect(
@@ -119,13 +119,13 @@ void main() {
         'https://medium.com/example/story',
         0.04,
       );
-      expect(container.read(historyProvider).single.progress, 0);
+      expect(container.read(historyProvider).requireValue.single.progress, 0);
 
       await notifier.updateReadingProgress(
         'https://medium.com/example/story',
         0.96,
       );
-      expect(container.read(historyProvider).single.progress, 1);
+      expect(container.read(historyProvider).requireValue.single.progress, 1);
     });
 
     test('reports failure and preserves history when removing fails', () async {
@@ -148,15 +148,13 @@ void main() {
       );
 
       final notifier = container.read(historyProvider.notifier);
-      container.read(historyProvider);
-      await container.read(sharedPreferencesProvider.future);
-      await Future<void>.delayed(Duration.zero);
-      expect(container.read(historyProvider), hasLength(1));
+      await container.read(historyProvider.future);
+      expect(container.read(historyProvider).requireValue, hasLength(1));
 
       final didRemove = await notifier.removeHistory(history);
 
       expect(didRemove, isFalse);
-      expect(container.read(historyProvider), hasLength(1));
+      expect(container.read(historyProvider).requireValue, hasLength(1));
     });
 
     test('reports failure and preserves history when clearing fails', () async {
@@ -179,15 +177,13 @@ void main() {
       );
 
       final notifier = container.read(historyProvider.notifier);
-      container.read(historyProvider);
-      await container.read(sharedPreferencesProvider.future);
-      await Future<void>.delayed(Duration.zero);
-      expect(container.read(historyProvider), hasLength(1));
+      await container.read(historyProvider.future);
+      expect(container.read(historyProvider).requireValue, hasLength(1));
 
       final didClear = await notifier.clearHistory();
 
       expect(didClear, isFalse);
-      expect(container.read(historyProvider), hasLength(1));
+      expect(container.read(historyProvider).requireValue, hasLength(1));
     });
   });
 }

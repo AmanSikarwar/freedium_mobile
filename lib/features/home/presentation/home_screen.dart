@@ -10,6 +10,7 @@ import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
+import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
@@ -103,7 +104,8 @@ class _HomeScreenState()
   Widget build(BuildContext context) {
     final homeNotifier = ref.read(homeProvider.notifier);
     final updateAsync = ref.watch(updateCheckProvider);
-    final history = ref.watch(historyProvider);
+    final history =
+        ref.watch(historyProvider).value ?? const <ReadingHistory>[];
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(

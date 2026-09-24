@@ -30,7 +30,8 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final history = ref.watch(historyProvider);
+    final historyAsync = ref.watch(historyProvider);
+    final history = historyAsync.value ?? const <ReadingHistory>[];
     final lowercaseQuery = _query.toLowerCase();
     const searchBarHeight = 56.0;
     const searchBarBottomPadding = 8.0;
@@ -119,8 +120,9 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: libraryContentMaxWidth),
-          child: filtered.isEmpty
-              ? LibraryEmptyState(
+          child: historyAsync.when(
+            data: (_) => filtered.isEmpty
+                ? LibraryEmptyState(
                   icon: _query.isNotEmpty ? Icons.search_off : Icons.history,
                   title: _query.isNotEmpty
                       ? 'No results for "$_query"'
@@ -192,6 +194,16 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                     );
                   },
                 ),
+            loading: () =>
+                const Center(child: CircularProgressIndicator()),
+            error: (error, _) => LibraryEmptyState(
+              icon: Icons.error_outline,
+              title: 'Something went wrong.',
+              message: 'Could not load reading history.',
+              actionLabel: 'Retry',
+              onAction: () => ref.invalidate(historyProvider),
+            ),
+          ),
         ),
       ),
     );
