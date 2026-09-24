@@ -142,9 +142,11 @@ class SettingsNotifier() extends Notifier<SettingsState> {
     if (mirror.isDefault) return false;
     final service = await _ensureSettingsService();
     if (service == null) return false;
-    if (!state.mirrors.contains(mirror)) return false;
+    if (!state.mirrors.any((m) => m.url == mirror.url)) return false;
     final selectedMirrorUrl = state.selectedMirrorUrl;
-    final remainingMirrors = state.mirrors.where((m) => m != mirror).toList();
+    final remainingMirrors = state.mirrors
+        .where((m) => m.url != mirror.url)
+        .toList();
     final updatedMirrors = remainingMirrors.isEmpty
         ? SettingsState.defaultMirrors
         : remainingMirrors;
@@ -174,16 +176,16 @@ class SettingsNotifier() extends Notifier<SettingsState> {
   ) async {
     final service = await _ensureSettingsService();
     if (service == null) return false;
-    if (!state.mirrors.contains(oldMirror)) return false;
+    if (!state.mirrors.any((m) => m.url == oldMirror.url)) return false;
     final normalizedMirror = _normalizeMirror(newMirror);
     if (normalizedMirror == null ||
         state.mirrors.any(
-          (m) => m != oldMirror && m.url == normalizedMirror.url,
+          (m) => m.url != oldMirror.url && m.url == normalizedMirror.url,
         )) {
       return false;
     }
     final updatedMirrors = state.mirrors.map((m) {
-      if (m == oldMirror) return normalizedMirror;
+      if (m.url == oldMirror.url) return normalizedMirror;
       return m;
     }).toList();
     final selectedMirrorUrl = state.selectedMirrorUrl;

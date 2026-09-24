@@ -1,45 +1,22 @@
-import 'package:flutter/foundation.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'bookmarked_article.freezed.dart';
+part 'bookmarked_article.g.dart';
+
+DateTime _savedAtFromJson(String value) => DateTime.parse(value);
+
+String _savedAtToJson(DateTime value) => value.toUtc().toIso8601String();
 
 /// A single bookmarked article, persisted to SharedPreferences.
-@immutable
-class const BookmarkedArticle({
-  required this.url,
-  required this.title,
-  required this.savedAt,
-}) {
-  final String url;
-  final String title;
-  final DateTime savedAt;
+@freezed
+abstract class BookmarkedArticle with _$BookmarkedArticle {
+  const factory BookmarkedArticle({
+    required String url,
+    @Default('') String title,
+    @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson)
+    required DateTime savedAt,
+  }) = _BookmarkedArticle;
 
-  BookmarkedArticle copyWith({String? url, String? title, DateTime? savedAt}) {
-    return BookmarkedArticle(
-      url: url ?? this.url,
-      title: title ?? this.title,
-      savedAt: savedAt ?? this.savedAt,
-    );
-  }
-
-  Map<String, dynamic> toJson() => {
-    'url': url,
-    'title': title,
-    'savedAt': savedAt.toIso8601String(),
-  };
-
-  factory BookmarkedArticle.fromJson(Map<String, dynamic> json) {
-    return BookmarkedArticle(
-      url: json['url'] as String,
-      title: json['title'] as String? ?? '',
-      savedAt: DateTime.parse(json['savedAt'] as String),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is BookmarkedArticle &&
-          runtimeType == other.runtimeType &&
-          url == other.url;
-
-  @override
-  int get hashCode => url.hashCode;
+  factory BookmarkedArticle.fromJson(Map<String, dynamic> json) =>
+      _$BookmarkedArticleFromJson(json);
 }

@@ -1,85 +1,43 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:material_ui/material_ui.dart' show ThemeMode;
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 
-@immutable
-class const FreediumMirror({
-  required this.name,
-  required this.url,
-  this.isDefault = false,
-  this.isCustom = false,
-}) {
-  final String name;
-  final String url;
-  final bool isDefault;
-  final bool isCustom;
+part 'settings_state.freezed.dart';
+part 'settings_state.g.dart';
 
-  FreediumMirror copyWith({
-    String? name,
-    String? url,
-    bool? isDefault,
-    bool? isCustom,
-  }) {
-    return FreediumMirror(
-      name: name ?? this.name,
-      url: url ?? this.url,
-      isDefault: isDefault ?? this.isDefault,
-      isCustom: isCustom ?? this.isCustom,
-    );
-  }
+@freezed
+abstract class FreediumMirror with _$FreediumMirror {
+  const factory FreediumMirror({
+    required String name,
+    required String url,
+    @Default(false) bool isDefault,
+    @Default(false) bool isCustom,
+  }) = _FreediumMirror;
 
-  Map<String, dynamic> toJson() {
-    return {
-      'name': name,
-      'url': url,
-      'isDefault': isDefault,
-      'isCustom': isCustom,
-    };
-  }
-
-  factory FreediumMirror.fromJson(Map<String, dynamic> json) {
-    return FreediumMirror(
-      name: json['name'] as String,
-      url: json['url'] as String,
-      isDefault: json['isDefault'] as bool? ?? false,
-      isCustom: json['isCustom'] as bool? ?? false,
-    );
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is FreediumMirror &&
-          runtimeType == other.runtimeType &&
-          url == other.url;
-
-  @override
-  int get hashCode => url.hashCode;
+  factory FreediumMirror.fromJson(Map<String, dynamic> json) =>
+      _$FreediumMirrorFromJson(json);
 }
 
-@immutable
-class const SettingsState({
-  this.themeMode = .system,
-  this.defaultFontSize = defaultDefaultFontSize,
-  this.mirrors = const [],
-  this.selectedMirrorUrl = AppConstants.freediumMirrorUrl,
-  this.autoSwitchMirror = true,
-  this.mirrorTimeout = defaultMirrorTimeout,
-  this.showSitePopups = true,
-}) {
+@freezed
+abstract class SettingsState with _$SettingsState {
+  const factory SettingsState({
+    @Default(ThemeMode.system) ThemeMode themeMode,
+    @Default(SettingsState.defaultDefaultFontSize) double defaultFontSize,
+    @Default([]) List<FreediumMirror> mirrors,
+    @Default(AppConstants.freediumMirrorUrl) String selectedMirrorUrl,
+    @Default(true) bool autoSwitchMirror,
+    @Default(SettingsState.defaultMirrorTimeout) int mirrorTimeout,
+    @Default(true) bool showSitePopups,
+  }) = _SettingsState;
+
+  const SettingsState._();
+
   static const double minDefaultFontSize = 14.0;
   static const double maxDefaultFontSize = 28.0;
   static const double defaultDefaultFontSize = 18.0;
   static const int minMirrorTimeout = 2;
   static const int maxMirrorTimeout = 15;
   static const int defaultMirrorTimeout = 5;
-
-  final ThemeMode themeMode;
-  final double defaultFontSize;
-  final List<FreediumMirror> mirrors;
-  final String selectedMirrorUrl;
-  final bool autoSwitchMirror;
-  final int mirrorTimeout;
-  final bool showSitePopups;
 
   static double normalizeDefaultFontSize(double fontSize) {
     if (!fontSize.isFinite) return defaultDefaultFontSize;
@@ -88,26 +46,6 @@ class const SettingsState({
 
   static int normalizeMirrorTimeout(int timeout) {
     return timeout.clamp(minMirrorTimeout, maxMirrorTimeout).toInt();
-  }
-
-  SettingsState copyWith({
-    ThemeMode? themeMode,
-    double? defaultFontSize,
-    List<FreediumMirror>? mirrors,
-    String? selectedMirrorUrl,
-    bool? autoSwitchMirror,
-    int? mirrorTimeout,
-    bool? showSitePopups,
-  }) {
-    return SettingsState(
-      themeMode: themeMode ?? this.themeMode,
-      defaultFontSize: defaultFontSize ?? this.defaultFontSize,
-      mirrors: mirrors ?? this.mirrors,
-      selectedMirrorUrl: selectedMirrorUrl ?? this.selectedMirrorUrl,
-      autoSwitchMirror: autoSwitchMirror ?? this.autoSwitchMirror,
-      mirrorTimeout: mirrorTimeout ?? this.mirrorTimeout,
-      showSitePopups: showSitePopups ?? this.showSitePopups,
-    );
   }
 
   FreediumMirror? get selectedMirror {
