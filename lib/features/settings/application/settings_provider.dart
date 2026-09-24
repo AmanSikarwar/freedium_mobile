@@ -9,6 +9,12 @@ import 'package:freedium_mobile/core/utils/url.dart'
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
+/// Creates [HttpClient] instances for mirror reachability probes.
+/// Overridable in tests to avoid real network access.
+final httpClientFactoryProvider = Provider<HttpClient Function()>(
+  (ref) => HttpClient.new,
+);
+
 class const _MirrorProbeResult({
   required this.isReachable,
   this.statusCode,
@@ -359,7 +365,7 @@ class SettingsNotifier() extends Notifier<SettingsState> {
     try {
       final uri = Uri.parse(url);
       final timeout = Duration(seconds: state.mirrorTimeout);
-      client = HttpClient();
+      client = ref.read(httpClientFactoryProvider)();
       client.connectionTimeout = timeout;
 
       final probeResult = await _probeMirrorUrl(client, uri, timeout);
@@ -474,7 +480,7 @@ class FreediumUrlService(this._ref) {
     HttpClient? client;
     try {
       final uri = Uri.parse(url);
-      client = HttpClient();
+      client = _ref.read(httpClientFactoryProvider)();
       client.connectionTimeout = _checkTimeout;
       final probeResult = await _probeMirrorUrl(client, uri, _checkTimeout);
       return probeResult.isReachable;
