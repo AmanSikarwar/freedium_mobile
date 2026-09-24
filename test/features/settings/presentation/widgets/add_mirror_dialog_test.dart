@@ -48,7 +48,7 @@ void main() {
     final mirror = addedMirror;
     expect(mirror, isNotNull);
     expect(mirror!.name, 'Custom');
-    expect(mirror.url, 'HTTPS://custom.example');
+    expect(mirror.url, 'https://custom.example');
   });
 
   testWidgets('stays open and shows an error when a mirror is rejected', (

@@ -4,7 +4,8 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
-import 'package:freedium_mobile/features/settings/application/mirror_url_normalizer.dart';
+import 'package:freedium_mobile/core/utils/url.dart'
+    show hasSameOrigin, isHttpUri, normalizeMirrorUrl, trimTrailingSlash;
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
@@ -87,34 +88,23 @@ Future<_MirrorProbeResult> _probeMirrorUrl(
 
 bool isFreediumMirrorUrl(String url, Iterable<FreediumMirror> mirrors) {
   final uri = Uri.tryParse(url);
-  if (uri == null || !_isHttpUri(uri)) {
+  if (!isHttpUri(uri)) {
     return false;
   }
 
   for (final mirror in mirrors) {
     final mirrorUri = Uri.tryParse(mirror.url);
-    if (mirrorUri == null || !_isHttpUri(mirrorUri)) {
+    if (!isHttpUri(mirrorUri)) {
       continue;
     }
 
-    if (_hasSameOrigin(uri, mirrorUri) &&
+    if (hasSameOrigin(uri!, mirrorUri!) &&
         _hasMirrorPathPrefix(uri.path, mirrorUri.path)) {
       return true;
     }
   }
 
   return false;
-}
-
-bool _isHttpUri(Uri uri) {
-  final scheme = uri.scheme.toLowerCase();
-  return (scheme == 'http' || scheme == 'https') && uri.host.isNotEmpty;
-}
-
-bool _hasSameOrigin(Uri url, Uri mirror) {
-  return url.scheme.toLowerCase() == mirror.scheme.toLowerCase() &&
-      url.host.toLowerCase() == mirror.host.toLowerCase() &&
-      url.port == mirror.port;
 }
 
 bool _hasMirrorPathPrefix(String path, String mirrorPath) {

@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
+import 'package:freedium_mobile/core/utils/url.dart';
 
 void main() {
   group('normalizeHttpUrl', () {

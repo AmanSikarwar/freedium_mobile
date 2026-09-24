@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show trimTrailingSlash;
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
@@ -305,10 +306,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   String _normalizeUrl(String value) {
     try {
       final uri = Uri.parse(value);
-      var normalizedPath = uri.path;
-      while (normalizedPath.length > 1 && normalizedPath.endsWith('/')) {
-        normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
-      }
+      final normalizedPath = trimTrailingSlash(uri.path);
       return uri.replace(path: normalizedPath, fragment: '').toString();
     } catch (_) {
       return value;

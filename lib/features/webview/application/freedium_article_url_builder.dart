@@ -1,9 +1,12 @@
+import 'package:freedium_mobile/core/utils/url.dart'
+    show hasSameOrigin, trimTrailingSlash;
+
 Uri buildFreediumArticleUri({
   required String mirrorUrl,
   required String articleUrl,
 }) {
   final mirrorUri = Uri.parse(mirrorUrl);
-  final mirrorPath = _trimTrailingSlash(mirrorUri.path);
+  final mirrorPath = trimTrailingSlash(mirrorUri.path);
   final articlePath = articleUrl.startsWith('/')
       ? articleUrl.substring(1)
       : articleUrl;
@@ -28,13 +31,11 @@ String? extractOriginalArticleUrlFromFreediumUri({
     return null;
   }
 
-  if (mirrorUri.scheme.toLowerCase() != freediumUri.scheme.toLowerCase() ||
-      mirrorUri.host.toLowerCase() != freediumUri.host.toLowerCase() ||
-      mirrorUri.port != freediumUri.port) {
+  if (!hasSameOrigin(mirrorUri, freediumUri)) {
     return null;
   }
 
-  final mirrorPath = _trimTrailingSlash(mirrorUri.path);
+  final mirrorPath = trimTrailingSlash(mirrorUri.path);
   var articlePath = freediumUri.path;
 
   if (mirrorPath.isNotEmpty) {
@@ -54,13 +55,4 @@ String? extractOriginalArticleUrlFromFreediumUri({
   final queryStr = freediumUri.hasQuery ? '?${freediumUri.query}' : '';
   final fragmentStr = freediumUri.hasFragment ? '#${freediumUri.fragment}' : '';
   return '$originalUrl$queryStr$fragmentStr';
-}
-
-String _trimTrailingSlash(String value) {
-  var trimmed = value;
-  while (trimmed.length > 1 && trimmed.endsWith('/')) {
-    trimmed = trimmed.substring(0, trimmed.length - 1);
-  }
-
-  return trimmed == '/' ? '' : trimmed;
 }

@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:freedium_mobile/core/utils/url.dart'
+    show normalizeMirrorUrl, trimTrailingSlash;
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class const AddMirrorDialog({
@@ -80,12 +82,7 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
                 if (url == null || url.isEmpty) {
                   return 'Please enter a URL';
                 }
-                final uri = Uri.tryParse(url);
-                final scheme = uri?.scheme.toLowerCase();
-                if (uri == null ||
-                    !uri.hasScheme ||
-                    uri.host.isEmpty ||
-                    (scheme != 'http' && scheme != 'https')) {
+                if (normalizeMirrorUrl(url) == null) {
                   return 'Please enter a valid URL';
                 }
                 return null;
@@ -131,10 +128,9 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
     }
 
     HapticFeedback.mediumImpact();
-    String url = _urlController.text.trim();
-    while (url.length > 1 && url.endsWith('/')) {
-      url = url.substring(0, url.length - 1);
-    }
+    final rawUrl = _urlController.text.trim();
+    // Validator already guarantees non-null, fallback to trimmed raw.
+    final url = normalizeMirrorUrl(rawUrl) ?? trimTrailingSlash(rawUrl);
 
     final mirror = FreediumMirror(
       name: _nameController.text.trim(),

@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
-import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 

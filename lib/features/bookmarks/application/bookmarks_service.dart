@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
