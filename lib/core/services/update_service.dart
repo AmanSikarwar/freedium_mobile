@@ -70,7 +70,10 @@ class UpdateService({http.Client? client}) {
           return UpdateInfo(
             latestVersion: 'v$latestVersionStr',
             releaseUrl: normalizedReleaseUrl,
-            releaseNotes: data['body'] is String ? data['body'] as String : '',
+            releaseNotes: switch (data['body']) {
+              final String notes => notes,
+              _ => '',
+            },
           );
         }
         return null;

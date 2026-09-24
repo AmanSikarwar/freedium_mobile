@@ -139,8 +139,8 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                   itemBuilder: (context, index) {
                     final entry = grouped[index];
 
-                    if (entry is String) {
-                      return DateGroupHeader(label: entry);
+                    if (entry case final String label) {
+                      return DateGroupHeader(label: label);
                     }
 
                     final item = entry as ReadingHistory;

@@ -159,14 +159,11 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   }
 
   String _getThemeModeName(ThemeMode themeMode) {
-    switch (themeMode) {
-      case .light:
-        return 'Light';
-      case .dark:
-        return 'Dark';
-      case .system:
-        return 'System';
-    }
+    return switch (themeMode) {
+      .light => 'Light',
+      .dark => 'Dark',
+      .system => 'System',
+    };
   }
 
   Widget _buildFontSizeTile(

@@ -13,11 +13,11 @@ class CacheService() {
 
       await controller.clearLocalStorage();
 
-      if (Platform.isAndroid &&
-          controller.platform is AndroidWebViewController) {
-        final androidController =
-            controller.platform as AndroidWebViewController;
-        await androidController.clearCache();
+      if (Platform.isAndroid) {
+        if (controller.platform case final AndroidWebViewController
+            androidController) {
+          await androidController.clearCache();
+        }
       }
 
       debugPrint('WebView cache cleared successfully');
