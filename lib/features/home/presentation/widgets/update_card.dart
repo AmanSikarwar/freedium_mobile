@@ -7,13 +7,11 @@ import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 
-class UpdateCard extends ConsumerWidget {
-  const UpdateCard({
+class const UpdateCard({
     super.key,
     required this.updateInfo,
     required this.onDismissed,
-  });
-
+  }) extends ConsumerWidget {
   final UpdateInfo updateInfo;
   final VoidCallback onDismissed;
 

@@ -4,17 +4,15 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
-class AddMirrorDialog extends StatefulWidget {
+class const AddMirrorDialog({super.key, this.existingMirror, required this.onAdd}) extends StatefulWidget {
   final FreediumMirror? existingMirror;
   final FutureOr<bool> Function(FreediumMirror mirror) onAdd;
-
-  const AddMirrorDialog({super.key, this.existingMirror, required this.onAdd});
 
   @override
   State<AddMirrorDialog> createState() => _AddMirrorDialogState();
 }
 
-class _AddMirrorDialogState extends State<AddMirrorDialog> {
+class _AddMirrorDialogState() extends State<AddMirrorDialog> {
   late TextEditingController _nameController;
   late TextEditingController _urlController;
   final _formKey = GlobalKey<FormState>();

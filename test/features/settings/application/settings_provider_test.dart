@@ -8,9 +8,7 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _RecordingFreediumUrlService extends FreediumUrlService {
-  _RecordingFreediumUrlService(super.ref);
-
+class _RecordingFreediumUrlService(super.ref) extends FreediumUrlService {
   int invalidateCount = 0;
 
   @override
@@ -19,7 +17,7 @@ class _RecordingFreediumUrlService extends FreediumUrlService {
   }
 }
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
+class _FailingSharedPreferencesStore() extends SharedPreferencesStorePlatform {
   @override
   Future<bool> clear() async => false;
 

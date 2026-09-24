@@ -5,7 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/settings/application/mirror_url_normalizer.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
-class SettingsService {
+class SettingsService(this._prefs) {
   static const String _themeModeKey = 'theme_mode';
   static const String _mirrorsKey = 'freedium_mirrors';
   static const String _selectedMirrorUrlKey = 'selected_mirror_url';
@@ -14,8 +14,6 @@ class SettingsService {
   static const String _showSitePopupsKey = 'show_site_popups';
 
   final SharedPreferences _prefs;
-
-  SettingsService(this._prefs);
 
   Future<void> saveThemeMode(ThemeMode themeMode) async {
     await _savePreference(

@@ -12,24 +12,24 @@ import 'package:freedium_mobile/features/onboarding/presentation/onboarding_scre
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class _FakeClipboardService extends ClipboardService {
+class _FakeClipboardService() extends ClipboardService {
   @override
   Future<String?> paste() async => null;
 }
 
-class _FakeIntentService extends IntentService {
+class _FakeIntentService() extends IntentService {
   @override
   Future<List<SharedMediaFile>> getInitialIntent() async => <SharedMediaFile>[];
 }
 
-class _FailingIntentService extends IntentService {
+class _FailingIntentService() extends IntentService {
   @override
   Future<List<SharedMediaFile>> getInitialIntent() async {
     throw Exception('initial intent unavailable');
   }
 }
 
-class _RecordingIntentService extends IntentService {
+class _RecordingIntentService() extends IntentService {
   int initialIntentRequests = 0;
 
   @override
@@ -39,7 +39,7 @@ class _RecordingIntentService extends IntentService {
   }
 }
 
-class _FakeUpdateService extends UpdateService {
+class _FakeUpdateService() extends UpdateService {
   @override
   Future<UpdateInfo?> checkForUpdate() async => null;
 }

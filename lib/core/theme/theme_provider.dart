@@ -5,11 +5,9 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/theme/util.dart';
 
-class AppThemeProvider {
+class AppThemeProvider({required this.lightTheme, required this.darkTheme}) {
   final ThemeData lightTheme;
   final ThemeData darkTheme;
-
-  AppThemeProvider({required this.lightTheme, required this.darkTheme});
 }
 
 final themeModeProvider = Provider<ThemeMode>((ref) {

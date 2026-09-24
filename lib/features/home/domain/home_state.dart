@@ -1,7 +1,5 @@
-class HomeState {
+class const HomeState({this.url = ''}) {
   final String url;
-
-  const HomeState({this.url = ''});
 
   HomeState copyWith({String? url}) {
     return HomeState(url: url ?? this.url);

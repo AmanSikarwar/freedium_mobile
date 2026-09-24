@@ -4,11 +4,9 @@ import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
-class BookmarksService {
+class BookmarksService(this._prefs) {
   static const String _bookmarksKey = 'bookmarked_articles';
   final SharedPreferences _prefs;
-
-  BookmarksService(this._prefs);
 
   List<BookmarkedArticle> getBookmarks() {
     final json = _prefs.getStringList(_bookmarksKey);

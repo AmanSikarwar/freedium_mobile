@@ -6,7 +6,7 @@ import 'package:freedium_mobile/features/webview/application/webview_provider.da
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
+class _FailingSharedPreferencesStore() extends SharedPreferencesStorePlatform {
   @override
   Future<bool> clear() async => false;
 

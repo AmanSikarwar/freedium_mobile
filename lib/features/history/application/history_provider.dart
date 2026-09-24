@@ -5,7 +5,7 @@ import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 
-class HistoryNotifier extends Notifier<List<ReadingHistory>> {
+class HistoryNotifier() extends Notifier<List<ReadingHistory>> {
   HistoryService? _historyService;
 
   Future<HistoryService?> _ensureHistoryService() async {

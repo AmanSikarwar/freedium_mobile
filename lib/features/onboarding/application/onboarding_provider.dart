@@ -3,16 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 
 @immutable
-class OnboardingState {
-  final bool hasSeenOnboarding;
-  final bool isLoading;
-  const OnboardingState({
+class const OnboardingState({
     this.hasSeenOnboarding = false,
     this.isLoading = false,
-  });
+  }) {
+  final bool hasSeenOnboarding;
+  final bool isLoading;
 }
 
-class OnboardingNotifier extends Notifier<OnboardingState> {
+class OnboardingNotifier() extends Notifier<OnboardingState> {
   static const _key = 'has_seen_onboarding';
 
   @override

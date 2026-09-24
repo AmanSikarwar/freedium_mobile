@@ -2,14 +2,12 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 
-class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
-
+class const OnboardingScreen({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState() extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
@@ -181,18 +179,18 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-class _OnboardingPage {
+class const _OnboardingPage({
+    this.icon,
+    this.imagePath,
+    required this.title,
+    required this.body,
+  }) {
   final IconData? icon;
   final String? imagePath;
   final String title;
   final String body;
 
-  const _OnboardingPage({
-    this.icon,
-    this.imagePath,
-    required this.title,
-    required this.body,
-  }) : assert(
+  this : assert(
          icon != null || imagePath != null,
          'Either icon or imagePath must be provided',
        );

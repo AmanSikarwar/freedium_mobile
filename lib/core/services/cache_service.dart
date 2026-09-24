@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
-class CacheService {
+class CacheService() {
   Future<bool> clearWebViewCache() async {
     try {
       final controller = WebViewController();

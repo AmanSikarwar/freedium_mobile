@@ -7,21 +7,17 @@ import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 
 @immutable
-class UpdateInfo {
-  final String latestVersion;
-  final String releaseUrl;
-  final String releaseNotes;
-
-  const UpdateInfo({
+class const UpdateInfo({
     required this.latestVersion,
     required this.releaseUrl,
     required this.releaseNotes,
-  });
+  }) {
+  final String latestVersion;
+  final String releaseUrl;
+  final String releaseNotes;
 }
 
-class UpdateCheckException implements Exception {
-  const UpdateCheckException(this.message, [this.cause]);
-
+class const UpdateCheckException(this.message, [this.cause]) implements Exception {
   final String message;
   final Object? cause;
 
@@ -33,10 +29,10 @@ class UpdateCheckException implements Exception {
   }
 }
 
-class UpdateService {
+class UpdateService({http.Client? client}) {
   final http.Client _client;
 
-  UpdateService({http.Client? client}) : _client = client ?? http.Client();
+  this : _client = client ?? http.Client();
 
   static const String _repoOwner = 'AmanSikarwar';
   static const String _repoName = 'freedium_mobile';

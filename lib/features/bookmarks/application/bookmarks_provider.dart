@@ -7,7 +7,7 @@ import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dar
 
 export 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
-class BookmarksNotifier extends Notifier<List<BookmarkedArticle>> {
+class BookmarksNotifier() extends Notifier<List<BookmarkedArticle>> {
   BookmarksService? _service;
 
   Future<BookmarksService?> _ensureService() async {

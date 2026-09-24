@@ -5,15 +5,7 @@ const libraryContentMaxWidth = 720.0;
 
 /// A reusable article list tile used by both History and Bookmarks screens.
 /// Supports a trailing icon (e.g. bookmark indicator) via [trailingIcon].
-class ArticleCard extends StatelessWidget {
-  final String title;
-  final String subtitle;
-  final String url;
-  final VoidCallback onTap;
-  final Widget? trailingIcon;
-  final double? progress;
-
-  const ArticleCard({
+class const ArticleCard({
     super.key,
     required this.title,
     required this.subtitle,
@@ -21,7 +13,13 @@ class ArticleCard extends StatelessWidget {
     required this.onTap,
     this.trailingIcon,
     this.progress,
-  });
+  }) extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String url;
+  final VoidCallback onTap;
+  final Widget? trailingIcon;
+  final double? progress;
 
   @override
   Widget build(BuildContext context) {
@@ -138,9 +136,7 @@ class ArticleCard extends StatelessWidget {
   }
 }
 
-class ArticleDismissBackground extends StatelessWidget {
-  const ArticleDismissBackground({super.key});
-
+class const ArticleDismissBackground({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -170,21 +166,19 @@ class ArticleDismissBackground extends StatelessWidget {
   }
 }
 
-class LibraryEmptyState extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String message;
-  final String? actionLabel;
-  final VoidCallback? onAction;
-
-  const LibraryEmptyState({
+class const LibraryEmptyState({
     super.key,
     required this.icon,
     required this.title,
     required this.message,
     this.actionLabel,
     this.onAction,
-  });
+  }) extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String message;
+  final String? actionLabel;
+  final VoidCallback? onAction;
 
   @override
   Widget build(BuildContext context) {
@@ -240,10 +234,8 @@ class LibraryEmptyState extends StatelessWidget {
 }
 
 /// A section-header divider used by the date-grouped list.
-class DateGroupHeader extends StatelessWidget {
+class const DateGroupHeader({super.key, required this.label}) extends StatelessWidget {
   final String label;
-
-  const DateGroupHeader({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {

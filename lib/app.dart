@@ -14,7 +14,7 @@ import 'package:freedium_mobile/features/webview/presentation/webview_screen.dar
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 @visibleForTesting
-class CurrentRouteNameObserver extends NavigatorObserver {
+class CurrentRouteNameObserver() extends NavigatorObserver {
   final List<Route<dynamic>> _routeStack = [];
 
   String? get currentRouteName =>
@@ -66,7 +66,7 @@ class CurrentRouteNameObserver extends NavigatorObserver {
 
 final currentRouteNameObserver = CurrentRouteNameObserver();
 
-class InitialIntentHandledNotifier extends Notifier<bool> {
+class InitialIntentHandledNotifier() extends Notifier<bool> {
   @override
   bool build() => false;
 
@@ -80,7 +80,7 @@ final initialIntentHandledProvider =
       InitialIntentHandledNotifier.new,
     );
 
-class PendingIntentUrlNotifier extends Notifier<String?> {
+class PendingIntentUrlNotifier() extends Notifier<String?> {
   @override
   String? build() => null;
 
@@ -109,9 +109,7 @@ bool shouldSkipIncomingWebviewNavigation({
   return currentRouteName == incomingWebviewRouteName(targetUrl);
 }
 
-class App extends ConsumerWidget {
-  const App({super.key});
-
+class const App({super.key}) extends ConsumerWidget {
   void _navigateToWebview(String url) {
     final navigator = navigatorKey.currentState;
     if (navigator != null) {

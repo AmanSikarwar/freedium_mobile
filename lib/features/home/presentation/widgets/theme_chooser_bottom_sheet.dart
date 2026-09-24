@@ -10,9 +10,7 @@ void showThemeChooserBottomSheet(BuildContext context) {
   );
 }
 
-class ThemeChooserBottomSheet extends ConsumerWidget {
-  const ThemeChooserBottomSheet({super.key});
-
+class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
   Future<void> _selectTheme(
     BuildContext context,
     SettingsNotifier settingsNotifier,

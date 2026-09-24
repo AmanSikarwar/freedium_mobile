@@ -20,7 +20,7 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 
 @visibleForTesting
-enum WebviewNavigationAction { navigate, launchExternal, block }
+enum WebviewNavigationAction() { navigate, launchExternal, block }
 
 @visibleForTesting
 WebviewNavigationAction resolveWebviewNavigationAction({
@@ -58,7 +58,7 @@ String buildReadingProgressRestoreScript(double progress) {
   ''';
 }
 
-class WebviewNotifier extends Notifier<WebviewState> {
+class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   late ThemeInjectorService _themeInjector;
   late FreediumUrlService _freediumUrlService;
   WebViewController? _controller;
@@ -73,8 +73,6 @@ class WebviewNotifier extends Notifier<WebviewState> {
   double _latestReadingProgress = 0;
   static const Duration _articleMetaWaitDuration = Duration(milliseconds: 900);
   static const int _maxRetries = 3;
-
-  WebviewNotifier(this.url);
 
   @override
   WebviewState build() {

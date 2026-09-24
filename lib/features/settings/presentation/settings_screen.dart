@@ -15,9 +15,7 @@ import 'package:freedium_mobile/features/settings/presentation/widgets/mirror_li
 import 'package:freedium_mobile/features/settings/presentation/widgets/add_mirror_dialog.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 
-class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
-
+class const SettingsScreen({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider);

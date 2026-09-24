@@ -5,8 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
-class IntentService {
-  IntentService({ReceiveSharingIntent? sharingIntent})
+class IntentService({ReceiveSharingIntent? sharingIntent}) {
+  this
     : _sharingIntent = sharingIntent ?? ReceiveSharingIntent.instance;
 
   final ReceiveSharingIntent _sharingIntent;

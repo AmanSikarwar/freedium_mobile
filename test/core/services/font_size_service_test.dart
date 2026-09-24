@@ -3,13 +3,11 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _RemoveTrackingSharedPreferencesStore
-    extends SharedPreferencesStorePlatform {
-  _RemoveTrackingSharedPreferencesStore(
+class _RemoveTrackingSharedPreferencesStore(
     this.initialValues, {
     required this.removeResult,
-  });
-
+  })
+    extends SharedPreferencesStorePlatform {
   final Map<String, Object> initialValues;
   final bool removeResult;
   final removeCalls = <String>[];

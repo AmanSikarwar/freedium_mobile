@@ -12,18 +12,16 @@ double normalizeReadingProgress(double progress) {
 }
 
 @immutable
-class ReadingHistory {
-  final String url;
-  final String title;
-  final DateTime timestamp;
-  final double progress;
-
-  const ReadingHistory({
+class const ReadingHistory({
     required this.url,
     required this.title,
     required this.timestamp,
     this.progress = 0,
-  });
+  }) {
+  final String url;
+  final String title;
+  final DateTime timestamp;
+  final double progress;
 
   bool get isFinished => progress >= readingCompletionThreshold;
 

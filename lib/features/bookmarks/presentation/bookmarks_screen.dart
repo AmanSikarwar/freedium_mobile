@@ -7,14 +7,12 @@ import 'package:freedium_mobile/features/webview/presentation/webview_screen.dar
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
-class BookmarksScreen extends ConsumerStatefulWidget {
-  const BookmarksScreen({super.key});
-
+class const BookmarksScreen({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<BookmarksScreen> createState() => _BookmarksScreenState();
 }
 
-class _BookmarksScreenState extends ConsumerState<BookmarksScreen> {
+class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
   String _query = '';
   final _searchController = TextEditingController();
 

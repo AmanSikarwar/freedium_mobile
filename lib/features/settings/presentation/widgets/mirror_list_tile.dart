@@ -4,25 +4,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
-class MirrorListTile extends ConsumerStatefulWidget {
-  final FreediumMirror mirror;
-  final bool isSelected;
-  final VoidCallback? onEdit;
-  final VoidCallback? onDelete;
-
-  const MirrorListTile({
+class const MirrorListTile({
     super.key,
     required this.mirror,
     required this.isSelected,
     this.onEdit,
     this.onDelete,
-  });
+  }) extends ConsumerStatefulWidget {
+  final FreediumMirror mirror;
+  final bool isSelected;
+  final VoidCallback? onEdit;
+  final VoidCallback? onDelete;
 
   @override
   ConsumerState<MirrorListTile> createState() => _MirrorListTileState();
 }
 
-class _MirrorListTileState extends ConsumerState<MirrorListTile> {
+class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
   bool _isTesting = false;
   MirrorTestResult? _testResult;
 

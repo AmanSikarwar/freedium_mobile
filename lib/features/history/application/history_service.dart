@@ -4,11 +4,9 @@ import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 
-class HistoryService {
+class HistoryService(this._prefs) {
   static const String _historyKey = 'reading_history';
   final SharedPreferences _prefs;
-
-  HistoryService(this._prefs);
 
   List<ReadingHistory> getHistory() {
     final historyJson = _prefs.getStringList(_historyKey);

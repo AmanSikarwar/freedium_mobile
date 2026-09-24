@@ -5,7 +5,7 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class _RecordingNavigatorObserver extends NavigatorObserver {
+class _RecordingNavigatorObserver() extends NavigatorObserver {
   int pushedRoutes = 0;
   int replacedRoutes = 0;
 

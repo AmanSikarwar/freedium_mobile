@@ -1,9 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:shimmer/shimmer.dart';
 
-class ArticleShimmer extends StatelessWidget {
-  const ArticleShimmer({super.key});
-
+class const ArticleShimmer({super.key}) extends StatelessWidget {
   static BoxDecoration _roundedBox(double radius) =>
       BoxDecoration(color: Colors.white, borderRadius: .circular(radius));
 

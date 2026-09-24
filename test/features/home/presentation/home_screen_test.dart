@@ -8,9 +8,7 @@ import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 
-class _FakeClipboardService extends ClipboardService {
-  _FakeClipboardService(this.text);
-
+class _FakeClipboardService(this.text) extends ClipboardService {
   String? text;
   int pasteCount = 0;
 
@@ -21,7 +19,7 @@ class _FakeClipboardService extends ClipboardService {
   }
 }
 
-class _DelayedPasteClipboardService extends ClipboardService {
+class _DelayedPasteClipboardService() extends ClipboardService {
   final pasteCompleter = Completer<String?>();
   int pasteCount = 0;
 

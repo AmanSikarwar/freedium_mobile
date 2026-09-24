@@ -8,16 +8,14 @@ import 'package:freedium_mobile/features/settings/application/mirror_url_normali
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
-class _MirrorProbeResult {
-  final bool isReachable;
-  final int? statusCode;
-  final String? error;
-
-  const _MirrorProbeResult({
+class const _MirrorProbeResult({
     required this.isReachable,
     this.statusCode,
     this.error,
-  });
+  }) {
+  final bool isReachable;
+  final int? statusCode;
+  final String? error;
 }
 
 bool _isSuccessStatus(int statusCode) => statusCode >= 200 && statusCode < 400;
@@ -130,7 +128,7 @@ bool _hasMirrorPathPrefix(String path, String mirrorPath) {
       path.startsWith('$normalizedMirrorPath/');
 }
 
-class SettingsNotifier extends Notifier<SettingsState> {
+class SettingsNotifier() extends Notifier<SettingsState> {
   SettingsService? _settingsService;
 
   Future<SettingsService?> _ensureSettingsService() async {
@@ -415,32 +413,28 @@ FreediumMirror? _normalizeMirror(FreediumMirror mirror) {
   return mirror.copyWith(name: name, url: url);
 }
 
-class MirrorTestResult {
-  final bool isReachable;
-  final int responseTimeMs;
-  final int? statusCode;
-  final String? error;
-
-  const MirrorTestResult({
+class const MirrorTestResult({
     required this.isReachable,
     required this.responseTimeMs,
     this.statusCode,
     this.error,
-  });
+  }) {
+  final bool isReachable;
+  final int responseTimeMs;
+  final int? statusCode;
+  final String? error;
 }
 
 final settingsProvider = NotifierProvider<SettingsNotifier, SettingsState>(
   SettingsNotifier.new,
 );
 
-class FreediumUrlService {
+class FreediumUrlService(this._ref) {
   String? _cachedWorkingUrl;
   DateTime? _lastCheckTime;
   final Ref _ref;
 
   static const Duration _cacheDuration = Duration(minutes: 5);
-
-  FreediumUrlService(this._ref);
 
   Duration get _checkTimeout {
     final settings = _ref.read(settingsProvider);

@@ -23,16 +23,14 @@ bool shouldRevealWebView({
   return isPageLoaded && !hasError && (!isThemedPage || isThemeApplied);
 }
 
-class WebviewScreen extends ConsumerStatefulWidget {
-  const WebviewScreen({required this.url, super.key});
-
+class const WebviewScreen({required this.url, super.key}) extends ConsumerStatefulWidget {
   final String url;
 
   @override
   ConsumerState<WebviewScreen> createState() => _WebviewScreenState();
 }
 
-class _WebviewScreenState extends ConsumerState<WebviewScreen> {
+class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
   WebViewController? _controller;
   ColorScheme? _prevColorScheme;

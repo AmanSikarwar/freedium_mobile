@@ -5,7 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
-class _ThrowingResetSharingIntent extends ReceiveSharingIntent {
+class _ThrowingResetSharingIntent() extends ReceiveSharingIntent {
   int resetRequests = 0;
 
   @override
@@ -21,9 +21,7 @@ class _ThrowingResetSharingIntent extends ReceiveSharingIntent {
   }
 }
 
-class _FakeIntentService extends IntentService {
-  _FakeIntentService(this._intentStream);
-
+class _FakeIntentService(this._intentStream) extends IntentService {
   final Stream<List<SharedMediaFile>> _intentStream;
   int resetRequests = 0;
 

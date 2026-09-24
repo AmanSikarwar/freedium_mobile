@@ -21,21 +21,19 @@ void showFontSettingsSheet(
   );
 }
 
-class FontSettingsSheet extends ConsumerStatefulWidget {
-  final double initialFontSize;
-  final Function(double) onFontSizeChanged;
-
-  const FontSettingsSheet({
+class const FontSettingsSheet({
     super.key,
     required this.initialFontSize,
     required this.onFontSizeChanged,
-  });
+  }) extends ConsumerStatefulWidget {
+  final double initialFontSize;
+  final Function(double) onFontSizeChanged;
 
   @override
   ConsumerState<FontSettingsSheet> createState() => _FontSettingsSheetState();
 }
 
-class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
+class _FontSettingsSheetState() extends ConsumerState<FontSettingsSheet> {
   late double _currentFontSize;
 
   @override

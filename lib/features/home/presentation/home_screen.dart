@@ -17,14 +17,12 @@ import 'package:freedium_mobile/features/home/presentation/widgets/update_card.d
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
-
+class const HomeScreen({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
+class _HomeScreenState() extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   bool _isUpdateCardDismissed = false;
   late final TextEditingController _urlController;

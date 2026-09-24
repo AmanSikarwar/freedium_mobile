@@ -2,13 +2,11 @@ import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
-class ContinueReadingSection extends StatelessWidget {
-  const ContinueReadingSection({
+class const ContinueReadingSection({
     required this.history,
     required this.onArticleTap,
     super.key,
-  });
-
+  }) extends StatelessWidget {
   final List<ReadingHistory> history;
   final ValueChanged<ReadingHistory> onArticleTap;
 

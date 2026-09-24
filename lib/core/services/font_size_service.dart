@@ -7,15 +7,13 @@ final sharedPreferencesProvider = FutureProvider<SharedPreferences>((
   return await .getInstance();
 });
 
-class FontSizeService {
+class FontSizeService(this._prefs) {
   static const String _fontSizeKey = 'webview_font_size';
   static const String _legacyDefaultFontSizeKey = 'default_font_size';
   static const double minFontSize = 14.0;
   static const double maxFontSize = 28.0;
   static const double defaultFontSize = 18.0;
   final SharedPreferences _prefs;
-
-  FontSizeService(this._prefs);
 
   Future<void> saveFontSize(double fontSize) async {
     final success = await _prefs.setDouble(

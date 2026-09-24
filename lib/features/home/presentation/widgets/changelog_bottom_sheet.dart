@@ -7,9 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
-class ChangelogBottomSheet extends ConsumerWidget {
-  const ChangelogBottomSheet({super.key, required this.updateInfo});
-
+class const ChangelogBottomSheet({super.key, required this.updateInfo}) extends ConsumerWidget {
   final UpdateInfo updateInfo;
 
   @override

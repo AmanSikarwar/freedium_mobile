@@ -7,14 +7,12 @@ import 'package:freedium_mobile/features/webview/presentation/webview_screen.dar
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
-class HistoryScreen extends ConsumerStatefulWidget {
-  const HistoryScreen({super.key});
-
+class const HistoryScreen({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<HistoryScreen> createState() => _HistoryScreenState();
 }
 
-class _HistoryScreenState extends ConsumerState<HistoryScreen> {
+class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
   String _query = '';
   final _searchController = TextEditingController();
 

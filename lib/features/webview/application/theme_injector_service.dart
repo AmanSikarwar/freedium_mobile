@@ -31,7 +31,7 @@ String _freediumThemeTokenAssignments(ColorScheme colorScheme) {
   return buffer.toString();
 }
 
-class ThemeInjectorService {
+class ThemeInjectorService() {
   Future<String> getThemeInjectionScript(
     ColorScheme colorScheme, {
     double fontSize = 18.0,

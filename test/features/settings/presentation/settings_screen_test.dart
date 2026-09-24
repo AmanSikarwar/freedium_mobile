@@ -13,8 +13,8 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
-  _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
+class _FailingSharedPreferencesStore([Map<String, Object>? initialValues]) extends SharedPreferencesStorePlatform {
+  this
     : _values = Map.of(initialValues ?? {});
 
   final Map<String, Object> _values;

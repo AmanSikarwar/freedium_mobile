@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class ClipboardService {
+class ClipboardService() {
   Future<String?> paste() async {
     try {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
