@@ -25,7 +25,7 @@ import 'package:freedium_mobile/features/onboarding/presentation/onboarding_scre
 part 'app.g.dart';
 
 @Riverpod(keepAlive: true)
-class InitialIntentHandled extends _$InitialIntentHandled {
+class InitialIntentHandled() extends _$InitialIntentHandled {
   @override
   bool build() => false;
 
@@ -35,7 +35,7 @@ class InitialIntentHandled extends _$InitialIntentHandled {
 }
 
 @Riverpod(keepAlive: true)
-class PendingIntentUrl extends _$PendingIntentUrl {
+class PendingIntentUrl() extends _$PendingIntentUrl {
   @override
   String? build() => null;
 

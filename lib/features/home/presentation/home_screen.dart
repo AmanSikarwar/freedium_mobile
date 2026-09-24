@@ -131,7 +131,7 @@ class _HomeScreenState()
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (context) => const BookmarksScreen(),
                 ),
               );
@@ -144,7 +144,7 @@ class _HomeScreenState()
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                MaterialPageRoute<void>(builder: (context) => const HistoryScreen()),
               );
             },
             tooltip: 'History',
@@ -155,7 +155,7 @@ class _HomeScreenState()
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute<void>(builder: (context) => const SettingsScreen()),
               );
             },
             tooltip: 'Settings',
@@ -252,7 +252,7 @@ class _HomeScreenState()
                               _urlController.text = url;
                               homeNotifier.setUrl(url);
                               Navigator.of(context).push(
-                                MaterialPageRoute(
+                                MaterialPageRoute<void>(
                                   builder: (context) => WebviewScreen(url: url),
                                 ),
                               );
@@ -264,7 +264,7 @@ class _HomeScreenState()
                       ContinueReadingSection(
                         history: history,
                         onArticleTap: (article) => Navigator.of(context).push(
-                          MaterialPageRoute(
+                          MaterialPageRoute<void>(
                             builder: (_) => WebviewScreen(url: article.url),
                           ),
                         ),

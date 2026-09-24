@@ -57,7 +57,7 @@ final class WebviewProvider extends $NotifierProvider<Webview, WebviewState> {
   }
 }
 
-String _$webviewHash() => r'270825f272387f2bcd93963357691d1b8323e119';
+String _$webviewHash() => r'87c592106e9828c708c530b38483ed691a31aef8';
 
 final class WebviewFamily extends $Family
     with

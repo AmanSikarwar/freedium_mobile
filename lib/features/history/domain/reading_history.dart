@@ -22,7 +22,7 @@ double _progressFromJson(num? value) =>
     normalizeReadingProgress(value?.toDouble() ?? 0);
 
 @freezed
-abstract class ReadingHistory with _$ReadingHistory {
+abstract class const ReadingHistory._() with _$ReadingHistory {
   const factory ReadingHistory({
     required String url,
     @Default('') String title,
@@ -30,8 +30,6 @@ abstract class ReadingHistory with _$ReadingHistory {
     required DateTime timestamp,
     @JsonKey(fromJson: _progressFromJson) @Default(0) double progress,
   }) = _ReadingHistory;
-
-  const ReadingHistory._();
 
   factory ReadingHistory.fromJson(Map<String, dynamic> json) =>
       _$ReadingHistoryFromJson(json);

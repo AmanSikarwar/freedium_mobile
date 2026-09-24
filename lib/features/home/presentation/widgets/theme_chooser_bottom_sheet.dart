@@ -5,7 +5,7 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 void showThemeChooserBottomSheet(BuildContext context) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     builder: (context) => const ThemeChooserBottomSheet(),
   );

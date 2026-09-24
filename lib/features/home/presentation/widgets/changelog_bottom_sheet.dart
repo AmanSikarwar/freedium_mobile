@@ -232,7 +232,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
 }
 
 void showChangelogBottomSheet(BuildContext context, UpdateInfo updateInfo) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

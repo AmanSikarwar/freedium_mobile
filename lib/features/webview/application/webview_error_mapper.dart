@@ -1,11 +1,8 @@
-import 'package:flutter/foundation.dart';
-
 /// Maps platform WebView load failures to user-friendly messages.
 ///
 /// Pure function over the error [description] and optional [errorTypeLabel]
 /// (e.g. `WebResourceError.errorType.toString().split('.').last`) so it can
 /// be unit-tested without platform channel types.
-@visibleForTesting
 String getUserFriendlyWebviewErrorMessage({
   required String description,
   String? errorTypeLabel,

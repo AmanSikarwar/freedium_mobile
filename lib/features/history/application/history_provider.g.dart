@@ -33,7 +33,7 @@ final class HistoryProvider
   History create() => History();
 }
 
-String _$historyHash() => r'8e47f1dc02d19d5d5d6a5d34411618764e54e257';
+String _$historyHash() => r'fd4c7d7e898cdaae14582761b03a231e7ec443fc';
 
 abstract class _$History extends $AsyncNotifier<List<ReadingHistory>> {
   FutureOr<List<ReadingHistory>> build();

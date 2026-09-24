@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
@@ -11,7 +10,7 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 part 'history_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-class History extends _$History {
+class History() extends _$History {
   static const int maxHistoryEntries = 100;
 
   Future<HistoryService?> _service() async {

@@ -1,17 +1,16 @@
-import 'package:flutter/foundation.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart'
     show parseExternalHttpUrl;
 import 'package:freedium_mobile/features/history/domain/reading_history.dart'
     show normalizeReadingProgress;
 
-@visibleForTesting
+/// Navigation policy for WebView requests, shared by the [Webview] notifier
+/// and covered directly by `webview_navigation_policy_test.dart`.
 enum WebviewNavigationAction() {
   navigate,
   launchExternal,
   block,
 }
 
-@visibleForTesting
 WebviewNavigationAction resolveWebviewNavigationAction({
   required String requestUrl,
   required bool Function(String url) isFreediumUrl,
@@ -28,7 +27,6 @@ WebviewNavigationAction resolveWebviewNavigationAction({
   return WebviewNavigationAction.launchExternal;
 }
 
-@visibleForTesting
 String buildReadingProgressRestoreScript(double progress) {
   final normalizedProgress = normalizeReadingProgress(progress);
   return '''

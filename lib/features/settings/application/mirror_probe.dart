@@ -6,8 +6,8 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'mirror_probe.freezed.dart';
 
+/// Result of a mirror reachability probe, surfaced by `testMirror`.
 @freezed
-@visibleForTesting
 abstract class MirrorProbeResult with _$MirrorProbeResult {
   const factory MirrorProbeResult({
     required bool isReachable,

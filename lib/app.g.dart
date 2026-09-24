@@ -42,7 +42,7 @@ final class InitialIntentHandledProvider
 }
 
 String _$initialIntentHandledHash() =>
-    r'a75bcbfc0bd13f2ae6bf691919286acafd6fc10b';
+    r'970bf105f51a4a4501efd5ea49581e27f0da2d6a';
 
 abstract class _$InitialIntentHandled extends $Notifier<bool> {
   bool build();
@@ -94,7 +94,7 @@ final class PendingIntentUrlProvider
   }
 }
 
-String _$pendingIntentUrlHash() => r'2ee7e5c0e19100b049869d33a36558b9b87dffe2';
+String _$pendingIntentUrlHash() => r'41958764f64c6ce26cea47502bac876bb8808892';
 
 abstract class _$PendingIntentUrl extends $Notifier<String?> {
   String? build();

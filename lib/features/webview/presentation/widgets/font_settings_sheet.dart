@@ -6,9 +6,9 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 void showFontSettingsSheet(
   BuildContext context, {
   required double initialFontSize,
-  required Function(double) onFontSizeChanged,
+  required void Function(double) onFontSizeChanged,
 }) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -27,7 +27,7 @@ class const FontSettingsSheet({
   required this.onFontSizeChanged,
 }) extends ConsumerStatefulWidget {
   final double initialFontSize;
-  final Function(double) onFontSizeChanged;
+  final void Function(double) onFontSizeChanged;
 
   @override
   ConsumerState<FontSettingsSheet> createState() => _FontSettingsSheetState();

@@ -161,7 +161,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
               if (mounted) {
                 _resetSharingIntent();
                 navigator.pushReplacement(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  MaterialPageRoute<void>(builder: (context) => const HomeScreen()),
                 );
               }
             });
@@ -319,7 +319,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
                 left: Radius.circular(30),
               ),
               onTap: () {
-                showModalBottomSheet(
+                showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,

@@ -81,7 +81,7 @@ bool navigateToWebview(String url) {
   }
 
   navigator.push(
-    MaterialPageRoute(
+    MaterialPageRoute<void>(
       builder: (context) => WebviewScreen(url: url),
       settings: RouteSettings(name: incomingWebviewRouteName(url)),
     ),

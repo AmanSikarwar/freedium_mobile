@@ -8,8 +8,7 @@ import 'package:freedium_mobile/shared/widgets/article_card.dart';
 /// The screens own filtering, sorting, and per-item display mapping;
 /// this widget owns the [ListView] shell, date-group headers, swipe to
 /// remove, and [ArticleCard] wiring.
-class LibraryListView<T extends Object> extends StatelessWidget {
-  const LibraryListView({
+class const LibraryListView<T extends Object>({
     super.key,
     required this.grouped,
     required this.keyFor,
@@ -21,8 +20,7 @@ class LibraryListView<T extends Object> extends StatelessWidget {
     required this.onRemove,
     required this.removeFailMessage,
     required this.onTap,
-  });
-
+  }) extends StatelessWidget {
   /// `(groupLabel, item)` entries, e.g. from `buildGroupedList`.
   final List<(String, T)> grouped;
   final String Function(T item) keyFor;

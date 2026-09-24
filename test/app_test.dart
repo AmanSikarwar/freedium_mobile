@@ -36,22 +36,30 @@ class _FakeUpdateService() extends UpdateService {
   Future<UpdateInfo?> checkForUpdate() async => null;
 }
 
-Widget _buildApp({
+/// Pumps [App] with mock services.
+///
+/// The [ProviderScope] is created directly inside [tester.pumpWidget] (rather
+/// than returned from this helper) so the scope is not treated as a nested
+/// scope by `scoped_providers_should_specify_dependencies`.
+Future<void> _pumpApp({
+  required WidgetTester tester,
   required SharedPreferences prefs,
   IntentService? intentService,
 }) {
-  return ProviderScope(
-    overrides: [
-      sharedPreferencesProvider.overrideWith((ref) async => prefs),
-      dynamicThemeProvider.overrideWith((ref) => ref.watch(themeProvider)),
-      clipboardServiceProvider.overrideWith((ref) => FakeClipboardService()),
-      intentServiceProvider.overrideWith(
-        (ref) => intentService ?? FakeIntentService(),
-      ),
-      intentStreamProvider.overrideWith((ref) => const Stream<String>.empty()),
-      updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
-    ],
-    child: const App(),
+  return tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWith((ref) async => prefs),
+        dynamicThemeProvider.overrideWith((ref) => ref.watch(themeProvider)),
+        clipboardServiceProvider.overrideWith((ref) => FakeClipboardService()),
+        intentServiceProvider.overrideWith(
+          (ref) => intentService ?? FakeIntentService(),
+        ),
+        intentStreamProvider.overrideWith((ref) => const Stream<String>.empty()),
+        updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
+      ],
+      child: const App(),
+    ),
   );
 }
 
@@ -128,7 +136,7 @@ void main() {
       await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(_buildApp(prefs: prefs));
+      await _pumpApp(tester: tester, prefs: prefs);
       await tester.pumpAndSettle();
 
       expect(find.byType(OnboardingScreen), findsOneWidget);
@@ -148,8 +156,10 @@ void main() {
       await mockPrefs({'has_seen_onboarding': true});
       final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(
-        _buildApp(prefs: prefs, intentService: _FailingIntentService()),
+      await _pumpApp(
+        tester: tester,
+        prefs: prefs,
+        intentService: _FailingIntentService(),
       );
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
@@ -165,8 +175,10 @@ void main() {
       final prefs = await SharedPreferences.getInstance();
       final intentService = _RecordingIntentService();
 
-      await tester.pumpWidget(
-        _buildApp(prefs: prefs, intentService: intentService),
+      await _pumpApp(
+        tester: tester,
+        prefs: prefs,
+        intentService: intentService,
       );
       await tester.pump();
 

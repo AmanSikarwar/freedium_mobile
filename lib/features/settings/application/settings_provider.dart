@@ -57,7 +57,7 @@ bool _hasMirrorPathPrefix(String path, String mirrorPath) {
 }
 
 @Riverpod(keepAlive: true)
-class Settings extends _$Settings {
+class Settings() extends _$Settings {
   Future<SettingsService?> _service() async {
     try {
       final prefs = await ref.read(sharedPreferencesProvider.future);

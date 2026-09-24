@@ -65,7 +65,7 @@ Future<SharedPreferences> pumpApp(
 }
 
 /// Shared fixture literals used across the test suite.
-abstract final class TestFixtures {
+abstract final class TestFixtures() {
   /// Bare article URL used by most history/bookmark/clipboard tests.
   static const storyUrl = 'https://medium.com/example/story';
 
@@ -81,9 +81,9 @@ abstract final class TestFixtures {
 ///
 /// Unifies the five identical `_FailingSharedPreferencesStore` copies (plus
 /// three no-arg variants) previously scattered across test files.
-class FailingPrefsStore extends SharedPreferencesStorePlatform {
-  FailingPrefsStore([Map<String, Object>? initialValues])
-    : _values = Map.of(initialValues ?? {});
+class FailingPrefsStore([Map<String, Object>? initialValues])
+    extends SharedPreferencesStorePlatform {
+  this : _values = Map.of(initialValues ?? {});
 
   final Map<String, Object> _values;
 
@@ -106,9 +106,7 @@ class FailingPrefsStore extends SharedPreferencesStorePlatform {
 /// Unifies the two same-named `_FakeClipboardService` fakes: the app-level
 /// one (always pastes `null`) is `FakeClipboardService()`, and the home
 /// one (scripted text + counter) is `FakeClipboardService(text)`.
-class FakeClipboardService extends ClipboardService {
-  FakeClipboardService([this.text]);
-
+class FakeClipboardService([this.text]) extends ClipboardService {
   String? text;
   int pasteCount = 0;
 
@@ -123,11 +121,9 @@ class FakeClipboardService extends ClipboardService {
 ///
 /// Unifies the two same-named `_FakeIntentService` fakes: callers that only
 /// need `getInitialIntent` use the default empty stream.
-class FakeIntentService extends IntentService {
-  FakeIntentService([
+class FakeIntentService([
     this._intentStream = const Stream<List<SharedMediaFile>>.empty(),
-  ]);
-
+  ]) extends IntentService {
   final Stream<List<SharedMediaFile>> _intentStream;
   int resetRequests = 0;
 

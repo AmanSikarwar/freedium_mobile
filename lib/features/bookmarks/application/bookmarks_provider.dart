@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
@@ -13,7 +12,7 @@ export 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dar
 part 'bookmarks_provider.g.dart';
 
 @Riverpod(keepAlive: true)
-class Bookmarks extends _$Bookmarks {
+class Bookmarks() extends _$Bookmarks {
   static const int maxBookmarks = 100;
 
   Future<BookmarksService?> _service() async {

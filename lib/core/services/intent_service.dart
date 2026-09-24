@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';

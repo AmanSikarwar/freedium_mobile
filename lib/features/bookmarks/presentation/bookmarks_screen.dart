@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
@@ -139,7 +138,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                     removeFailMessage: 'Failed to remove bookmark',
                     onTap: (item) => Navigator.push(
                       context,
-                      MaterialPageRoute(
+                      MaterialPageRoute<void>(
                         builder: (_) => WebviewScreen(url: item.url),
                       ),
                     ),

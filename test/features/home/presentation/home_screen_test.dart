@@ -27,7 +27,7 @@ class _DelayedPasteClipboardService() extends ClipboardService {
 void main() {
   group('HomeScreen clipboard detection', () {
     testWidgets('renders the documented primary action', (tester) async {
-      final clipboard = FakeClipboardService(null);
+      final clipboard = FakeClipboardService();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -47,7 +47,7 @@ void main() {
     testWidgets('opens the source repository from the GitHub star chip', (
       tester,
     ) async {
-      final clipboard = FakeClipboardService(null);
+      final clipboard = FakeClipboardService();
       final launchedUrls = <String?>[];
 
       await tester.pumpWidget(
@@ -123,7 +123,7 @@ void main() {
     testWidgets('shows paste failure when clipboard has no text', (
       tester,
     ) async {
-      final clipboard = FakeClipboardService(null);
+      final clipboard = FakeClipboardService();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -150,7 +150,7 @@ void main() {
     testWidgets('does not overwrite typed input when the app resumes', (
       tester,
     ) async {
-      final clipboard = FakeClipboardService(null);
+      final clipboard = FakeClipboardService();
 
       await tester.pumpWidget(
         ProviderScope(

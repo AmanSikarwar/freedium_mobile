@@ -6,15 +6,13 @@ part 'webview_state.freezed.dart';
 /// Metadata extracted from the article DOM via the ArticleMeta JS channel.
 /// All fields default to empty string — extraction is best-effort.
 @freezed
-abstract class ArticleMeta with _$ArticleMeta {
+abstract class const ArticleMeta._() with _$ArticleMeta {
   const factory ArticleMeta({
     @Default('') String title,
     @Default('') String author,
     @Default('') String readTime,
     @Default('') String heroImageUrl,
   }) = _ArticleMeta;
-
-  const ArticleMeta._();
 
   bool get hasContent => author.isNotEmpty || readTime.isNotEmpty;
 }
@@ -27,7 +25,7 @@ abstract class ArticleMeta with _$ArticleMeta {
 /// Nullable message/metadata fields are cleared by passing explicit `null`
 /// to `copyWith` (freezed null-sentinel semantics).
 @freezed
-abstract class WebviewState with _$WebviewState {
+abstract class const WebviewState._() with _$WebviewState {
   const factory WebviewState({
     @Default(0.0) double progress,
     @Default(false) bool isPageLoaded,
@@ -44,6 +42,4 @@ abstract class WebviewState with _$WebviewState {
     // Article metadata extracted from the Freedium DOM.
     ArticleMeta? articleMeta,
   }) = _WebviewState;
-
-  const WebviewState._();
 }

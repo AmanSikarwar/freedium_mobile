@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -17,7 +16,7 @@ abstract class OnboardingState with _$OnboardingState {
 }
 
 @Riverpod(keepAlive: true)
-class Onboarding extends _$Onboarding {
+class Onboarding() extends _$Onboarding {
   @override
   OnboardingState build() {
     final prefsAsync = ref.watch(sharedPreferencesProvider);

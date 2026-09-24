@@ -48,4 +48,4 @@ final class SharedPreferencesProvider
   }
 }
 
-String _$sharedPreferencesHash() => r'd4dd9eb312a06f1fcc86e844e2c3688cced45c3c';
+String _$sharedPreferencesHash() => r'48e60558ea6530114ea20ea03e69b9fb339ab129';

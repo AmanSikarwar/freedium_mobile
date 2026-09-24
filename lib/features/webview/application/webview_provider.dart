@@ -40,7 +40,7 @@ part 'webview_provider.g.dart';
 typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 
 @riverpod
-class Webview extends _$Webview {
+class Webview() extends _$Webview {
   late ThemeInjectorService _themeInjector;
   late FreediumUrlService _freediumUrlService;
   WebViewController? _controller;
@@ -203,7 +203,8 @@ class Webview extends _$Webview {
               controller
                   .runJavaScript(preScript)
                   .catchError(
-                    (e) => debugPrint('Pre-theme injection failed: $e'),
+                    (Object e) =>
+                        debugPrint('Pre-theme injection failed: $e'),
                   );
             }
           },

@@ -289,7 +289,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   ) {
     int timeout = SettingsState.normalizeMirrorTimeout(settings.mirrorTimeout);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -347,7 +347,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   }
 
   void _showAddMirrorDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AddMirrorDialog(
         onAdd: (mirror) {
@@ -362,7 +362,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
     WidgetRef ref,
     FreediumMirror mirror,
   ) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AddMirrorDialog(
         existingMirror: mirror,
@@ -380,7 +380,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
     WidgetRef ref,
     FreediumMirror mirror,
   ) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Mirror'),
@@ -418,7 +418,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   }
 
   void _confirmResetDefaults(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Reset to Defaults'),
@@ -522,7 +522,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
 
     final availableUpdate = updateInfo;
     if (availableUpdate != null) {
-      showDialog(
+      showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Update Available'),

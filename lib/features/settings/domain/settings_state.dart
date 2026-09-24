@@ -19,7 +19,7 @@ abstract class FreediumMirror with _$FreediumMirror {
 }
 
 @freezed
-abstract class SettingsState with _$SettingsState {
+abstract class const SettingsState._() with _$SettingsState {
   const factory SettingsState({
     @Default(ThemeMode.system) ThemeMode themeMode,
     @Default(SettingsState.defaultDefaultFontSize) double defaultFontSize,
@@ -29,8 +29,6 @@ abstract class SettingsState with _$SettingsState {
     @Default(SettingsState.defaultMirrorTimeout) int mirrorTimeout,
     @Default(true) bool showSitePopups,
   }) = _SettingsState;
-
-  const SettingsState._();
 
   static const double minDefaultFontSize = 14.0;
   static const double maxDefaultFontSize = 28.0;
