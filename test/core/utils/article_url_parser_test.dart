@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
+
 import '../../test_helpers.dart';
 
 void main() {

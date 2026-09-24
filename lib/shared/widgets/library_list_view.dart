@@ -60,9 +60,8 @@ class LibraryListView<T extends Object> extends StatelessWidget {
                 if (!context.mounted) return false;
 
                 if (!didRemove) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(removeFailMessage)),
-                  );
+                  ScaffoldMessenger.of(context)
+                      .showSnackBar(SnackBar(content: Text(removeFailMessage)));
                 }
 
                 return didRemove;

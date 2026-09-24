@@ -5,8 +5,8 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
-import '../../../test_helpers.dart';
 
+import '../../../test_helpers.dart';
 
 void main() {
   group('WebviewNotifier font size', () {
@@ -76,8 +76,7 @@ void main() {
 
     test('keeps font size and reports message when saving fails', () async {
       final previousStore = SharedPreferencesStorePlatform.instance;
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() {
         SharedPreferences.setMockInitialValues({});

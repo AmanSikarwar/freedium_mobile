@@ -11,9 +11,8 @@ import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'test_helpers.dart';
-
-
 
 class _FailingIntentService() extends IntentService {
   @override

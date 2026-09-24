@@ -11,7 +11,6 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 
 import '../../../test_helpers.dart';
 
-
 void main() {
   group('HistoryScreen', () {
     testWidgets('shows in-progress and finished reading states', (

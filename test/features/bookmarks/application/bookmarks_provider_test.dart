@@ -9,7 +9,6 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 
 import '../../../test_helpers.dart';
 
-
 void main() {
   group('BookmarksNotifier', () {
     late ProviderContainer container;
@@ -90,8 +89,7 @@ void main() {
 
     test('reports failure and preserves bookmarks when adding fails', () async {
       container.dispose();
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -104,10 +102,7 @@ void main() {
       final notifier = container.read(bookmarksProvider.notifier);
       await container.read(bookmarksProvider.future);
 
-      final didAdd = await notifier.addBookmark(
-        TestFixtures.storyUrl,
-        'Story',
-      );
+      final didAdd = await notifier.addBookmark(TestFixtures.storyUrl, 'Story');
 
       expect(didAdd, isFalse);
       expect(container.read(bookmarksProvider).requireValue, isEmpty);
@@ -115,8 +110,7 @@ void main() {
 
     test('reports failure when toggling a bookmark add fails', () async {
       container.dispose();
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -147,10 +141,9 @@ void main() {
           title: 'Story',
           savedAt: TestFixtures.seedDate,
         );
-        SharedPreferencesStorePlatform.instance =
-            FailingPrefsStore({
-              'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
-            });
+        SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+          'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        });
         SharedPreferences.resetStatic();
         addTearDown(() => SharedPreferences.setMockInitialValues({}));
         final prefs = await SharedPreferences.getInstance();
@@ -180,10 +173,9 @@ void main() {
           title: 'Story',
           savedAt: TestFixtures.seedDate,
         );
-        SharedPreferencesStorePlatform.instance =
-            FailingPrefsStore({
-              'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
-            });
+        SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+          'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        });
         SharedPreferences.resetStatic();
         addTearDown(() => SharedPreferences.setMockInitialValues({}));
         final prefs = await SharedPreferences.getInstance();

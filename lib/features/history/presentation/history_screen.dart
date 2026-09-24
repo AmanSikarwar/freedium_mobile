@@ -120,9 +120,8 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                     progressFor: (item) =>
                         item.progress > 0 ? item.progress : null,
                     trailingFor: (_) => null,
-                    onRemove: (item) => ref
-                        .read(historyProvider.notifier)
-                        .removeHistory(item),
+                    onRemove: (item) =>
+                        ref.read(historyProvider.notifier).removeHistory(item),
                     removeFailMessage: 'Failed to remove history entry',
                     onTap: (item) => Navigator.push(
                       context,

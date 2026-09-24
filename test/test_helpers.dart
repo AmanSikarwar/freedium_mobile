@@ -135,8 +135,7 @@ class FakeIntentService extends IntentService {
   Stream<List<SharedMediaFile>> get intentStream => _intentStream;
 
   @override
-  Future<List<SharedMediaFile>> getInitialIntent() async =>
-      <SharedMediaFile>[];
+  Future<List<SharedMediaFile>> getInitialIntent() async => <SharedMediaFile>[];
 
   @override
   Future<void> reset() async {

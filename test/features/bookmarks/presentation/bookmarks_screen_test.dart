@@ -12,7 +12,6 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 
 import '../../../test_helpers.dart';
 
-
 void main() {
   group('BookmarksScreen', () {
     testWidgets('shows progress from matching history entries', (tester) async {

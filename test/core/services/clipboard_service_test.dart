@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
+
 import '../../test_helpers.dart';
 
 void main() {
@@ -21,10 +22,7 @@ void main() {
         return {'text': TestFixtures.storyUrl};
       });
 
-      expect(
-        await ClipboardService().paste(),
-        TestFixtures.storyUrl,
-      );
+      expect(await ClipboardService().paste(), TestFixtures.storyUrl);
     });
 
     test('returns null when the platform clipboard call fails', () async {

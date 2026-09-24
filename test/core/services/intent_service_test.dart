@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+
 import '../../test_helpers.dart';
 
 class _ThrowingResetSharingIntent() extends ReceiveSharingIntent {
@@ -21,7 +22,6 @@ class _ThrowingResetSharingIntent() extends ReceiveSharingIntent {
     throw Exception('reset unavailable');
   }
 }
-
 
 void main() {
   group('IntentService', () {

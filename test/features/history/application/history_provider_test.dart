@@ -10,7 +10,6 @@ import 'package:shared_preferences_platform_interface/shared_preferences_platfor
 
 import '../../../test_helpers.dart';
 
-
 void main() {
   group('HistoryNotifier', () {
     late ProviderContainer container;
@@ -71,10 +70,7 @@ void main() {
     test('updates and preserves reading progress when reopening', () async {
       final notifier = container.read(historyProvider.notifier);
       await notifier.addHistory(TestFixtures.storyUrl, 'First');
-      await notifier.updateReadingProgress(
-        TestFixtures.storyUrl,
-        0.42,
-      );
+      await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.42);
       await notifier.addHistory(TestFixtures.storyUrl, 'Second');
 
       final history = container.read(historyProvider).requireValue;
@@ -92,16 +88,10 @@ void main() {
       final notifier = container.read(historyProvider.notifier);
       await notifier.addHistory(TestFixtures.storyUrl, 'Story');
 
-      await notifier.updateReadingProgress(
-        TestFixtures.storyUrl,
-        0.04,
-      );
+      await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.04);
       expect(container.read(historyProvider).requireValue.single.progress, 0);
 
-      await notifier.updateReadingProgress(
-        TestFixtures.storyUrl,
-        0.96,
-      );
+      await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.96);
       expect(container.read(historyProvider).requireValue.single.progress, 1);
     });
 

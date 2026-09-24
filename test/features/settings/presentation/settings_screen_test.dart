@@ -12,8 +12,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
-import '../../../test_helpers.dart';
 
+import '../../../test_helpers.dart';
 
 void main() {
   group('SettingsScreen', () {
@@ -87,8 +87,7 @@ void main() {
     testWidgets('shows reset failure when defaults cannot be saved', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -201,8 +200,7 @@ void main() {
     });
 
     testWidgets('keeps timeout dialog open when saving fails', (tester) async {
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -236,8 +234,7 @@ void main() {
     testWidgets('shows default font size failure when saving fails', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -264,8 +261,7 @@ void main() {
     testWidgets('shows selected mirror failure when saving fails', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -294,8 +290,7 @@ void main() {
     });
 
     testWidgets('shows auto-switch failure when saving fails', (tester) async {
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();

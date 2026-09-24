@@ -114,8 +114,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                       final historyItem = historyByUrl[item.url];
                       final progress = historyItem?.progress ?? 0;
                       final relativeTime = du.relativeTime(item.savedAt);
-                      final readingStatus =
-                          historyItem?.isFinished ?? false
+                      final readingStatus = historyItem?.isFinished ?? false
                           ? 'Finished'
                           : progress > 0
                           ? '${(progress * 100).round()}% read'
@@ -126,8 +125,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                     },
                     urlFor: (item) => item.url,
                     progressFor: (item) {
-                      final progress =
-                          historyByUrl[item.url]?.progress ?? 0;
+                      final progress = historyByUrl[item.url]?.progress ?? 0;
                       return progress > 0 ? progress : null;
                     },
                     trailingFor: (_) => Icon(

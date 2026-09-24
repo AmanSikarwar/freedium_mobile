@@ -7,8 +7,8 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
-import '../../../test_helpers.dart';
 
+import '../../../test_helpers.dart';
 
 class _DelayedPasteClipboardService() extends ClipboardService {
   final pasteCompleter = Completer<String?>();

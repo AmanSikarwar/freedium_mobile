@@ -37,9 +37,8 @@ Future<void> showLibraryClearDialog({
               return;
             }
 
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(failMessage)));
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(failMessage)));
           },
           child: const Text('Clear'),
         ),

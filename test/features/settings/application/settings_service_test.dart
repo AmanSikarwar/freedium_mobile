@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import '../../../test_helpers.dart';
 
 void main() {
@@ -129,10 +130,7 @@ void main() {
     );
 
     test('loadAllSettings clamps persisted numeric preferences', () async {
-      await mockPrefs({
-        'webview_font_size': 100.0,
-        'mirror_timeout': 0,
-      });
+      await mockPrefs({'webview_font_size': 100.0, 'mirror_timeout': 0});
 
       final service = SettingsService(await SharedPreferences.getInstance());
 

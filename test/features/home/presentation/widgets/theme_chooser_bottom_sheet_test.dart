@@ -5,14 +5,13 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
-import '../../../../test_helpers.dart';
 
+import '../../../../test_helpers.dart';
 
 void main() {
   group('ThemeChooserBottomSheet', () {
     testWidgets('keeps the sheet open when saving fails', (tester) async {
-      SharedPreferencesStorePlatform.instance =
-          FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
