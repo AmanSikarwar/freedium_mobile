@@ -13,11 +13,11 @@ double normalizeReadingProgress(double progress) {
 
 @immutable
 class const ReadingHistory({
-    required this.url,
-    required this.title,
-    required this.timestamp,
-    this.progress = 0,
-  }) {
+  required this.url,
+  required this.title,
+  required this.timestamp,
+  this.progress = 0,
+}) {
   final String url;
   final String title;
   final DateTime timestamp;

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -20,7 +21,11 @@ import 'package:webview_flutter_android/webview_flutter_android.dart';
 typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 
 @visibleForTesting
-enum WebviewNavigationAction() { navigate, launchExternal, block }
+enum WebviewNavigationAction() {
+  navigate,
+  launchExternal,
+  block,
+}
 
 @visibleForTesting
 WebviewNavigationAction resolveWebviewNavigationAction({

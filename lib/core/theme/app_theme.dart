@@ -349,15 +349,15 @@ class const AppTheme(this.textTheme) {
 }
 
 class const ExtendedColor({
-    required this.seed,
-    required this.value,
-    required this.light,
-    required this.lightHighContrast,
-    required this.lightMediumContrast,
-    required this.dark,
-    required this.darkHighContrast,
-    required this.darkMediumContrast,
-  }) {
+  required this.seed,
+  required this.value,
+  required this.light,
+  required this.lightHighContrast,
+  required this.lightMediumContrast,
+  required this.dark,
+  required this.darkHighContrast,
+  required this.darkMediumContrast,
+}) {
   final Color seed, value;
   final ColorFamily light;
   final ColorFamily lightHighContrast;
@@ -368,11 +368,11 @@ class const ExtendedColor({
 }
 
 class const ColorFamily({
-    required this.color,
-    required this.onColor,
-    required this.colorContainer,
-    required this.onColorContainer,
-  }) {
+  required this.color,
+  required this.onColor,
+  required this.colorContainer,
+  required this.onColorContainer,
+}) {
   final Color color;
   final Color onColor;
   final Color colorContainer;

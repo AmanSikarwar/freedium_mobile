@@ -4,10 +4,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 class _RemoveTrackingSharedPreferencesStore(
-    this.initialValues, {
-    required this.removeResult,
-  })
-    extends SharedPreferencesStorePlatform {
+  this.initialValues, {
+  required this.removeResult,
+}) extends SharedPreferencesStorePlatform {
   final Map<String, Object> initialValues;
   final bool removeResult;
   final removeCalls = <String>[];

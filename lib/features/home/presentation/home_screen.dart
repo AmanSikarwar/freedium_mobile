@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -22,7 +23,8 @@ class const HomeScreen({super.key}) extends ConsumerStatefulWidget {
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState() extends ConsumerState<HomeScreen>
+class _HomeScreenState()
+    extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   bool _isUpdateCardDismissed = false;
   late final TextEditingController _urlController;

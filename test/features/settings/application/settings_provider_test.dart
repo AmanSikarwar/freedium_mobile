@@ -197,9 +197,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       final notifier = container.read(settingsProvider.notifier);
       final added = await notifier.addMirror(
@@ -232,9 +232,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       final added = await container
           .read(settingsProvider.notifier)
@@ -274,9 +274,9 @@ void main() {
           ],
         );
         addTearDown(container.dispose);
-        freediumUrlService =
-            container.read(freediumUrlServiceProvider)
-                as _RecordingFreediumUrlService;
+        freediumUrlService = container.read(
+          freediumUrlServiceProvider,
+        ) as _RecordingFreediumUrlService;
 
         final notifier = container.read(settingsProvider.notifier);
         await notifier.addMirror(
@@ -317,9 +317,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       final notifier = container.read(settingsProvider.notifier);
       final duplicateAdded = await notifier.addMirror(
@@ -359,9 +359,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       await container
           .read(settingsProvider.notifier)
@@ -389,9 +389,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       const staleMirror = FreediumMirror(
         name: 'Stale',

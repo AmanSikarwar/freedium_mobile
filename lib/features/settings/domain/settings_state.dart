@@ -3,11 +3,11 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 
 @immutable
 class const FreediumMirror({
-    required this.name,
-    required this.url,
-    this.isDefault = false,
-    this.isCustom = false,
-  }) {
+  required this.name,
+  required this.url,
+  this.isDefault = false,
+  this.isCustom = false,
+}) {
   final String name;
   final String url;
   final bool isDefault;
@@ -58,14 +58,14 @@ class const FreediumMirror({
 
 @immutable
 class const SettingsState({
-    this.themeMode = .system,
-    this.defaultFontSize = defaultDefaultFontSize,
-    this.mirrors = const [],
-    this.selectedMirrorUrl = AppConstants.freediumMirrorUrl,
-    this.autoSwitchMirror = true,
-    this.mirrorTimeout = defaultMirrorTimeout,
-    this.showSitePopups = true,
-  }) {
+  this.themeMode = .system,
+  this.defaultFontSize = defaultDefaultFontSize,
+  this.mirrors = const [],
+  this.selectedMirrorUrl = AppConstants.freediumMirrorUrl,
+  this.autoSwitchMirror = true,
+  this.mirrorTimeout = defaultMirrorTimeout,
+  this.showSitePopups = true,
+}) {
   static const double minDefaultFontSize = 14.0;
   static const double maxDefaultFontSize = 28.0;
   static const double defaultDefaultFontSize = 18.0;

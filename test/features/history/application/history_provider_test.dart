@@ -8,9 +8,9 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore([Map<String, Object>? initialValues]) extends SharedPreferencesStorePlatform {
-  this
-    : _values = Map.of(initialValues ?? {});
+class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
+    extends SharedPreferencesStorePlatform {
+  this : _values = Map.of(initialValues ?? {});
 
   final Map<String, Object> _values;
 

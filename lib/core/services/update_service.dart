@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
@@ -8,16 +9,17 @@ import 'package:pub_semver/pub_semver.dart';
 
 @immutable
 class const UpdateInfo({
-    required this.latestVersion,
-    required this.releaseUrl,
-    required this.releaseNotes,
-  }) {
+  required this.latestVersion,
+  required this.releaseUrl,
+  required this.releaseNotes,
+}) {
   final String latestVersion;
   final String releaseUrl;
   final String releaseNotes;
 }
 
-class const UpdateCheckException(this.message, [this.cause]) implements Exception {
+class const UpdateCheckException(this.message, [this.cause])
+    implements Exception {
   final String message;
   final Object? cause;
 

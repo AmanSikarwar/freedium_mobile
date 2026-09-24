@@ -6,11 +6,11 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 /// All fields default to empty string — extraction is best-effort.
 @immutable
 class const ArticleMeta({
-    this.title = '',
-    this.author = '',
-    this.readTime = '',
-    this.heroImageUrl = '',
-  }) {
+  this.title = '',
+  this.author = '',
+  this.readTime = '',
+  this.heroImageUrl = '',
+}) {
   final String title;
   final String author;
   final String readTime;
@@ -27,19 +27,19 @@ class const ArticleMeta({
 /// rebuild. It is never replaced after initial creation.
 @immutable
 class const WebviewState({
-    this.progress = 0.0,
-    this.isPageLoaded = false,
-    this.isThemeApplied = false,
-    this.isInitialLoad = true,
-    this.controller,
-    this.fontSize = 18.0,
-    this.currentUrl,
-    this.activeBaseUrl = AppConstants.freediumUrl,
-    this.hasError = false,
-    this.errorMessage,
-    this.userMessage,
-    this.articleMeta,
-  }) {
+  this.progress = 0.0,
+  this.isPageLoaded = false,
+  this.isThemeApplied = false,
+  this.isInitialLoad = true,
+  this.controller,
+  this.fontSize = 18.0,
+  this.currentUrl,
+  this.activeBaseUrl = AppConstants.freediumUrl,
+  this.hasError = false,
+  this.errorMessage,
+  this.userMessage,
+  this.articleMeta,
+}) {
   final double progress;
   final bool isPageLoaded;
   final bool isThemeApplied;

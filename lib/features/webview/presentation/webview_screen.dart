@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -23,7 +24,8 @@ bool shouldRevealWebView({
   return isPageLoaded && !hasError && (!isThemedPage || isThemeApplied);
 }
 
-class const WebviewScreen({required this.url, super.key}) extends ConsumerStatefulWidget {
+class const WebviewScreen({required this.url, super.key})
+    extends ConsumerStatefulWidget {
   final String url;
 
   @override

@@ -3,10 +3,10 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
 class const ContinueReadingSection({
-    required this.history,
-    required this.onArticleTap,
-    super.key,
-  }) extends StatelessWidget {
+  required this.history,
+  required this.onArticleTap,
+  super.key,
+}) extends StatelessWidget {
   final List<ReadingHistory> history;
   final ValueChanged<ReadingHistory> onArticleTap;
 
@@ -31,9 +31,8 @@ class const ContinueReadingSection({
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Text(
               'Continue Reading',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(height: 4),

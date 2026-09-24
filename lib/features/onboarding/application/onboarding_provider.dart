@@ -4,9 +4,9 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 
 @immutable
 class const OnboardingState({
-    this.hasSeenOnboarding = false,
-    this.isLoading = false,
-  }) {
+  this.hasSeenOnboarding = false,
+  this.isLoading = false,
+}) {
   final bool hasSeenOnboarding;
   final bool isLoading;
 }

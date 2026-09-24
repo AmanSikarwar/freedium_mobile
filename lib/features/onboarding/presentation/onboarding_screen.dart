@@ -15,20 +15,17 @@ class _OnboardingScreenState() extends ConsumerState<OnboardingScreen> {
     _OnboardingPage(
       imagePath: 'assets/icon/icon.png',
       title: 'Welcome to Freedium',
-      body:
-          'Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times.',
+      body: 'Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times.',
     ),
     _OnboardingPage(
       icon: Icons.share,
       title: 'Share from Anywhere',
-      body:
-          'Open a supported article in Chrome or any app, tap Share, and choose Freedium from the share sheet.',
+      body: 'Open a supported article in Chrome or any app, tap Share, and choose Freedium from the share sheet.',
     ),
     _OnboardingPage(
       icon: Icons.content_paste,
       title: 'Clipboard Detection',
-      body:
-          'Copy a supported article URL, then open Freedium — it auto-fills the link for you instantly.',
+      body: 'Copy a supported article URL, then open Freedium — it auto-fills the link for you instantly.',
     ),
   ];
 
@@ -180,18 +177,19 @@ class _OnboardingScreenState() extends ConsumerState<OnboardingScreen> {
 }
 
 class const _OnboardingPage({
-    this.icon,
-    this.imagePath,
-    required this.title,
-    required this.body,
-  }) {
+  this.icon,
+  this.imagePath,
+  required this.title,
+  required this.body,
+}) {
   final IconData? icon;
   final String? imagePath;
   final String title;
   final String body;
 
-  this : assert(
-         icon != null || imagePath != null,
-         'Either icon or imagePath must be provided',
-       );
+  this
+    : assert(
+        icon != null || imagePath != null,
+        'Either icon or imagePath must be provided',
+      );
 }

@@ -4,7 +4,11 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
-class const AddMirrorDialog({super.key, this.existingMirror, required this.onAdd}) extends StatefulWidget {
+class const AddMirrorDialog({
+  super.key,
+  this.existingMirror,
+  required this.onAdd,
+}) extends StatefulWidget {
   final FreediumMirror? existingMirror;
   final FutureOr<bool> Function(FreediumMirror mirror) onAdd;
 
@@ -98,9 +102,8 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
               const SizedBox(height: 12),
               Text(
                 _submissionError!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.error),
               ),
             ],
           ],

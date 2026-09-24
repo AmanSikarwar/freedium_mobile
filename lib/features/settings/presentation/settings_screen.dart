@@ -39,9 +39,8 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
             padding: const .symmetric(horizontal: 16, vertical: 8),
             child: Text(
               'Available Mirrors',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
             ),
           ),
           RadioGroup<String>(

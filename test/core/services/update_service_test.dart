@@ -17,8 +17,7 @@ void main() {
         return http.Response(
           jsonEncode({
             'tag_name': 'v0.11.0',
-            'html_url':
-                'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
+            'html_url': 'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
             'body': null,
           }),
           200,
@@ -41,8 +40,7 @@ void main() {
         return http.Response(
           jsonEncode({
             'tag_name': ' V0.11.0 ',
-            'html_url':
-                ' https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0 ',
+            'html_url': ' https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0 ',
             'body': ['not a string'],
           }),
           200,
@@ -82,8 +80,7 @@ void main() {
         return http.Response(
           jsonEncode({
             'tag_name': 'v0.10.0',
-            'html_url':
-                'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.10.0',
+            'html_url': 'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.10.0',
             'body': 'Current release',
           }),
           200,

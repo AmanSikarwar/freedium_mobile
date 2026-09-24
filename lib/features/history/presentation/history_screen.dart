@@ -125,9 +125,7 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                   title: _query.isNotEmpty
                       ? 'No results for "$_query"'
                       : 'No reading history yet.',
-                  message: _query.isNotEmpty
-                      ? 'Try another title or URL.'
-                      : 'Articles you open will appear here with their reading progress.',
+                  message: _query.isNotEmpty ? 'Try another title or URL.' : 'Articles you open will appear here with their reading progress.',
                   actionLabel: _query.isNotEmpty ? 'Clear search' : null,
                   onAction: _query.isNotEmpty ? _clearSearch : null,
                 )

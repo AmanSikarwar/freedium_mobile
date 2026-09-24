@@ -7,7 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
-class const ChangelogBottomSheet({super.key, required this.updateInfo}) extends ConsumerWidget {
+class const ChangelogBottomSheet({super.key, required this.updateInfo})
+    extends ConsumerWidget {
   final UpdateInfo updateInfo;
 
   @override
@@ -32,9 +33,8 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo}) extends 
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant
+                      .withValues(alpha: 0.4),
                   borderRadius: .circular(2),
                 ),
               ),
@@ -57,9 +57,9 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo}) extends 
                             'Version ${updateInfo.latestVersion}',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                 ),
                           ),
                         ],
@@ -168,9 +168,8 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo}) extends 
                   color: Theme.of(context).colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.shadow
+                          .withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, -2),
                     ),

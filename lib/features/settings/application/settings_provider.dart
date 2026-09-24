@@ -9,10 +9,10 @@ import 'package:freedium_mobile/features/settings/application/settings_service.d
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class const _MirrorProbeResult({
-    required this.isReachable,
-    this.statusCode,
-    this.error,
-  }) {
+  required this.isReachable,
+  this.statusCode,
+  this.error,
+}) {
   final bool isReachable;
   final int? statusCode;
   final String? error;
@@ -414,11 +414,11 @@ FreediumMirror? _normalizeMirror(FreediumMirror mirror) {
 }
 
 class const MirrorTestResult({
-    required this.isReachable,
-    required this.responseTimeMs,
-    this.statusCode,
-    this.error,
-  }) {
+  required this.isReachable,
+  required this.responseTimeMs,
+  this.statusCode,
+  this.error,
+}) {
   final bool isReachable;
   final int responseTimeMs;
   final int? statusCode;

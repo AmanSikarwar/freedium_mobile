@@ -5,12 +5,12 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class const MirrorListTile({
-    super.key,
-    required this.mirror,
-    required this.isSelected,
-    this.onEdit,
-    this.onDelete,
-  }) extends ConsumerStatefulWidget {
+  super.key,
+  required this.mirror,
+  required this.isSelected,
+  this.onEdit,
+  this.onDelete,
+}) extends ConsumerStatefulWidget {
   final FreediumMirror mirror;
   final bool isSelected;
   final VoidCallback? onEdit;

@@ -120,8 +120,7 @@ void main() {
         expect(
           extractOriginalArticleUrlFromFreediumUri(
             mirrorUrl: 'https://freedium.cfd',
-            freediumUrl:
-                'https://freedium.cfd/https://medium.com/example/story?sk=abc#intro',
+            freediumUrl: 'https://freedium.cfd/https://medium.com/example/story?sk=abc#intro',
           ),
           'https://medium.com/example/story?sk=abc#intro',
         );
@@ -134,8 +133,7 @@ void main() {
         expect(
           extractOriginalArticleUrlFromFreediumUri(
             mirrorUrl: 'https://mirror.example/base',
-            freediumUrl:
-                'https://mirror.example/base/https://medium.com/example/story?sk=abc#intro',
+            freediumUrl: 'https://mirror.example/base/https://medium.com/example/story?sk=abc#intro',
           ),
           'https://medium.com/example/story?sk=abc#intro',
         );

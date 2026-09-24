@@ -6,14 +6,14 @@ const libraryContentMaxWidth = 720.0;
 /// A reusable article list tile used by both History and Bookmarks screens.
 /// Supports a trailing icon (e.g. bookmark indicator) via [trailingIcon].
 class const ArticleCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.url,
-    required this.onTap,
-    this.trailingIcon,
-    this.progress,
-  }) extends StatelessWidget {
+  super.key,
+  required this.title,
+  required this.subtitle,
+  required this.url,
+  required this.onTap,
+  this.trailingIcon,
+  this.progress,
+}) extends StatelessWidget {
   final String title;
   final String subtitle;
   final String url;
@@ -167,13 +167,13 @@ class const ArticleDismissBackground({super.key}) extends StatelessWidget {
 }
 
 class const LibraryEmptyState({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.actionLabel,
-    this.onAction,
-  }) extends StatelessWidget {
+  super.key,
+  required this.icon,
+  required this.title,
+  required this.message,
+  this.actionLabel,
+  this.onAction,
+}) extends StatelessWidget {
   final IconData icon;
   final String title;
   final String message;
@@ -234,7 +234,8 @@ class const LibraryEmptyState({
 }
 
 /// A section-header divider used by the date-grouped list.
-class const DateGroupHeader({super.key, required this.label}) extends StatelessWidget {
+class const DateGroupHeader({super.key, required this.label})
+    extends StatelessWidget {
   final String label;
 
   @override

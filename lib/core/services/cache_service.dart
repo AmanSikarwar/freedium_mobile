@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:webview_flutter/webview_flutter.dart';
@@ -14,8 +15,8 @@ class CacheService() {
       await controller.clearLocalStorage();
 
       if (Platform.isAndroid) {
-        if (controller.platform case final AndroidWebViewController
-            androidController) {
+        if (controller.platform
+            case final AndroidWebViewController androidController) {
           await androidController.clearCache();
         }
       }

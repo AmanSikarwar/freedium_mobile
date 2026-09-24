@@ -3,10 +3,10 @@ import 'package:flutter/foundation.dart';
 /// A single bookmarked article, persisted to SharedPreferences.
 @immutable
 class const BookmarkedArticle({
-    required this.url,
-    required this.title,
-    required this.savedAt,
-  }) {
+  required this.url,
+  required this.title,
+  required this.savedAt,
+}) {
   final String url;
   final String title;
   final DateTime savedAt;

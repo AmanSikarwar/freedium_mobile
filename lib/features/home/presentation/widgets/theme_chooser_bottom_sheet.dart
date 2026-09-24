@@ -48,9 +48,8 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
               padding: const .symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 'Choose Theme',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: .bold),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: .bold),
               ),
             ),
             const Divider(),

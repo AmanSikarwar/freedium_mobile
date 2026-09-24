@@ -90,8 +90,7 @@ void main() {
                           context,
                           const UpdateInfo(
                             latestVersion: 'v1.2.3',
-                            releaseUrl:
-                                'https://github.com/example/app/releases/tag/v1.2.3',
+                            releaseUrl: 'https://github.com/example/app/releases/tag/v1.2.3',
                             releaseNotes: '[Release notes]($releaseNoteUrl)',
                           ),
                         );

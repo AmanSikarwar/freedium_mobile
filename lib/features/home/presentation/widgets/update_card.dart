@@ -8,10 +8,10 @@ import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 
 class const UpdateCard({
-    super.key,
-    required this.updateInfo,
-    required this.onDismissed,
-  }) extends ConsumerWidget {
+  super.key,
+  required this.updateInfo,
+  required this.onDismissed,
+}) extends ConsumerWidget {
   final UpdateInfo updateInfo;
   final VoidCallback onDismissed;
 
@@ -43,9 +43,9 @@ class const UpdateCard({
                           style: TextStyle(
                             fontWeight: .bold,
                             fontSize: 16,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSecondaryContainer,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -76,9 +76,9 @@ class const UpdateCard({
                     icon: const Icon(Icons.article_outlined, size: 18),
                     label: const Text('View Changelog'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(
-                        context,
-                      ).colorScheme.onSecondaryContainer,
+                      foregroundColor: Theme.of(context)
+                          .colorScheme
+                          .onSecondaryContainer,
                       side: BorderSide(
                         color: Theme.of(context)
                             .colorScheme

@@ -13,9 +13,9 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore([Map<String, Object>? initialValues]) extends SharedPreferencesStorePlatform {
-  this
-    : _values = Map.of(initialValues ?? {});
+class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
+    extends SharedPreferencesStorePlatform {
+  this : _values = Map.of(initialValues ?? {});
 
   final Map<String, Object> _values;
 
@@ -69,8 +69,7 @@ void main() {
           (_) async => http.Response(
             jsonEncode({
               'tag_name': 'v0.11.0',
-              'html_url':
-                  'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
+              'html_url': 'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
               'body': 'Release notes',
             }),
             200,

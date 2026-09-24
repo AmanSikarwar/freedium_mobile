@@ -22,10 +22,10 @@ void showFontSettingsSheet(
 }
 
 class const FontSettingsSheet({
-    super.key,
-    required this.initialFontSize,
-    required this.onFontSizeChanged,
-  }) extends ConsumerStatefulWidget {
+  super.key,
+  required this.initialFontSize,
+  required this.onFontSizeChanged,
+}) extends ConsumerStatefulWidget {
   final double initialFontSize;
   final Function(double) onFontSizeChanged;
 
