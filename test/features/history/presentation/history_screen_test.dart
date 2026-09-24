@@ -9,6 +9,8 @@ import 'package:freedium_mobile/features/history/presentation/history_screen.dar
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
+import '../../../test_helpers.dart';
+
 class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
     extends SharedPreferencesStorePlatform {
   this : _values = Map.of(initialValues ?? {});
@@ -49,22 +51,15 @@ void main() {
           progress: 1,
         ),
       ];
-      SharedPreferences.setMockInitialValues({
-        'reading_history': [
-          for (final item in history) jsonEncode(item.toJson()),
-        ],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+      await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [
+            for (final item in history) jsonEncode(item.toJson()),
           ],
-          child: const MaterialApp(home: HistoryScreen()),
-        ),
+        },
       );
-      await tester.pumpAndSettle();
 
       expect(find.textContaining('42% read'), findsOneWidget);
       expect(find.textContaining('Finished •'), findsOneWidget);

@@ -8,6 +8,8 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
+import '../../../test_helpers.dart';
+
 class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
     extends SharedPreferencesStorePlatform {
   this : _values = Map.of(initialValues ?? {});
@@ -33,13 +35,7 @@ void main() {
     late ProviderContainer container;
 
     setUp(() async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-      container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWith((ref) async => prefs),
-        ],
-      );
+      container = prefsContainer(await mockPrefs());
     });
 
     tearDown(() {

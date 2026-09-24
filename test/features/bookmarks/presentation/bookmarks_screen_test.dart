@@ -10,6 +10,8 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
+import '../../../test_helpers.dart';
+
 class _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
     extends SharedPreferencesStorePlatform {
   this : _values = Map.of(initialValues ?? {});
@@ -60,25 +62,18 @@ void main() {
           progress: 1,
         ),
       ];
-      SharedPreferences.setMockInitialValues({
-        'bookmarked_articles': [
-          for (final item in bookmarks) jsonEncode(item.toJson()),
-        ],
-        'reading_history': [
-          for (final item in history) jsonEncode(item.toJson()),
-        ],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+      await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [
+            for (final item in bookmarks) jsonEncode(item.toJson()),
           ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+          'reading_history': [
+            for (final item in history) jsonEncode(item.toJson()),
+          ],
+        },
       );
-      await tester.pumpAndSettle();
 
       expect(find.textContaining('42% read'), findsOneWidget);
       expect(find.textContaining('Finished •'), findsOneWidget);
