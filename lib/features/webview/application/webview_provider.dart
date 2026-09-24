@@ -569,10 +569,8 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 }
 
-final webviewProvider =
-    NotifierProvider.autoDispose.family<WebviewNotifier, WebviewState, String>(
-      WebviewNotifier.new,
-    );
+final webviewProvider = NotifierProvider.autoDispose
+    .family<WebviewNotifier, WebviewState, String>(WebviewNotifier.new);
 
 final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
 

@@ -13,10 +13,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/routing/app_navigation.dart'
-    show
-        currentRouteNameObserver,
-        navigateToWebview,
-        navigatorKey;
+    show currentRouteNameObserver, navigateToWebview, navigatorKey;
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';

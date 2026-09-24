@@ -11,9 +11,7 @@ class OnboardingService(this._prefs) {
   Future<void> completeOnboarding() async {
     final success = await _prefs.setBool(hasSeenOnboardingKey, true);
     if (!success) {
-      throw Exception(
-        'setBool returned false for key "$hasSeenOnboardingKey"',
-      );
+      throw Exception('setBool returned false for key "$hasSeenOnboardingKey"');
     }
   }
 }

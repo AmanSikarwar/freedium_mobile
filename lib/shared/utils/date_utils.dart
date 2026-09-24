@@ -57,7 +57,5 @@ List<(String, T)> buildGroupedList<T extends Object>({
   required List<T> items,
   required DateTime Function(T) dateOf,
 }) {
-  return [
-    for (final item in items) (dateGroupLabel(dateOf(item)), item),
-  ];
+  return [for (final item in items) (dateGroupLabel(dateOf(item)), item)];
 }
