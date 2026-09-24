@@ -2,8 +2,11 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+
+part 'cache_service.g.dart';
 
 class CacheService() {
   /// Clears WebView cache and local storage.
@@ -36,4 +39,5 @@ class CacheService() {
   }
 }
 
-final cacheServiceProvider = Provider((ref) => CacheService());
+@Riverpod(keepAlive: true)
+CacheService cacheService(Ref ref) => CacheService();

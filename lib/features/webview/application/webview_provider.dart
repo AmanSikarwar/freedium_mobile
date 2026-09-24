@@ -578,8 +578,8 @@ class Webview extends _$Webview {
   }
 }
 
-final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
+@Riverpod(keepAlive: true)
+ThemeInjectorService themeInjectorService(Ref ref) => ThemeInjectorService();
 
-final shareLauncherProvider = Provider<ShareLauncher>(
-  (ref) => SharePlus.instance.share,
-);
+@Riverpod(keepAlive: true)
+ShareLauncher shareLauncher(Ref ref) => SharePlus.instance.share;

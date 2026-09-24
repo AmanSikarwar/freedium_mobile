@@ -2,8 +2,11 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+
+part 'intent_service.g.dart';
 
 class IntentService({ReceiveSharingIntent? sharingIntent}) {
   this : _sharingIntent = sharingIntent ?? ReceiveSharingIntent.instance;
@@ -26,9 +29,11 @@ class IntentService({ReceiveSharingIntent? sharingIntent}) {
   }
 }
 
-final intentServiceProvider = Provider((ref) => IntentService());
+@Riverpod(keepAlive: true)
+IntentService intentService(Ref ref) => IntentService();
 
-final intentStreamProvider = StreamProvider<String>((ref) {
+@Riverpod(keepAlive: true)
+Stream<String> intentStream(Ref ref) {
   final intentService = ref.watch(intentServiceProvider);
   final controller = StreamController<String>();
 
@@ -61,4 +66,4 @@ final intentStreamProvider = StreamProvider<String>((ref) {
   });
 
   return controller.stream;
-});
+}

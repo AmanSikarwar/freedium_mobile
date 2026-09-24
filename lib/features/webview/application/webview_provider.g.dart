@@ -104,3 +104,92 @@ abstract class _$Webview extends $Notifier<WebviewState> {
     return element.handleCreate(ref, () => build(_$args));
   }
 }
+
+@ProviderFor(themeInjectorService)
+final themeInjectorServiceProvider = ThemeInjectorServiceProvider._();
+
+final class ThemeInjectorServiceProvider
+    extends
+        $FunctionalProvider<
+          ThemeInjectorService,
+          ThemeInjectorService,
+          ThemeInjectorService
+        >
+    with $Provider<ThemeInjectorService> {
+  ThemeInjectorServiceProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'themeInjectorServiceProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$themeInjectorServiceHash();
+
+  @$internal
+  @override
+  $ProviderElement<ThemeInjectorService> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  ThemeInjectorService create(Ref ref) {
+    return themeInjectorService(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ThemeInjectorService value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ThemeInjectorService>(value),
+    );
+  }
+}
+
+String _$themeInjectorServiceHash() =>
+    r'9d8b3b39c22b01af59f2fe322b8a22379f33ec6c';
+
+@ProviderFor(shareLauncher)
+final shareLauncherProvider = ShareLauncherProvider._();
+
+final class ShareLauncherProvider
+    extends $FunctionalProvider<ShareLauncher, ShareLauncher, ShareLauncher>
+    with $Provider<ShareLauncher> {
+  ShareLauncherProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'shareLauncherProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$shareLauncherHash();
+
+  @$internal
+  @override
+  $ProviderElement<ShareLauncher> $createElement($ProviderPointer pointer) =>
+      $ProviderElement(pointer);
+
+  @override
+  ShareLauncher create(Ref ref) {
+    return shareLauncher(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(ShareLauncher value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<ShareLauncher>(value),
+    );
+  }
+}
+
+String _$shareLauncherHash() => r'640b46fd5b2a75e541bb4653a3703b5d86785ca3';

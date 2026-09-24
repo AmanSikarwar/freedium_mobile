@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 
 part 'update_service.freezed.dart';
+part 'update_service.g.dart';
 
 @freezed
 abstract class UpdateInfo with _$UpdateInfo {
@@ -99,9 +101,11 @@ String? _normalizeReleaseUrl(String value) {
   return normalizeHttpUrl(value);
 }
 
-final updateServiceProvider = Provider((ref) => UpdateService());
+@Riverpod(keepAlive: true)
+UpdateService updateService(Ref ref) => UpdateService();
 
-final updateCheckProvider = FutureProvider<UpdateInfo?>((ref) async {
-  final updateService = ref.watch(updateServiceProvider);
-  return await updateService.checkForUpdate();
-});
+@Riverpod(keepAlive: true)
+Future<UpdateInfo?> updateCheck(Ref ref) async {
+  final service = ref.watch(updateServiceProvider);
+  return service.checkForUpdate();
+}

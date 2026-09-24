@@ -11,6 +11,7 @@ export 'core/routing/app_navigation.dart'
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/routing/app_navigation.dart'
     show currentRouteNameObserver, navigateToWebview, navigatorKey;
@@ -21,7 +22,10 @@ import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 
-class InitialIntentHandledNotifier() extends Notifier<bool> {
+part 'app.g.dart';
+
+@Riverpod(keepAlive: true)
+class InitialIntentHandled extends _$InitialIntentHandled {
   @override
   bool build() => false;
 
@@ -30,12 +34,8 @@ class InitialIntentHandledNotifier() extends Notifier<bool> {
   }
 }
 
-final initialIntentHandledProvider =
-    NotifierProvider<InitialIntentHandledNotifier, bool>(
-      InitialIntentHandledNotifier.new,
-    );
-
-class PendingIntentUrlNotifier() extends Notifier<String?> {
+@Riverpod(keepAlive: true)
+class PendingIntentUrl extends _$PendingIntentUrl {
   @override
   String? build() => null;
 
@@ -47,11 +47,6 @@ class PendingIntentUrlNotifier() extends Notifier<String?> {
     state = null;
   }
 }
-
-final pendingIntentUrlProvider =
-    NotifierProvider<PendingIntentUrlNotifier, String?>(
-      PendingIntentUrlNotifier.new,
-    );
 
 class const App({super.key}) extends ConsumerWidget {
   void _navigateToWebview(String url) {

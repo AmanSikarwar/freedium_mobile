@@ -21,9 +21,8 @@ part 'settings_provider.g.dart';
 
 /// Creates [HttpClient] instances for mirror reachability probes.
 /// Overridable in tests to avoid real network access.
-final httpClientFactoryProvider = Provider<HttpClient Function()>(
-  (ref) => HttpClient.new,
-);
+@Riverpod(keepAlive: true)
+HttpClient Function() httpClientFactory(Ref ref) => HttpClient.new;
 
 bool isFreediumMirrorUrl(String url, Iterable<FreediumMirror> mirrors) {
   final uri = Uri.tryParse(url);

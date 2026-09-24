@@ -8,6 +8,60 @@ part of 'settings_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
+/// Creates [HttpClient] instances for mirror reachability probes.
+/// Overridable in tests to avoid real network access.
+
+@ProviderFor(httpClientFactory)
+final httpClientFactoryProvider = HttpClientFactoryProvider._();
+
+/// Creates [HttpClient] instances for mirror reachability probes.
+/// Overridable in tests to avoid real network access.
+
+final class HttpClientFactoryProvider
+    extends
+        $FunctionalProvider<
+          HttpClient Function(),
+          HttpClient Function(),
+          HttpClient Function()
+        >
+    with $Provider<HttpClient Function()> {
+  /// Creates [HttpClient] instances for mirror reachability probes.
+  /// Overridable in tests to avoid real network access.
+  HttpClientFactoryProvider._()
+    : super(
+        from: null,
+        argument: null,
+        retry: null,
+        name: r'httpClientFactoryProvider',
+        isAutoDispose: false,
+        dependencies: null,
+        $allTransitiveDependencies: null,
+      );
+
+  @override
+  String debugGetCreateSourceHash() => _$httpClientFactoryHash();
+
+  @$internal
+  @override
+  $ProviderElement<HttpClient Function()> $createElement(
+    $ProviderPointer pointer,
+  ) => $ProviderElement(pointer);
+
+  @override
+  HttpClient Function() create(Ref ref) {
+    return httpClientFactory(ref);
+  }
+
+  /// {@macro riverpod.override_with_value}
+  Override overrideWithValue(HttpClient Function() value) {
+    return $ProviderOverride(
+      origin: this,
+      providerOverride: $SyncValueProvider<HttpClient Function()>(value),
+    );
+  }
+}
+
+String _$httpClientFactoryHash() => r'90b502ab6e2441570df2acd759aa3ddd89f66d2d';
 
 @ProviderFor(Settings)
 final settingsProvider = SettingsProvider._();
