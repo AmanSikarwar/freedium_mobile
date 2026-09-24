@@ -18,11 +18,12 @@ import 'package:freedium_mobile/features/webview/presentation/widgets/font_setti
 class const SettingsScreen({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
+    final settingsAsync = ref.watch(settingsProvider);
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+    return settingsAsync.when(
+      data: (settings) => Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
           _buildSectionHeader(context, 'Appearance'),
@@ -128,6 +129,27 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
           const SizedBox(height: 24),
         ],
       ),
+      ),
+      loading: () => Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, _) => Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
+        body: Center(
+          child: Column(
+            mainAxisSize: .min,
+            children: [
+              const Text('Could not load settings.'),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () => ref.invalidate(settingsProvider),
+                child: const Text('Retry'),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -147,7 +169,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   Widget _buildThemeTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return ListTile(
       leading: const Icon(Icons.brightness_6),
@@ -168,7 +190,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   Widget _buildFontSizeTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return ListTile(
       leading: const Icon(Icons.text_fields),
@@ -197,7 +219,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   Widget _buildAutoSwitchTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return SwitchListTile(
       secondary: const Icon(Icons.swap_horiz),
@@ -224,7 +246,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   Widget _buildSitePopupsTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return SwitchListTile(
       secondary: const Icon(Icons.notifications_outlined),
@@ -249,7 +271,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   Widget _buildMirrorTimeoutTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return ListTile(
       leading: const Icon(Icons.timer),
@@ -262,7 +284,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   void _showTimeoutDialog(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     int timeout = SettingsState.normalizeMirrorTimeout(settings.mirrorTimeout);
 

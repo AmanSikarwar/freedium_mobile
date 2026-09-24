@@ -11,8 +11,8 @@ class AppThemeProvider({required this.lightTheme, required this.darkTheme}) {
 }
 
 final themeModeProvider = Provider<ThemeMode>((ref) {
-  final settings = ref.watch(settingsProvider);
-  return settings.themeMode;
+  final settings = ref.watch(settingsProvider).value;
+  return settings?.themeMode ?? ThemeMode.system;
 });
 
 final themeProvider = Provider<AppThemeProvider>((ref) {

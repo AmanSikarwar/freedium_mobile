@@ -12,6 +12,7 @@ import 'package:freedium_mobile/core/utils/url.dart' show trimTrailingSlash;
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:freedium_mobile/features/webview/application/webview_error_mapper.dart'
@@ -56,7 +57,11 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
     _freediumUrlService = ref.read(freediumUrlServiceProvider);
 
     ref.listen<double>(
-      settingsProvider.select((settings) => settings.defaultFontSize),
+      settingsProvider.select(
+        (settings) =>
+            settings.value?.defaultFontSize ??
+            SettingsState.defaultDefaultFontSize,
+      ),
       (previous, next) {
         final normalizedFontSize = FontSizeService.normalizeFontSize(next);
         if (!ref.mounted || state.fontSize == normalizedFontSize) {
@@ -79,7 +84,8 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
 
     return WebviewState(
       fontSize: FontSizeService.normalizeFontSize(
-        ref.read(settingsProvider).defaultFontSize,
+        ref.read(settingsProvider).value?.defaultFontSize ??
+            SettingsState.defaultDefaultFontSize,
       ),
     );
   }
@@ -261,7 +267,8 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 
   void _setCurrentMirrorIndex(String baseUrl) {
-    final mirrors = ref.read(settingsProvider).mirrors;
+    final mirrors =
+        ref.read(settingsProvider).value?.mirrors ?? const <FreediumMirror>[];
     final mirrorIndex = mirrors.indexWhere((mirror) => mirror.url == baseUrl);
     _currentMirrorIndex = mirrorIndex >= 0 ? mirrorIndex : 0;
   }
@@ -292,7 +299,8 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 
   Future<void> _handleLoadError(WebResourceError error) async {
-    final settings = ref.read(settingsProvider);
+    final settings =
+        ref.read(settingsProvider).value ?? const SettingsState();
 
     if (settings.autoSwitchMirror &&
         _retryCount < _maxRetries &&
@@ -444,7 +452,8 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 
   Future<void> retryWithNextMirror() async {
-    final settings = ref.read(settingsProvider);
+    final settings =
+        ref.read(settingsProvider).value ?? const SettingsState();
     if (settings.mirrors.isEmpty) {
       debugPrint('No mirrors available to retry');
       return;
@@ -500,7 +509,8 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
       final script = await _themeInjector.getThemeInjectionScript(
         _colorScheme!,
         fontSize: state.fontSize,
-        showSitePopups: ref.read(settingsProvider).showSitePopups,
+        showSitePopups:
+            ref.read(settingsProvider).value?.showSitePopups ?? true,
       );
 
       if (!ref.mounted) return;

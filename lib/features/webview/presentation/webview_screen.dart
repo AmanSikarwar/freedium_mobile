@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
@@ -51,7 +52,8 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final themeInjector = ref.read(themeInjectorServiceProvider);
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
-    final settings = ref.read(settingsProvider);
+    final settings =
+        ref.read(settingsProvider).value ?? const SettingsState();
     final initialMirrorUrl = await resolveInitialMirrorUrl(
       autoSwitchMirror: settings.autoSwitchMirror,
       selectedMirrorUrl: settings.selectedMirrorUrl,

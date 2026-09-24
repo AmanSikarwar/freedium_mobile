@@ -60,7 +60,7 @@ void main() {
 
       expect(container.read(provider).fontSize, FontSizeService.maxFontSize);
       expect(
-        container.read(settingsProvider).defaultFontSize,
+        container.read(settingsProvider).requireValue.defaultFontSize,
         FontSizeService.maxFontSize,
       );
       expect(prefs.getDouble('webview_font_size'), FontSizeService.maxFontSize);

@@ -170,7 +170,7 @@ void main() {
       await notifier.setDefaultFontSize(100);
       await notifier.setMirrorTimeout(0);
 
-      final settings = container.read(settingsProvider);
+      final settings = container.read(settingsProvider).requireValue;
       expect(settings.defaultFontSize, SettingsState.maxDefaultFontSize);
       expect(settings.mirrorTimeout, SettingsState.minMirrorTimeout);
       expect(
@@ -211,7 +211,7 @@ void main() {
       );
       await notifier.setAutoSwitchMirror(false);
 
-      final settings = container.read(settingsProvider);
+      final settings = container.read(settingsProvider).requireValue;
       expect(added, isFalse);
       expect(settings.mirrors, SettingsState.defaultMirrors);
       expect(settings.autoSwitchMirror, isTrue);
@@ -247,7 +247,7 @@ void main() {
           );
 
       expect(added, isTrue);
-      final mirror = container.read(settingsProvider).mirrors.last;
+      final mirror = container.read(settingsProvider).requireValue.mirrors.last;
       expect(mirror.name, 'Custom');
       expect(mirror.url, 'https://custom.example');
       expect(freediumUrlService.invalidateCount, 1);
@@ -295,7 +295,7 @@ void main() {
         );
 
         final customMirrors = container
-            .read(settingsProvider)
+            .read(settingsProvider).requireValue
             .mirrors
             .where((mirror) => mirror.url == 'https://custom.example/base');
         expect(customMirrors, hasLength(1));
@@ -339,7 +339,7 @@ void main() {
 
       expect(duplicateAdded, isFalse);
       expect(invalidAdded, isFalse);
-      final settings = container.read(settingsProvider);
+      final settings = container.read(settingsProvider).requireValue;
       expect(settings.mirrors, SettingsState.defaultMirrors);
       expect(freediumUrlService.invalidateCount, 0);
       expect(prefs.getStringList('freedium_mirrors'), isNull);
@@ -368,7 +368,7 @@ void main() {
           .setSelectedMirror('https://missing.example');
 
       expect(
-        container.read(settingsProvider).selectedMirrorUrl,
+        container.read(settingsProvider).requireValue.selectedMirrorUrl,
         SettingsState.defaultMirrors.first.url,
       );
       expect(freediumUrlService.invalidateCount, 0);
@@ -411,7 +411,7 @@ void main() {
       );
 
       expect(
-        container.read(settingsProvider).mirrors,
+        container.read(settingsProvider).requireValue.mirrors,
         SettingsState.defaultMirrors,
       );
       expect(freediumUrlService.invalidateCount, 0);
@@ -442,7 +442,7 @@ void main() {
             .read(settingsProvider.notifier)
             .removeMirror(customMirror);
 
-        final settings = container.read(settingsProvider);
+        final settings = container.read(settingsProvider).requireValue;
         expect(settings.mirrors, SettingsState.defaultMirrors);
         expect(
           settings.selectedMirrorUrl,

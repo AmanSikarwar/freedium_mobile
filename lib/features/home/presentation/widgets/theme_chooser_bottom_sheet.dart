@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 void showThemeChooserBottomSheet(BuildContext context) {
   showModalBottomSheet(
@@ -13,7 +14,7 @@ void showThemeChooserBottomSheet(BuildContext context) {
 class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
   Future<void> _selectTheme(
     BuildContext context,
-    SettingsNotifier settingsNotifier,
+    Settings settingsNotifier,
     ThemeMode themeMode,
   ) async {
     HapticFeedback.selectionClick();
@@ -35,7 +36,8 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
+    final settings =
+        ref.watch(settingsProvider).value ?? const SettingsState();
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return SafeArea(
