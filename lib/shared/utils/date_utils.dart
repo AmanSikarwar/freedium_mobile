@@ -11,10 +11,18 @@ String dateGroupLabel(DateTime date) {
   final d = DateTime(date.year, date.month, date.day);
   final diff = today.difference(d).inDays;
 
-  if (diff == 0) return 'Today';
-  if (diff == 1) return 'Yesterday';
-  if (diff < 7) return 'This week';
-  if (diff < 30) return 'This month';
+  switch (diff) {
+    case 0:
+      return 'Today';
+    case 1:
+      return 'Yesterday';
+    case < 7:
+      return 'This week';
+    case < 30:
+      return 'This month';
+    default:
+      break;
+  }
 
   // E.g. "March 2025"
   const months = [
@@ -38,24 +46,18 @@ String dateGroupLabel(DateTime date) {
 String relativeTime(DateTime date) => timeago.format(date);
 
 /// Groups a list of [items] (sorted newest-first) into an ordered list of
-/// `(groupLabel, item)` entries for use with a sectioned ListView.
+/// `(groupLabel, item)` records for use with a sectioned ListView.
+///
+/// Each entry carries its own group label so callers can render a header
+/// when the label differs from the previous entry — no `String` sentinel
+/// or casts required.
 ///
 /// [dateOf] extracts the [DateTime] from each item.
-List<Object> buildGroupedList<T extends Object>({
+List<(String, T)> buildGroupedList<T extends Object>({
   required List<T> items,
   required DateTime Function(T) dateOf,
 }) {
-  final result = <Object>[];
-  String? lastLabel;
-
-  for (final item in items) {
-    final label = dateGroupLabel(dateOf(item));
-    if (label != lastLabel) {
-      result.add(label); // header sentinel — a String
-      lastLabel = label;
-    }
-    result.add(item);
-  }
-
-  return result;
+  return [
+    for (final item in items) (dateGroupLabel(dateOf(item)), item),
+  ];
 }

@@ -135,56 +135,60 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   itemCount: grouped.length,
                   itemBuilder: (context, index) {
-                    final entry = grouped[index];
-
-                    if (entry case final String label) {
-                      return DateGroupHeader(label: label);
-                    }
-
-                    final item = entry as ReadingHistory;
+                    final (label, item) = grouped[index];
+                    final showHeader =
+                        index == 0 || grouped[index - 1].$1 != label;
                     final relativeTime = du.relativeTime(item.timestamp);
                     final readingStatus = item.isFinished
                         ? 'Finished'
                         : item.progress > 0
                         ? '${(item.progress * 100).round()}% read'
                         : null;
-                    return Dismissible(
-                      key: ValueKey(
-                        '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
-                      ),
-                      direction: DismissDirection.endToStart,
-                      background: const ArticleDismissBackground(),
-                      confirmDismiss: (_) async {
-                        HapticFeedback.lightImpact();
-                        final didRemove = await ref
-                            .read(historyProvider.notifier)
-                            .removeHistory(item);
-                        if (!context.mounted) return false;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (showHeader) DateGroupHeader(label: label),
+                        Dismissible(
+                          key: ValueKey(
+                            '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
+                          ),
+                          direction: DismissDirection.endToStart,
+                          background: const ArticleDismissBackground(),
+                          confirmDismiss: (_) async {
+                            HapticFeedback.lightImpact();
+                            final didRemove = await ref
+                                .read(historyProvider.notifier)
+                                .removeHistory(item);
+                            if (!context.mounted) return false;
 
-                        if (!didRemove) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Failed to remove history entry'),
+                            if (!didRemove) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                    'Failed to remove history entry',
+                                  ),
+                                ),
+                              );
+                            }
+
+                            return didRemove;
+                          },
+                          child: ArticleCard(
+                            title: item.title,
+                            subtitle: readingStatus == null
+                                ? relativeTime
+                                : '$readingStatus • $relativeTime',
+                            url: item.url,
+                            progress: item.progress > 0 ? item.progress : null,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => WebviewScreen(url: item.url),
+                              ),
                             ),
-                          );
-                        }
-
-                        return didRemove;
-                      },
-                      child: ArticleCard(
-                        title: item.title,
-                        subtitle: readingStatus == null
-                            ? relativeTime
-                            : '$readingStatus • $relativeTime',
-                        url: item.url,
-                        progress: item.progress > 0 ? item.progress : null,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => WebviewScreen(url: item.url),
                           ),
                         ),
-                      ),
+                      ],
                     );
                   },
                 ),

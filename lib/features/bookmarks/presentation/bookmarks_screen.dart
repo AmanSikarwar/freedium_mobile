@@ -140,13 +140,9 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   itemCount: grouped.length,
                   itemBuilder: (context, index) {
-                    final entry = grouped[index];
-
-                    if (entry case final String label) {
-                      return DateGroupHeader(label: label);
-                    }
-
-                    final item = entry as BookmarkedArticle;
+                    final (label, item) = grouped[index];
+                    final showHeader =
+                        index == 0 || grouped[index - 1].$1 != label;
                     final historyItem = historyByUrl[item.url];
                     final progress = historyItem?.progress ?? 0;
                     final relativeTime = du.relativeTime(item.savedAt);
@@ -155,48 +151,54 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                         : progress > 0
                         ? '${(progress * 100).round()}% read'
                         : null;
-                    return Dismissible(
-                      key: ValueKey(
-                        '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
-                      ),
-                      direction: DismissDirection.endToStart,
-                      background: const ArticleDismissBackground(),
-                      confirmDismiss: (_) async {
-                        HapticFeedback.lightImpact();
-                        final didRemove = await ref
-                            .read(bookmarksProvider.notifier)
-                            .removeBookmark(item);
-                        if (!context.mounted) return false;
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (showHeader) DateGroupHeader(label: label),
+                        Dismissible(
+                          key: ValueKey(
+                            '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
+                          ),
+                          direction: DismissDirection.endToStart,
+                          background: const ArticleDismissBackground(),
+                          confirmDismiss: (_) async {
+                            HapticFeedback.lightImpact();
+                            final didRemove = await ref
+                                .read(bookmarksProvider.notifier)
+                                .removeBookmark(item);
+                            if (!context.mounted) return false;
 
-                        if (!didRemove) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Failed to remove bookmark'),
+                            if (!didRemove) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text('Failed to remove bookmark'),
+                                ),
+                              );
+                            }
+
+                            return didRemove;
+                          },
+                          child: ArticleCard(
+                            title: item.title,
+                            subtitle: readingStatus == null
+                                ? relativeTime
+                                : '$readingStatus • $relativeTime',
+                            url: item.url,
+                            progress: progress > 0 ? progress : null,
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => WebviewScreen(url: item.url),
+                              ),
                             ),
-                          );
-                        }
-
-                        return didRemove;
-                      },
-                      child: ArticleCard(
-                        title: item.title,
-                        subtitle: readingStatus == null
-                            ? relativeTime
-                            : '$readingStatus • $relativeTime',
-                        url: item.url,
-                        progress: progress > 0 ? progress : null,
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => WebviewScreen(url: item.url),
+                            trailingIcon: Icon(
+                              Icons.bookmark,
+                              size: 16,
+                              color: Theme.of(context).colorScheme.primary,
+                            ),
                           ),
                         ),
-                        trailingIcon: Icon(
-                          Icons.bookmark,
-                          size: 16,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
+                      ],
                     );
                   },
                 ),
