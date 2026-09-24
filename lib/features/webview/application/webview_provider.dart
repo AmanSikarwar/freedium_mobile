@@ -634,7 +634,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
 }
 
 final webviewProvider =
-    NotifierProvider.family<WebviewNotifier, WebviewState, String>(
+    NotifierProvider.autoDispose.family<WebviewNotifier, WebviewState, String>(
       WebviewNotifier.new,
     );
 

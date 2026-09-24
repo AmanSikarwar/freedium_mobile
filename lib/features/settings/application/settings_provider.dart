@@ -508,8 +508,3 @@ class FreediumUrlService(this._ref) {
 }
 
 final freediumUrlServiceProvider = Provider(FreediumUrlService.new);
-
-final activeFreediumUrlProvider = FutureProvider<String>((ref) async {
-  final service = ref.watch(freediumUrlServiceProvider);
-  return service.getActiveUrl();
-});
