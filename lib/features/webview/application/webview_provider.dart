@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
@@ -34,14 +35,16 @@ export 'webview_navigation_policy.dart'
         buildReadingProgressRestoreScript,
         resolveWebviewNavigationAction;
 
+part 'webview_provider.g.dart';
+
 typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 
-class WebviewNotifier(this.url) extends Notifier<WebviewState> {
+@riverpod
+class Webview extends _$Webview {
   late ThemeInjectorService _themeInjector;
   late FreediumUrlService _freediumUrlService;
   WebViewController? _controller;
   ColorScheme? _colorScheme;
-  final String url;
   int _currentMirrorIndex = 0;
   int _retryCount = 0;
   bool _hasSwitchedMirror = false;
@@ -53,7 +56,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   static const int _maxRetries = 3;
 
   @override
-  WebviewState build() {
+  WebviewState build(String url) {
     _freediumUrlService = ref.read(freediumUrlServiceProvider);
 
     ref.listen<double>(
@@ -101,7 +104,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
 
     final currentUrl = state.currentUrl;
     if (!ref.mounted ||
-        state.controller == null ||
+        _controller == null ||
         currentUrl == null ||
         !_freediumUrlService.isFreediumUrl(currentUrl)) {
       return;
@@ -113,7 +116,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   /// Clears the one-shot [WebviewState.userMessage] after the screen has
   /// displayed it as a SnackBar.
   void clearUserMessage() {
-    state = state.copyWith(clearUserMessage: true);
+    state = state.copyWith(userMessage: null);
   }
 
   WebViewController createController({String? baseUrl}) {
@@ -188,8 +191,8 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
               progress: 0,
               currentUrl: url,
               hasError: false,
-              clearErrorMessage: true,
-              clearArticleMeta: true,
+              errorMessage: null,
+              articleMeta: null,
             );
             // Inject the pre-theme script as early as possible so the page's
             // own inline scripts read the correct localStorage.theme value and
@@ -259,10 +262,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
       }
     }
 
-    state = state.copyWith(
-      controller: controller,
-      activeBaseUrl: activeBaseUrl,
-    );
+    state = state.copyWith(activeBaseUrl: activeBaseUrl);
     return controller;
   }
 
@@ -324,7 +324,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
         articleUrl: url,
       );
       state = state.copyWith(activeBaseUrl: nextMirror.url);
-      state.controller?.loadRequest(newUrl);
+      _controller?.loadRequest(newUrl);
     } else {
       state = state.copyWith(
         isPageLoaded: true,
@@ -338,7 +338,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 
   Future<void> _recordHistoryWhenReady(String currentUrl) async {
-    final controller = state.controller;
+    final controller = _controller;
     if (controller == null || !_freediumUrlService.isFreediumUrl(currentUrl)) {
       return;
     }
@@ -420,7 +420,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
 
     _latestReadingProgress = progress;
     try {
-      await state.controller?.runJavaScript(
+      await _controller?.runJavaScript(
         buildReadingProgressRestoreScript(progress),
       );
     } catch (e) {
@@ -464,7 +464,6 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
     _rememberArticleRequestUrl(nextMirror.url);
 
     state = WebviewState(
-      controller: state.controller,
       fontSize: state.fontSize,
       activeBaseUrl: nextMirror.url,
     );
@@ -473,7 +472,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
       mirrorUrl: nextMirror.url,
       articleUrl: url,
     );
-    state.controller?.loadRequest(newUrl);
+    _controller?.loadRequest(newUrl);
   }
 
   Future<void> shareArticle() async {
@@ -504,7 +503,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 
   Future<void> _injectTheme() async {
-    if (_colorScheme == null || state.controller == null) return;
+    if (_colorScheme == null || _controller == null) return;
     try {
       final script = await _themeInjector.getThemeInjectionScript(
         _colorScheme!,
@@ -515,7 +514,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
 
       if (!ref.mounted) return;
 
-      await state.controller!.runJavaScript(script);
+      await _controller!.runJavaScript(script);
     } catch (e) {
       debugPrint('Failed to inject theme script: $e');
       if (ref.mounted) {
@@ -536,15 +535,15 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   }
 
   Future<bool> canGoBack() async {
-    return await state.controller?.canGoBack() ?? false;
+    return await _controller?.canGoBack() ?? false;
   }
 
   void goBack() {
-    state.controller?.goBack();
+    _controller?.goBack();
   }
 
   void reload() {
-    state.controller?.reload();
+    _controller?.reload();
   }
 
   Future<bool> updateFontSize(double fontSize) async {
@@ -567,7 +566,7 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
   Future<void> _applyFontSize(double fontSize) async {
     final normalizedFontSize = FontSizeService.normalizeFontSize(fontSize);
     state = state.copyWith(fontSize: normalizedFontSize);
-    final controller = state.controller;
+    final controller = _controller;
     if (controller != null && state.isPageLoaded) {
       final script = _themeInjector.getFontSizeUpdateScript(normalizedFontSize);
       try {
@@ -578,9 +577,6 @@ class WebviewNotifier(this.url) extends Notifier<WebviewState> {
     }
   }
 }
-
-final webviewProvider = NotifierProvider.autoDispose
-    .family<WebviewNotifier, WebviewState, String>(WebviewNotifier.new);
 
 final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
 

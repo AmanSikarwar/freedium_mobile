@@ -1,6 +1,4 @@
-import 'package:flutter/foundation.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 
 part 'webview_state.freezed.dart';
@@ -21,80 +19,31 @@ abstract class ArticleMeta with _$ArticleMeta {
   bool get hasContent => author.isNotEmpty || readTime.isNotEmpty;
 }
 
-/// WebView feature state.
+/// WebView feature UI state.
 ///
-/// NOTE: [controller] is mutable by design — the WebViewController is created
-/// once per notifier instance and must be held here so both the notifier and
-/// screen widget share the same reference without re-creating it on every state
-/// rebuild. It is never replaced after initial creation.
-@immutable
-class const WebviewState({
-  this.progress = 0.0,
-  this.isPageLoaded = false,
-  this.isThemeApplied = false,
-  this.isInitialLoad = true,
-  this.controller,
-  this.fontSize = 18.0,
-  this.currentUrl,
-  this.activeBaseUrl = AppConstants.freediumUrl,
-  this.hasError = false,
-  this.errorMessage,
-  this.userMessage,
-  this.articleMeta,
-}) {
-  final double progress;
-  final bool isPageLoaded;
-  final bool isThemeApplied;
-  final bool isInitialLoad;
-  // ignore: invalid_annotation_target
-  final WebViewController? controller; // intentionally mutable — see class doc
-  final double fontSize;
-  final String? currentUrl;
-  final String activeBaseUrl;
-  final bool hasError;
-  final String? errorMessage;
-
-  /// One-shot message for the UI layer to display as a SnackBar.
-  /// The screen clears this after display via [WebviewNotifier.clearUserMessage].
-  final String? userMessage;
-
-  /// Article metadata extracted from the Freedium DOM (Phase 3).
-  final ArticleMeta? articleMeta;
-
-  WebviewState copyWith({
-    double? progress,
-    bool? isPageLoaded,
-    bool? isThemeApplied,
-    bool? isInitialLoad,
-    WebViewController? controller,
-    double? fontSize,
+/// NOTE: the [WebViewController] is intentionally NOT part of this state.
+/// It is mutable, non-serializable platform state owned by the
+/// `Webview` notifier (and mirrored to the screen via `createController`).
+/// Nullable message/metadata fields are cleared by passing explicit `null`
+/// to `copyWith` (freezed null-sentinel semantics).
+@freezed
+abstract class WebviewState with _$WebviewState {
+  const factory WebviewState({
+    @Default(0.0) double progress,
+    @Default(false) bool isPageLoaded,
+    @Default(false) bool isThemeApplied,
+    @Default(true) bool isInitialLoad,
+    @Default(18.0) double fontSize,
     String? currentUrl,
-    String? activeBaseUrl,
-    bool? hasError,
+    @Default(AppConstants.freediumUrl) String activeBaseUrl,
+    @Default(false) bool hasError,
     String? errorMessage,
-    bool clearErrorMessage = false,
+    // One-shot message for the UI layer to display as a SnackBar.
+    // The screen clears this after display via `Webview.clearUserMessage`.
     String? userMessage,
-
-    /// Pass [clearUserMessage] = true to null-out [userMessage] after display.
-    bool clearUserMessage = false,
+    // Article metadata extracted from the Freedium DOM.
     ArticleMeta? articleMeta,
-    bool clearArticleMeta = false,
-  }) {
-    return WebviewState(
-      progress: progress ?? this.progress,
-      isPageLoaded: isPageLoaded ?? this.isPageLoaded,
-      isThemeApplied: isThemeApplied ?? this.isThemeApplied,
-      isInitialLoad: isInitialLoad ?? this.isInitialLoad,
-      controller: controller ?? this.controller,
-      fontSize: fontSize ?? this.fontSize,
-      currentUrl: currentUrl ?? this.currentUrl,
-      activeBaseUrl: activeBaseUrl ?? this.activeBaseUrl,
-      hasError: hasError ?? this.hasError,
-      errorMessage: clearErrorMessage
-          ? null
-          : (errorMessage ?? this.errorMessage),
-      userMessage: clearUserMessage ? null : (userMessage ?? this.userMessage),
-      articleMeta: clearArticleMeta ? null : (articleMeta ?? this.articleMeta),
-    );
-  }
+  }) = _WebviewState;
+
+  const WebviewState._();
 }

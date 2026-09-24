@@ -175,7 +175,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
 
   Widget _buildWebView(
     WebviewState webviewState,
-    WebviewNotifier webviewNotifier,
+    Webview webviewNotifier,
   ) {
     if (!_isVisible) {
       return Scaffold(backgroundColor: Theme.of(context).colorScheme.surface);
@@ -226,7 +226,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
 
   Widget _buildErrorWidget(
     WebviewState webviewState,
-    WebviewNotifier webviewNotifier,
+    Webview webviewNotifier,
   ) {
     final theme = Theme.of(context);
 
