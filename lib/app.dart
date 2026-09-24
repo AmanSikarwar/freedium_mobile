@@ -207,16 +207,25 @@ class App extends ConsumerWidget {
         darkTheme: theme.darkTheme,
         themeMode: themeMode,
         navigatorObservers: [currentRouteNameObserver],
+        builder: (context, child) {
+          return MaterialUiCompatibilityBridge(child: child!);
+        },
         home: onboarding.isLoading
             ? const Scaffold(body: Center(child: CircularProgressIndicator()))
             : hasSeenOnboarding
             ? const HomeScreen()
             : const OnboardingScreen(),
       ),
-      loading: () => const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => MaterialApp(
+        builder: (context, child) {
+          return MaterialUiCompatibilityBridge(child: child!);
+        },
+        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
       error: (err, stack) => MaterialApp(
+        builder: (context, child) {
+          return MaterialUiCompatibilityBridge(child: child!);
+        },
         home: Scaffold(body: Center(child: Text('Error: $err'))),
       ),
     );
