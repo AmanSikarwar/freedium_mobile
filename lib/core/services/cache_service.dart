@@ -6,16 +6,22 @@ import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 class CacheService() {
-  Future<bool> clearWebViewCache() async {
+  /// Clears WebView cache and local storage.
+  ///
+  /// Pass the live [controller] when available (e.g. from an open
+  /// `WebviewScreen`) so the actual view's cache is cleared. Without it,
+  /// falls back to a best-effort global clear via a throwaway controller,
+  /// which is a no-op for the live view on most platforms.
+  Future<bool> clearWebViewCache({WebViewController? controller}) async {
     try {
-      final controller = WebViewController();
+      final target = controller ?? WebViewController();
 
-      await controller.clearCache();
+      await target.clearCache();
 
-      await controller.clearLocalStorage();
+      await target.clearLocalStorage();
 
       if (Platform.isAndroid) {
-        if (controller.platform
+        if (target.platform
             case final AndroidWebViewController androidController) {
           await androidController.clearCache();
         }

@@ -438,6 +438,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
   Future<void> _clearCache(BuildContext context, WidgetRef ref) async {
     HapticFeedback.mediumImpact();
     final cacheService = ref.read(cacheServiceProvider);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
     final success = await cacheService.clearWebViewCache();
     if (context.mounted) {
       if (success) {
