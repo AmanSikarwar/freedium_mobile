@@ -35,7 +35,8 @@ ProviderContainer prefsContainer(SharedPreferences prefs) {
 }
 
 /// Pumps [child] as the home of a [MaterialApp] inside a [ProviderScope]
-/// wired to mock prefs, then settles.
+/// wired to mock prefs, then settles. Returns the mock [prefs] for
+/// post-condition assertions.
 ///
 /// Covers the standard screen-test scaffolding:
 /// ```dart
@@ -47,7 +48,7 @@ ProviderContainer prefsContainer(SharedPreferences prefs) {
 /// );
 /// await tester.pumpAndSettle();
 /// ```
-Future<void> pumpApp(
+Future<SharedPreferences> pumpApp(
   WidgetTester tester, {
   required Widget child,
   Map<String, Object> initialPrefs = const {},
@@ -60,6 +61,7 @@ Future<void> pumpApp(
     ),
   );
   await tester.pumpAndSettle();
+  return prefs;
 }
 
 /// Shared fixture literals used across the test suite.

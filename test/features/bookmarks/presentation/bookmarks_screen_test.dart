@@ -71,20 +71,13 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      await mockPrefs({
-        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+      await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       final appBar = tester.widget<AppBar>(find.byType(AppBar));
       expect(appBar.bottom?.preferredSize.height, 64);
@@ -96,20 +89,13 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      await mockPrefs({
-        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+      final prefs = await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       expect(find.text('Example story'), findsOneWidget);
 
@@ -165,20 +151,13 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      await mockPrefs({
-        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+      final prefs = await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.descendant(

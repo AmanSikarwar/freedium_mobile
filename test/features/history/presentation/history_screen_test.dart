@@ -93,20 +93,13 @@ void main() {
         title: 'Example story',
         timestamp: TestFixtures.seedDate,
       );
-      await mockPrefs({
-        'reading_history': [jsonEncode(history.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: HistoryScreen()),
-        ),
+      final prefs = await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [jsonEncode(history.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.descendant(
