@@ -8,6 +8,7 @@ import 'package:freedium_mobile/features/webview/presentation/webview_screen.dar
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 import 'package:freedium_mobile/shared/widgets/library_clear_dialog.dart';
+import 'package:freedium_mobile/shared/widgets/library_list_view.dart';
 import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
 
 class const BookmarksScreen({super.key}) extends ConsumerStatefulWidget {
@@ -104,73 +105,46 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                     actionLabel: _query.isNotEmpty ? 'Clear search' : null,
                     onAction: _query.isNotEmpty ? _clearSearch : null,
                   )
-                : ListView.builder(
-                    padding: const EdgeInsets.only(top: 4, bottom: 24),
-                    keyboardDismissBehavior:
-                        ScrollViewKeyboardDismissBehavior.onDrag,
-                    itemCount: grouped.length,
-                    itemBuilder: (context, index) {
-                      final (label, item) = grouped[index];
-                      final showHeader =
-                          index == 0 || grouped[index - 1].$1 != label;
+                : LibraryListView<BookmarkedArticle>(
+                    grouped: grouped,
+                    keyFor: (item) =>
+                        '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
+                    titleFor: (item) => item.title,
+                    subtitleFor: (item) {
                       final historyItem = historyByUrl[item.url];
                       final progress = historyItem?.progress ?? 0;
                       final relativeTime = du.relativeTime(item.savedAt);
-                      final readingStatus = historyItem?.isFinished ?? false
+                      final readingStatus =
+                          historyItem?.isFinished ?? false
                           ? 'Finished'
                           : progress > 0
                           ? '${(progress * 100).round()}% read'
                           : null;
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (showHeader) DateGroupHeader(label: label),
-                          Dismissible(
-                            key: ValueKey(
-                              '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
-                            ),
-                            direction: DismissDirection.endToStart,
-                            background: const ArticleDismissBackground(),
-                            confirmDismiss: (_) async {
-                              HapticFeedback.lightImpact();
-                              final didRemove = await ref
-                                  .read(bookmarksProvider.notifier)
-                                  .removeBookmark(item);
-                              if (!context.mounted) return false;
-
-                              if (!didRemove) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Failed to remove bookmark'),
-                                  ),
-                                );
-                              }
-
-                              return didRemove;
-                            },
-                            child: ArticleCard(
-                              title: item.title,
-                              subtitle: readingStatus == null
-                                  ? relativeTime
-                                  : '$readingStatus • $relativeTime',
-                              url: item.url,
-                              progress: progress > 0 ? progress : null,
-                              onTap: () => Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => WebviewScreen(url: item.url),
-                                ),
-                              ),
-                              trailingIcon: Icon(
-                                Icons.bookmark,
-                                size: 16,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
+                      return readingStatus == null
+                          ? relativeTime
+                          : '$readingStatus • $relativeTime';
                     },
+                    urlFor: (item) => item.url,
+                    progressFor: (item) {
+                      final progress =
+                          historyByUrl[item.url]?.progress ?? 0;
+                      return progress > 0 ? progress : null;
+                    },
+                    trailingFor: (_) => Icon(
+                      Icons.bookmark,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    onRemove: (item) => ref
+                        .read(bookmarksProvider.notifier)
+                        .removeBookmark(item),
+                    removeFailMessage: 'Failed to remove bookmark',
+                    onTap: (item) => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => WebviewScreen(url: item.url),
+                      ),
+                    ),
                   ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => LibraryEmptyState(
