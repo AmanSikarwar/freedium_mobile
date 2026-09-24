@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 const readingCompletionThreshold = 0.95;
 const readingProgressRestoreThreshold = 0.05;
