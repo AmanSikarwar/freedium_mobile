@@ -13,6 +13,10 @@ linter:
     - use_primary_constructors
 
 analyzer:
+  language:
+    strict-casts: true
+    strict-inference: true
+    strict-raw-types: true
   exclude:
     - build/**
     - android/**
