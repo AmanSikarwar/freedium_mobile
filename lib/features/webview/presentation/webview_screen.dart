@@ -86,7 +86,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
   }
 
   Future<void> _toggleBookmark(
-    BookmarksNotifier bookmarksNotifier,
+    Bookmarks bookmarksNotifier,
     WebviewState webviewState,
   ) async {
     final didSave = await bookmarksNotifier.toggleBookmark(
@@ -285,7 +285,12 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final bookmarksNotifier = ref.read(bookmarksProvider.notifier);
     final isBookmarked = ref.watch(
-      bookmarksProvider.select((list) => list.any((b) => b.url == widget.url)),
+      bookmarksProvider.select(
+        (bookmarks) =>
+            (bookmarks.value ?? const <BookmarkedArticle>[]).any(
+              (b) => b.url == widget.url,
+            ),
+      ),
     );
     final divider = Container(
       width: 1,

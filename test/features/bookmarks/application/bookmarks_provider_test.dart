@@ -53,7 +53,7 @@ void main() {
             ' Example story ',
           );
 
-      final bookmarks = container.read(bookmarksProvider);
+      final bookmarks = container.read(bookmarksProvider).requireValue;
       expect(didAdd, isTrue);
       expect(bookmarks, hasLength(1));
       expect(bookmarks.single.url, 'https://medium.com/example/story');
@@ -65,7 +65,7 @@ void main() {
           .read(bookmarksProvider.notifier)
           .addBookmark(' HTTPS://Medium.COM/example/story/ ', '  ');
 
-      final bookmarks = container.read(bookmarksProvider);
+      final bookmarks = container.read(bookmarksProvider).requireValue;
       expect(bookmarks, hasLength(1));
       expect(bookmarks.single.title, 'https://medium.com/example/story');
     });
@@ -83,7 +83,7 @@ void main() {
       expect(didAddFtp, isFalse);
       expect(didAddText, isFalse);
       expect(didAddEmpty, isFalse);
-      expect(container.read(bookmarksProvider), isEmpty);
+      expect(container.read(bookmarksProvider).requireValue, isEmpty);
     });
 
     test('deduplicates bookmarks by normalized URL', () async {
@@ -94,7 +94,7 @@ void main() {
         'Second',
       );
 
-      final bookmarks = container.read(bookmarksProvider);
+      final bookmarks = container.read(bookmarksProvider).requireValue;
       expect(bookmarks, hasLength(1));
       expect(bookmarks.single.title, 'First');
     });
@@ -108,7 +108,7 @@ void main() {
         '',
       );
       expect(didToggle, isTrue);
-      expect(container.read(bookmarksProvider), isEmpty);
+      expect(container.read(bookmarksProvider).requireValue, isEmpty);
     });
 
     test('reports failure and preserves bookmarks when adding fails', () async {
@@ -125,9 +125,7 @@ void main() {
       );
 
       final notifier = container.read(bookmarksProvider.notifier);
-      container.read(bookmarksProvider);
-      await container.read(sharedPreferencesProvider.future);
-      await Future<void>.delayed(Duration.zero);
+      await container.read(bookmarksProvider.future);
 
       final didAdd = await notifier.addBookmark(
         'https://medium.com/example/story',
@@ -135,7 +133,7 @@ void main() {
       );
 
       expect(didAdd, isFalse);
-      expect(container.read(bookmarksProvider), isEmpty);
+      expect(container.read(bookmarksProvider).requireValue, isEmpty);
     });
 
     test('reports failure when toggling a bookmark add fails', () async {
@@ -152,9 +150,7 @@ void main() {
       );
 
       final notifier = container.read(bookmarksProvider.notifier);
-      container.read(bookmarksProvider);
-      await container.read(sharedPreferencesProvider.future);
-      await Future<void>.delayed(Duration.zero);
+      await container.read(bookmarksProvider.future);
 
       final didToggle = await notifier.toggleBookmark(
         'https://medium.com/example/story',
@@ -162,7 +158,7 @@ void main() {
       );
 
       expect(didToggle, isFalse);
-      expect(container.read(bookmarksProvider), isEmpty);
+      expect(container.read(bookmarksProvider).requireValue, isEmpty);
     });
 
     test(
@@ -188,15 +184,13 @@ void main() {
         );
 
         final notifier = container.read(bookmarksProvider.notifier);
-        container.read(bookmarksProvider);
-        await container.read(sharedPreferencesProvider.future);
-        await Future<void>.delayed(Duration.zero);
-        expect(container.read(bookmarksProvider), hasLength(1));
+        await container.read(bookmarksProvider.future);
+        expect(container.read(bookmarksProvider).requireValue, hasLength(1));
 
         final didRemove = await notifier.removeBookmark(bookmark);
 
         expect(didRemove, isFalse);
-        expect(container.read(bookmarksProvider), hasLength(1));
+        expect(container.read(bookmarksProvider).requireValue, hasLength(1));
       },
     );
 
@@ -223,15 +217,13 @@ void main() {
         );
 
         final notifier = container.read(bookmarksProvider.notifier);
-        container.read(bookmarksProvider);
-        await container.read(sharedPreferencesProvider.future);
-        await Future<void>.delayed(Duration.zero);
-        expect(container.read(bookmarksProvider), hasLength(1));
+        await container.read(bookmarksProvider.future);
+        expect(container.read(bookmarksProvider).requireValue, hasLength(1));
 
         final didClear = await notifier.clearBookmarks();
 
         expect(didClear, isFalse);
-        expect(container.read(bookmarksProvider), hasLength(1));
+        expect(container.read(bookmarksProvider).requireValue, hasLength(1));
       },
     );
   });

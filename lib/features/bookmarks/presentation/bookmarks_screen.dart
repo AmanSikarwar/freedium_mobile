@@ -31,7 +31,9 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final bookmarks = ref.watch(bookmarksProvider);
+    final bookmarksAsync = ref.watch(bookmarksProvider);
+    final bookmarks =
+        bookmarksAsync.value ?? const <BookmarkedArticle>[];
     final historyByUrl = {
       for (final item
           in ref.watch(historyProvider).value ??
@@ -124,8 +126,9 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: libraryContentMaxWidth),
-          child: filtered.isEmpty
-              ? LibraryEmptyState(
+          child: bookmarksAsync.when(
+            data: (_) => filtered.isEmpty
+                ? LibraryEmptyState(
                   icon: _query.isNotEmpty
                       ? Icons.search_off
                       : Icons.bookmark_border,
@@ -206,6 +209,16 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                     );
                   },
                 ),
+            loading: () =>
+                const Center(child: CircularProgressIndicator()),
+            error: (error, _) => LibraryEmptyState(
+              icon: Icons.error_outline,
+              title: 'Something went wrong.',
+              message: 'Could not load bookmarks.',
+              actionLabel: 'Retry',
+              onAction: () => ref.invalidate(bookmarksProvider),
+            ),
+          ),
         ),
       ),
     );

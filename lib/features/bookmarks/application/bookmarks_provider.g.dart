@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'history_provider.dart';
+part of 'bookmarks_provider.dart';
 
 // **************************************************************************
 // RiverpodGenerator
@@ -9,48 +9,51 @@ part of 'history_provider.dart';
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
 
-@ProviderFor(History)
-final historyProvider = HistoryProvider._();
+@ProviderFor(Bookmarks)
+final bookmarksProvider = BookmarksProvider._();
 
-final class HistoryProvider
-    extends $AsyncNotifierProvider<History, List<ReadingHistory>> {
-  HistoryProvider._()
+final class BookmarksProvider
+    extends $AsyncNotifierProvider<Bookmarks, List<BookmarkedArticle>> {
+  BookmarksProvider._()
     : super(
         from: null,
         argument: null,
         retry: null,
-        name: r'historyProvider',
+        name: r'bookmarksProvider',
         isAutoDispose: false,
         dependencies: null,
         $allTransitiveDependencies: null,
       );
 
   @override
-  String debugGetCreateSourceHash() => _$historyHash();
+  String debugGetCreateSourceHash() => _$bookmarksHash();
 
   @$internal
   @override
-  History create() => History();
+  Bookmarks create() => Bookmarks();
 }
 
-String _$historyHash() => r'8e47f1dc02d19d5d5d6a5d34411618764e54e257';
+String _$bookmarksHash() => r'76d25ed7a04c8844eb1d2bf2ea4b16e07f3d9ec2';
 
-abstract class _$History extends $AsyncNotifier<List<ReadingHistory>> {
-  FutureOr<List<ReadingHistory>> build();
+abstract class _$Bookmarks extends $AsyncNotifier<List<BookmarkedArticle>> {
+  FutureOr<List<BookmarkedArticle>> build();
   @$mustCallSuper
   @override
   WhenComplete runBuild() {
     final ref =
         this.ref
-            as $Ref<AsyncValue<List<ReadingHistory>>, List<ReadingHistory>>;
+            as $Ref<
+              AsyncValue<List<BookmarkedArticle>>,
+              List<BookmarkedArticle>
+            >;
     final element =
         ref.element
             as $ClassProviderElement<
               AnyNotifier<
-                AsyncValue<List<ReadingHistory>>,
-                List<ReadingHistory>
+                AsyncValue<List<BookmarkedArticle>>,
+                List<BookmarkedArticle>
               >,
-              AsyncValue<List<ReadingHistory>>,
+              AsyncValue<List<BookmarkedArticle>>,
               Object?,
               Object?
             >;
