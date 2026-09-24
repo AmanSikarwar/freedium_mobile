@@ -295,7 +295,8 @@ void main() {
         );
 
         final customMirrors = container
-            .read(settingsProvider).requireValue
+            .read(settingsProvider)
+            .requireValue
             .mirrors
             .where((mirror) => mirror.url == 'https://custom.example/base');
         expect(customMirrors, hasLength(1));

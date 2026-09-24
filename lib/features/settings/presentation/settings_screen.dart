@@ -24,111 +24,112 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
     return settingsAsync.when(
       data: (settings) => Scaffold(
         appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        children: [
-          _buildSectionHeader(context, 'Appearance'),
-          _buildThemeTile(context, settings, settingsNotifier),
-          _buildFontSizeTile(context, settings, settingsNotifier),
-          _buildSitePopupsTile(context, settings, settingsNotifier),
-          const Divider(),
+        body: ListView(
+          children: [
+            _buildSectionHeader(context, 'Appearance'),
+            _buildThemeTile(context, settings, settingsNotifier),
+            _buildFontSizeTile(context, settings, settingsNotifier),
+            _buildSitePopupsTile(context, settings, settingsNotifier),
+            const Divider(),
 
-          _buildSectionHeader(context, 'Freedium Mirrors'),
-          _buildAutoSwitchTile(context, settings, settingsNotifier),
-          _buildMirrorTimeoutTile(context, settings, settingsNotifier),
-          const Divider(height: 1),
-          Padding(
-            padding: const .symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Available Mirrors',
-              style: Theme.of(context).textTheme.titleSmall
-                  ?.copyWith(color: Theme.of(context).colorScheme.primary),
+            _buildSectionHeader(context, 'Freedium Mirrors'),
+            _buildAutoSwitchTile(context, settings, settingsNotifier),
+            _buildMirrorTimeoutTile(context, settings, settingsNotifier),
+            const Divider(height: 1),
+            Padding(
+              padding: const .symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Available Mirrors',
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
+              ),
             ),
-          ),
-          RadioGroup<String>(
-            groupValue: settings.selectedMirrorUrl,
-            onChanged: (url) async {
-              if (url != null) {
-                HapticFeedback.selectionClick();
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-                final didSave = await settingsNotifier.setSelectedMirror(url);
-                if (!context.mounted) return;
-                if (!didSave) {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to save selected mirror'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+            RadioGroup<String>(
+              groupValue: settings.selectedMirrorUrl,
+              onChanged: (url) async {
+                if (url != null) {
+                  HapticFeedback.selectionClick();
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  final didSave = await settingsNotifier.setSelectedMirror(url);
+                  if (!context.mounted) return;
+                  if (!didSave) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to save selected mirror'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
-              }
-            },
-            child: Column(
-              children: settings.mirrors
-                  .map(
-                    (mirror) => MirrorListTile(
-                      mirror: mirror,
-                      isSelected: mirror.url == settings.selectedMirrorUrl,
-                      onEdit: mirror.isCustom
-                          ? () => _showEditMirrorDialog(context, ref, mirror)
-                          : null,
-                      onDelete: mirror.isCustom
-                          ? () => _confirmDeleteMirror(context, ref, mirror)
-                          : null,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-          Padding(
-            padding: const .symmetric(horizontal: 16, vertical: 8),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                _showAddMirrorDialog(context, ref);
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Add Custom Mirror'),
+              child: Column(
+                children: settings.mirrors
+                    .map(
+                      (mirror) => MirrorListTile(
+                        mirror: mirror,
+                        isSelected: mirror.url == settings.selectedMirrorUrl,
+                        onEdit: mirror.isCustom
+                            ? () => _showEditMirrorDialog(context, ref, mirror)
+                            : null,
+                        onDelete: mirror.isCustom
+                            ? () => _confirmDeleteMirror(context, ref, mirror)
+                            : null,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
-          ),
-          const Divider(),
+            Padding(
+              padding: const .symmetric(horizontal: 16, vertical: 8),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _showAddMirrorDialog(context, ref);
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Add Custom Mirror'),
+              ),
+            ),
+            const Divider(),
 
-          _buildSectionHeader(context, 'Storage & Updates'),
-          ListTile(
-            leading: const Icon(Icons.delete_outline),
-            title: const Text('Clear Cache'),
-            subtitle: const Text('Clear WebView cache and local storage'),
-            onTap: () => _clearCache(context, ref),
-          ),
-          ListTile(
-            leading: const Icon(Icons.update),
-            title: const Text('Check for Updates'),
-            subtitle: const Text('Check if a new version is available'),
-            onTap: () => _checkForUpdates(context, ref),
-          ),
-          const Divider(),
+            _buildSectionHeader(context, 'Storage & Updates'),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('Clear Cache'),
+              subtitle: const Text('Clear WebView cache and local storage'),
+              onTap: () => _clearCache(context, ref),
+            ),
+            ListTile(
+              leading: const Icon(Icons.update),
+              title: const Text('Check for Updates'),
+              subtitle: const Text('Check if a new version is available'),
+              onTap: () => _checkForUpdates(context, ref),
+            ),
+            const Divider(),
 
-          _buildSectionHeader(context, 'About'),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('Version'),
-            subtitle: Text(AppConstants.appVersion),
-          ),
-          ListTile(
-            leading: const Icon(Icons.code),
-            title: const Text('Source Code'),
-            subtitle: const Text('View on GitHub'),
-            onTap: () =>
-                unawaited(_launchUrl(context, ref, AppConstants.appSourceUrl)),
-          ),
-          ListTile(
-            leading: const Icon(Icons.restore),
-            title: const Text('Reset to Defaults'),
-            subtitle: const Text('Reset all settings to default values'),
-            onTap: () => _confirmResetDefaults(context, ref),
-          ),
-          const SizedBox(height: 24),
-        ],
-      ),
+            _buildSectionHeader(context, 'About'),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Version'),
+              subtitle: Text(AppConstants.appVersion),
+            ),
+            ListTile(
+              leading: const Icon(Icons.code),
+              title: const Text('Source Code'),
+              subtitle: const Text('View on GitHub'),
+              onTap: () => unawaited(
+                _launchUrl(context, ref, AppConstants.appSourceUrl),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.restore),
+              title: const Text('Reset to Defaults'),
+              subtitle: const Text('Reset all settings to default values'),
+              onTap: () => _confirmResetDefaults(context, ref),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
       loading: () => Scaffold(
         appBar: AppBar(title: const Text('Settings')),

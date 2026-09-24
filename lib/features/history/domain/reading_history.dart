@@ -14,8 +14,7 @@ double normalizeReadingProgress(double progress) {
   return progress.clamp(0, 1);
 }
 
-DateTime _dateTimeFromJson(String value) =>
-    DateTime.parse(value).toLocal();
+DateTime _dateTimeFromJson(String value) => DateTime.parse(value).toLocal();
 
 String _dateTimeToJson(DateTime value) => value.toUtc().toIso8601String();
 

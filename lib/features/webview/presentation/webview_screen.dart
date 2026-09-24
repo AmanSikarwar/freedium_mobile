@@ -52,8 +52,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final themeInjector = ref.read(themeInjectorServiceProvider);
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
-    final settings =
-        ref.read(settingsProvider).value ?? const SettingsState();
+    final settings = ref.read(settingsProvider).value ?? const SettingsState();
     final initialMirrorUrl = await resolveInitialMirrorUrl(
       autoSwitchMirror: settings.autoSwitchMirror,
       selectedMirrorUrl: settings.selectedMirrorUrl,
@@ -173,10 +172,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     );
   }
 
-  Widget _buildWebView(
-    WebviewState webviewState,
-    Webview webviewNotifier,
-  ) {
+  Widget _buildWebView(WebviewState webviewState, Webview webviewNotifier) {
     if (!_isVisible) {
       return Scaffold(backgroundColor: Theme.of(context).colorScheme.surface);
     }
@@ -224,10 +220,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     );
   }
 
-  Widget _buildErrorWidget(
-    WebviewState webviewState,
-    Webview webviewNotifier,
-  ) {
+  Widget _buildErrorWidget(WebviewState webviewState, Webview webviewNotifier) {
     final theme = Theme.of(context);
 
     return Center(
@@ -288,10 +281,9 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     final bookmarksNotifier = ref.read(bookmarksProvider.notifier);
     final isBookmarked = ref.watch(
       bookmarksProvider.select(
-        (bookmarks) =>
-            (bookmarks.value ?? const <BookmarkedArticle>[]).any(
-              (b) => b.url == widget.url,
-            ),
+        (bookmarks) => (bookmarks.value ?? const <BookmarkedArticle>[]).any(
+          (b) => b.url == widget.url,
+        ),
       ),
     );
     final divider = Container(

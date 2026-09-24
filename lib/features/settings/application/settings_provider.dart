@@ -347,14 +347,12 @@ class FreediumUrlService(this._ref) {
   static const Duration _cacheDuration = Duration(minutes: 5);
 
   Duration get _checkTimeout {
-    final settings =
-        _ref.read(settingsProvider).value ?? const SettingsState();
+    final settings = _ref.read(settingsProvider).value ?? const SettingsState();
     return Duration(seconds: settings.mirrorTimeout);
   }
 
   Future<String> getActiveUrl() async {
-    final settings =
-        _ref.read(settingsProvider).value ?? const SettingsState();
+    final settings = _ref.read(settingsProvider).value ?? const SettingsState();
 
     if (!settings.autoSwitchMirror) {
       return settings.selectedMirrorUrl;
@@ -414,8 +412,7 @@ class FreediumUrlService(this._ref) {
   }
 
   bool isFreediumUrl(String url) {
-    final settings =
-        _ref.read(settingsProvider).value ?? const SettingsState();
+    final settings = _ref.read(settingsProvider).value ?? const SettingsState();
     return isFreediumMirrorUrl(url, settings.mirrors);
   }
 }

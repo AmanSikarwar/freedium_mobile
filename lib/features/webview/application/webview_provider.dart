@@ -299,8 +299,7 @@ class Webview extends _$Webview {
   }
 
   Future<void> _handleLoadError(WebResourceError error) async {
-    final settings =
-        ref.read(settingsProvider).value ?? const SettingsState();
+    final settings = ref.read(settingsProvider).value ?? const SettingsState();
 
     if (settings.autoSwitchMirror &&
         _retryCount < _maxRetries &&
@@ -452,8 +451,7 @@ class Webview extends _$Webview {
   }
 
   Future<void> retryWithNextMirror() async {
-    final settings =
-        ref.read(settingsProvider).value ?? const SettingsState();
+    final settings = ref.read(settingsProvider).value ?? const SettingsState();
     if (settings.mirrors.isEmpty) {
       debugPrint('No mirrors available to retry');
       return;

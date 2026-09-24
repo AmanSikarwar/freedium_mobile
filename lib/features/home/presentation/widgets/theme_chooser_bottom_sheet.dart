@@ -36,8 +36,7 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings =
-        ref.watch(settingsProvider).value ?? const SettingsState();
+    final settings = ref.watch(settingsProvider).value ?? const SettingsState();
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return SafeArea(

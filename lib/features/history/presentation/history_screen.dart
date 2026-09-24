@@ -123,79 +123,80 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
           child: historyAsync.when(
             data: (_) => filtered.isEmpty
                 ? LibraryEmptyState(
-                  icon: _query.isNotEmpty ? Icons.search_off : Icons.history,
-                  title: _query.isNotEmpty
-                      ? 'No results for "$_query"'
-                      : 'No reading history yet.',
-                  message: _query.isNotEmpty ? 'Try another title or URL.' : 'Articles you open will appear here with their reading progress.',
-                  actionLabel: _query.isNotEmpty ? 'Clear search' : null,
-                  onAction: _query.isNotEmpty ? _clearSearch : null,
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.only(top: 4, bottom: 24),
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  itemCount: grouped.length,
-                  itemBuilder: (context, index) {
-                    final (label, item) = grouped[index];
-                    final showHeader =
-                        index == 0 || grouped[index - 1].$1 != label;
-                    final relativeTime = du.relativeTime(item.timestamp);
-                    final readingStatus = item.isFinished
-                        ? 'Finished'
-                        : item.progress > 0
-                        ? '${(item.progress * 100).round()}% read'
-                        : null;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        if (showHeader) DateGroupHeader(label: label),
-                        Dismissible(
-                          key: ValueKey(
-                            '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
-                          ),
-                          direction: DismissDirection.endToStart,
-                          background: const ArticleDismissBackground(),
-                          confirmDismiss: (_) async {
-                            HapticFeedback.lightImpact();
-                            final didRemove = await ref
-                                .read(historyProvider.notifier)
-                                .removeHistory(item);
-                            if (!context.mounted) return false;
+                    icon: _query.isNotEmpty ? Icons.search_off : Icons.history,
+                    title: _query.isNotEmpty
+                        ? 'No results for "$_query"'
+                        : 'No reading history yet.',
+                    message: _query.isNotEmpty ? 'Try another title or URL.' : 'Articles you open will appear here with their reading progress.',
+                    actionLabel: _query.isNotEmpty ? 'Clear search' : null,
+                    onAction: _query.isNotEmpty ? _clearSearch : null,
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.only(top: 4, bottom: 24),
+                    keyboardDismissBehavior:
+                        ScrollViewKeyboardDismissBehavior.onDrag,
+                    itemCount: grouped.length,
+                    itemBuilder: (context, index) {
+                      final (label, item) = grouped[index];
+                      final showHeader =
+                          index == 0 || grouped[index - 1].$1 != label;
+                      final relativeTime = du.relativeTime(item.timestamp);
+                      final readingStatus = item.isFinished
+                          ? 'Finished'
+                          : item.progress > 0
+                          ? '${(item.progress * 100).round()}% read'
+                          : null;
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (showHeader) DateGroupHeader(label: label),
+                          Dismissible(
+                            key: ValueKey(
+                              '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
+                            ),
+                            direction: DismissDirection.endToStart,
+                            background: const ArticleDismissBackground(),
+                            confirmDismiss: (_) async {
+                              HapticFeedback.lightImpact();
+                              final didRemove = await ref
+                                  .read(historyProvider.notifier)
+                                  .removeHistory(item);
+                              if (!context.mounted) return false;
 
-                            if (!didRemove) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                  content: Text(
-                                    'Failed to remove history entry',
+                              if (!didRemove) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text(
+                                      'Failed to remove history entry',
+                                    ),
                                   ),
-                                ),
-                              );
-                            }
+                                );
+                              }
 
-                            return didRemove;
-                          },
-                          child: ArticleCard(
-                            title: item.title,
-                            subtitle: readingStatus == null
-                                ? relativeTime
-                                : '$readingStatus • $relativeTime',
-                            url: item.url,
-                            progress: item.progress > 0 ? item.progress : null,
-                            onTap: () => Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => WebviewScreen(url: item.url),
+                              return didRemove;
+                            },
+                            child: ArticleCard(
+                              title: item.title,
+                              subtitle: readingStatus == null
+                                  ? relativeTime
+                                  : '$readingStatus • $relativeTime',
+                              url: item.url,
+                              progress: item.progress > 0
+                                  ? item.progress
+                                  : null,
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => WebviewScreen(url: item.url),
+                                ),
                               ),
                             ),
                           ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-            loading: () =>
-                const Center(child: CircularProgressIndicator()),
+                        ],
+                      );
+                    },
+                  ),
+            loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => LibraryEmptyState(
               icon: Icons.error_outline,
               title: 'Something went wrong.',
