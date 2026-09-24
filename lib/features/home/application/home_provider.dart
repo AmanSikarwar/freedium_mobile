@@ -1,11 +1,15 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/home/domain/home_state.dart';
 
 export 'package:freedium_mobile/features/home/domain/home_state.dart';
 
-class HomeNotifier() extends Notifier<HomeState> {
+part 'home_provider.g.dart';
+
+@Riverpod(keepAlive: true)
+class Home extends _$Home {
   @override
   HomeState build() => const HomeState();
 
@@ -33,7 +37,3 @@ class HomeNotifier() extends Notifier<HomeState> {
     return url;
   }
 }
-
-final homeProvider = NotifierProvider<HomeNotifier, HomeState>(
-  HomeNotifier.new,
-);

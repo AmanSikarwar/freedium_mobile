@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_service.dart';
 
 part 'onboarding_provider.freezed.dart';
+part 'onboarding_provider.g.dart';
 
 @freezed
 abstract class OnboardingState with _$OnboardingState {
@@ -14,7 +16,8 @@ abstract class OnboardingState with _$OnboardingState {
   }) = _OnboardingState;
 }
 
-class OnboardingNotifier() extends Notifier<OnboardingState> {
+@Riverpod(keepAlive: true)
+class Onboarding extends _$Onboarding {
   @override
   OnboardingState build() {
     final prefsAsync = ref.watch(sharedPreferencesProvider);
@@ -41,16 +44,12 @@ class OnboardingNotifier() extends Notifier<OnboardingState> {
   }
 }
 
-final onboardingServiceProvider = Provider<OnboardingService?>((ref) {
+@Riverpod(keepAlive: true)
+OnboardingService? onboardingService(Ref ref) {
   final prefsAsync = ref.watch(sharedPreferencesProvider);
   return prefsAsync.when(
     data: OnboardingService.new,
     loading: () => null,
     error: (_, _) => null,
   );
-});
-
-final onboardingProvider =
-    NotifierProvider<OnboardingNotifier, OnboardingState>(
-      OnboardingNotifier.new,
-    );
+}
