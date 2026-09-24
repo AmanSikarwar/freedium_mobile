@@ -79,7 +79,7 @@ void main() {
 
   group('SettingsNotifier', () {
     test('invalidates active URL cache when mirror list changes', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -119,7 +119,7 @@ void main() {
     });
 
     test('invalidates active URL cache when mirror policy changes', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -143,7 +143,7 @@ void main() {
     });
 
     test('clamps numeric setting updates to supported bounds', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [
@@ -206,7 +206,7 @@ void main() {
     });
 
     test('normalizes custom mirrors before saving live state', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -248,7 +248,7 @@ void main() {
     test(
       'deduplicates custom mirrors after dropping query and fragment',
       () async {
-        SharedPreferences.setMockInitialValues({});
+        await mockPrefs({});
         final prefs = await SharedPreferences.getInstance();
         late _RecordingFreediumUrlService freediumUrlService;
         final container = ProviderContainer(
@@ -292,7 +292,7 @@ void main() {
     );
 
     test('rejects invalid and duplicate custom mirrors', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -334,7 +334,7 @@ void main() {
     });
 
     test('ignores selected mirror URLs outside current mirrors', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -364,7 +364,7 @@ void main() {
     });
 
     test('ignores stale mirror remove and update requests', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -414,7 +414,7 @@ void main() {
           url: 'https://custom.example',
           isCustom: true,
         );
-        SharedPreferences.setMockInitialValues({
+        await mockPrefs({
           'freedium_mirrors': [jsonEncode(customMirror.toJson())],
           'selected_mirror_url': customMirror.url,
         });

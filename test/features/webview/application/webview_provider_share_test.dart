@@ -82,7 +82,7 @@ void main() {
 }
 
 Future<ProviderContainer> _createContainer(ShareLauncher shareLauncher) async {
-  SharedPreferences.setMockInitialValues({});
+  await mockPrefs({});
   final prefs = await SharedPreferences.getInstance();
   return ProviderContainer(
     overrides: [

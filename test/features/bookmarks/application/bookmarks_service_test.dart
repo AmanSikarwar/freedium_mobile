@@ -16,7 +16,7 @@ void main() {
         savedAt: savedAt,
       );
 
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'bookmarked_articles': [
           '{bad json',
           jsonEncode({
@@ -41,15 +41,14 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = BookmarksService(prefs);
+      final service = BookmarksService(await SharedPreferences.getInstance());
 
       expect(service.getBookmarks(), [bookmark]);
     });
 
     test('getBookmarks falls back to URL when title is blank', () async {
       final savedAt = TestFixtures.seedDate;
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'bookmarked_articles': [
           jsonEncode({
             'url': ' HTTPS://Medium.COM/example/story/ ',
@@ -59,8 +58,7 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = BookmarksService(prefs);
+      final service = BookmarksService(await SharedPreferences.getInstance());
 
       final bookmarks = service.getBookmarks();
       expect(bookmarks, hasLength(1));

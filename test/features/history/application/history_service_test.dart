@@ -16,7 +16,7 @@ void main() {
         timestamp: timestamp.toLocal(),
       );
 
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'reading_history': [
           '{bad json',
           jsonEncode({
@@ -40,15 +40,14 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = HistoryService(prefs);
+      final service = HistoryService(await SharedPreferences.getInstance());
 
       expect(service.getHistory(), [history]);
     });
 
     test('getHistory falls back to URL when title is blank', () async {
       final timestamp = TestFixtures.seedDate;
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'reading_history': [
           jsonEncode({
             'url': ' HTTPS://Medium.COM/example/story/ ',
@@ -58,8 +57,7 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = HistoryService(prefs);
+      final service = HistoryService(await SharedPreferences.getInstance());
 
       final history = service.getHistory();
       expect(history, hasLength(1));
@@ -68,7 +66,7 @@ void main() {
 
     test('getHistory falls back to URL when title is missing', () async {
       final timestamp = TestFixtures.seedDate;
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'reading_history': [
           jsonEncode({
             'url': TestFixtures.storyUrl,
@@ -77,8 +75,7 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = HistoryService(prefs);
+      final service = HistoryService(await SharedPreferences.getInstance());
 
       final history = service.getHistory();
       expect(history, hasLength(1));
@@ -87,7 +84,7 @@ void main() {
 
     test('getHistory loads progress and supports legacy entries', () async {
       final timestamp = TestFixtures.seedDate;
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'reading_history': [
           jsonEncode({
             'url': 'https://medium.com/with-progress',

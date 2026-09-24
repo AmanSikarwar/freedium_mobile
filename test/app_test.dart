@@ -126,7 +126,7 @@ void main() {
     testWidgets('shows home after completing onboarding without a shared URL', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
 
       await tester.pumpWidget(_buildApp(prefs: prefs));
@@ -146,7 +146,7 @@ void main() {
     testWidgets('keeps home visible when initial intent lookup fails', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({'has_seen_onboarding': true});
+      await mockPrefs({'has_seen_onboarding': true});
       final prefs = await SharedPreferences.getInstance();
 
       await tester.pumpWidget(
@@ -162,7 +162,7 @@ void main() {
     testWidgets('does not read initial intent after app disposal', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({'has_seen_onboarding': true});
+      await mockPrefs({'has_seen_onboarding': true});
       final prefs = await SharedPreferences.getInstance();
       final intentService = _RecordingIntentService();
 

@@ -18,7 +18,7 @@ import '../../../test_helpers.dart';
 void main() {
   group('SettingsScreen', () {
     testWidgets('toggles Freedium site popups', (tester) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
 
       await tester.pumpWidget(
@@ -44,7 +44,7 @@ void main() {
     testWidgets('closes the update dialog before opening changelog', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final updateService = UpdateService(
         client: MockClient(
@@ -119,7 +119,7 @@ void main() {
     testWidgets('shows link failure when update URL cannot be opened', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final launchedUrls = <String?>[];
       const releaseUrl =
@@ -171,7 +171,7 @@ void main() {
     testWidgets('shows update check failure when the request fails', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final updateService = UpdateService(
         client: MockClient((_) async => http.Response('rate limited', 403)),

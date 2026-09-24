@@ -71,7 +71,7 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
       final prefs = await SharedPreferences.getInstance();
@@ -96,7 +96,7 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
       final prefs = await SharedPreferences.getInstance();
@@ -165,7 +165,7 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
       final prefs = await SharedPreferences.getInstance();

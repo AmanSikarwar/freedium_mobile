@@ -11,7 +11,7 @@ import '../../../test_helpers.dart';
 void main() {
   group('WebviewNotifier font size', () {
     test('loads persisted font size through supported bounds', () async {
-      SharedPreferences.setMockInitialValues({'webview_font_size': 100.0});
+      await mockPrefs({'webview_font_size': 100.0});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [
@@ -29,7 +29,7 @@ void main() {
     });
 
     test('clamps font size updates before saving state', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [
@@ -54,7 +54,7 @@ void main() {
     });
 
     test('tracks font size changes made from settings', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [

@@ -93,7 +93,7 @@ void main() {
         title: 'Example story',
         timestamp: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'reading_history': [jsonEncode(history.toJson())],
       });
       final prefs = await SharedPreferences.getInstance();
