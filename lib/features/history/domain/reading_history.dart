@@ -1,4 +1,7 @@
-import 'package:material_ui/material_ui.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'reading_history.freezed.dart';
+part 'reading_history.g.dart';
 
 const readingCompletionThreshold = 0.95;
 const readingProgressRestoreThreshold = 0.05;
@@ -11,65 +14,28 @@ double normalizeReadingProgress(double progress) {
   return progress.clamp(0, 1);
 }
 
-@immutable
-class const ReadingHistory({
-  required this.url,
-  required this.title,
-  required this.timestamp,
-  this.progress = 0,
-}) {
-  final String url;
-  final String title;
-  final DateTime timestamp;
-  final double progress;
+DateTime _dateTimeFromJson(String value) =>
+    DateTime.parse(value).toLocal();
+
+String _dateTimeToJson(DateTime value) => value.toUtc().toIso8601String();
+
+double _progressFromJson(num? value) =>
+    normalizeReadingProgress(value?.toDouble() ?? 0);
+
+@freezed
+abstract class ReadingHistory with _$ReadingHistory {
+  const factory ReadingHistory({
+    required String url,
+    @Default('') String title,
+    @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
+    required DateTime timestamp,
+    @JsonKey(fromJson: _progressFromJson) @Default(0) double progress,
+  }) = _ReadingHistory;
+
+  const ReadingHistory._();
+
+  factory ReadingHistory.fromJson(Map<String, dynamic> json) =>
+      _$ReadingHistoryFromJson(json);
 
   bool get isFinished => progress >= readingCompletionThreshold;
-
-  ReadingHistory copyWith({
-    String? url,
-    String? title,
-    DateTime? timestamp,
-    double? progress,
-  }) {
-    return ReadingHistory(
-      url: url ?? this.url,
-      title: title ?? this.title,
-      timestamp: timestamp ?? this.timestamp,
-      progress: progress ?? this.progress,
-    );
-  }
-
-  Map<String, dynamic> toJson() {
-    return {
-      'url': url,
-      'title': title,
-      'timestamp': timestamp.toUtc().toIso8601String(),
-      'progress': progress,
-    };
-  }
-
-  factory ReadingHistory.fromJson(Map<String, dynamic> json) {
-    return ReadingHistory(
-      url: json['url'] as String,
-      title: json['title'] as String? ?? '',
-      timestamp: DateTime.parse(json['timestamp'] as String).toLocal(),
-      progress: normalizeReadingProgress(
-        (json['progress'] as num?)?.toDouble() ?? 0,
-      ),
-    );
-  }
-
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-
-    return other is ReadingHistory &&
-        other.url == url &&
-        other.title == title &&
-        other.timestamp == timestamp &&
-        other.progress == progress;
-  }
-
-  @override
-  int get hashCode => Object.hash(url, title, timestamp, progress);
 }
