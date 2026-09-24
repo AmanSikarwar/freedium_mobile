@@ -1,70 +1,28 @@
 import 'dart:async';
 
+export 'core/routing/app_navigation.dart'
+    show
+        CurrentRouteNameObserver,
+        currentRouteNameObserver,
+        incomingWebviewRouteName,
+        navigateToWebview,
+        navigatorKey,
+        shouldSkipIncomingWebviewNavigation;
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/routing/app_navigation.dart'
+    show
+        currentRouteNameObserver,
+        navigateToWebview,
+        navigatorKey;
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
-
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
-
-@visibleForTesting
-class CurrentRouteNameObserver() extends NavigatorObserver {
-  final List<Route<dynamic>> _routeStack = [];
-
-  String? get currentRouteName =>
-      _routeStack.isEmpty ? null : _routeStack.last.settings.name;
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPush(route, previousRoute);
-    _routeStack.add(route);
-  }
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPop(route, previousRoute);
-    _routeStack.remove(route);
-  }
-
-  @override
-  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didRemove(route, previousRoute);
-    _routeStack.remove(route);
-  }
-
-  @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    if (oldRoute == null) {
-      if (newRoute != null) {
-        _routeStack.add(newRoute);
-      }
-      return;
-    }
-
-    final index = _routeStack.indexOf(oldRoute);
-    if (index == -1) return;
-
-    if (newRoute == null) {
-      _routeStack.removeAt(index);
-    } else {
-      _routeStack[index] = newRoute;
-    }
-  }
-
-  @visibleForTesting
-  void reset() {
-    _routeStack.clear();
-  }
-}
-
-final currentRouteNameObserver = CurrentRouteNameObserver();
 
 class InitialIntentHandledNotifier() extends Notifier<bool> {
   @override
@@ -98,37 +56,9 @@ final pendingIntentUrlProvider =
       PendingIntentUrlNotifier.new,
     );
 
-@visibleForTesting
-String incomingWebviewRouteName(String url) => '/webview/$url';
-
-@visibleForTesting
-bool shouldSkipIncomingWebviewNavigation({
-  required String? currentRouteName,
-  required String targetUrl,
-}) {
-  return currentRouteName == incomingWebviewRouteName(targetUrl);
-}
-
 class const App({super.key}) extends ConsumerWidget {
   void _navigateToWebview(String url) {
-    final navigator = navigatorKey.currentState;
-    if (navigator != null) {
-      if (navigator.context.mounted) {
-        if (shouldSkipIncomingWebviewNavigation(
-          currentRouteName: currentRouteNameObserver.currentRouteName,
-          targetUrl: url,
-        )) {
-          return;
-        }
-
-        navigator.push(
-          MaterialPageRoute(
-            builder: (context) => WebviewScreen(url: url),
-            settings: RouteSettings(name: incomingWebviewRouteName(url)),
-          ),
-        );
-      }
-    }
+    navigateToWebview(url);
   }
 
   void _handleIncomingIntent(WidgetRef ref, String value) {
