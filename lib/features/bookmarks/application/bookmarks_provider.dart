@@ -194,6 +194,47 @@ class Bookmarks() extends _$Bookmarks {
     }
   }
 
+  /// Merges backup [entries] into the current list: existing URLs keep
+  /// their saved data, new entries are inserted newest-first, and the list
+  /// is trimmed to [maxBookmarks]. Returns the number of entries added.
+  Future<int> importBookmarks(List<BookmarkedArticle> entries) async {
+    final service = await _service();
+    if (service == null) return 0;
+    if (entries.isEmpty) return 0;
+
+    final current = state.value ?? const <BookmarkedArticle>[];
+    final knownUrls = {for (final b in current) b.url};
+    final fresh = <BookmarkedArticle>[];
+    for (final entry in entries) {
+      if (knownUrls.add(entry.url)) {
+        fresh.add(entry);
+      }
+    }
+    if (fresh.isEmpty) return 0;
+
+    fresh.sort((a, b) => b.savedAt.compareTo(a.savedAt));
+    final merged = [...fresh, ...current];
+    final newList = merged.length > maxBookmarks
+        ? merged.sublist(0, maxBookmarks)
+        : merged;
+
+    try {
+      await service.saveBookmarks(newList);
+      state = AsyncData(newList);
+      final folders = ref.read(bookmarkFoldersProvider.notifier);
+      for (final entry in newList) {
+        final folder = entry.folder;
+        if (folder != null) {
+          await folders.ensureFolder(folder);
+        }
+      }
+      return fresh.length;
+    } catch (e) {
+      debugPrint('Failed to import bookmarks: $e');
+      return 0;
+    }
+  }
+
   /// Clears the folder (back to Unsorted) on every article matching [name]
   /// (case-insensitive).
   Future<bool> clearFolder(String name) async {

@@ -167,7 +167,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Clear Bookmarks'));
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear bookmarks').last);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
       await tester.pumpAndSettle();
@@ -211,7 +213,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Clear Bookmarks'));
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear bookmarks').last);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
       await tester.pumpAndSettle();
