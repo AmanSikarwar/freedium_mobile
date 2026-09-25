@@ -52,9 +52,10 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 - **Seven Supported Sources** - Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times
 - **Share and Open With** - Share or open supported links directly in Freedium from Android browsers and apps
 - **Clipboard Detection** - Automatically detects article URLs in your clipboard for quick access
-- **Continue Reading** - Resume unfinished articles from the home screen at your saved reading position
-- **Bookmarks** - Save articles locally and search or manage them from the Bookmarks screen
-- **Reading History** - Track article progress, completion state, and recently opened stories locally
+- **Continue Reading** - Resume unfinished articles from the home screen at your saved reading position, plus finished stories for re-reading
+- **Bookmarks** - Save articles locally, organize them into folders, and search or manage them from the Bookmarks screen
+- **Bookmark Export/Import** - Share versioned JSON backups and restore them on any device
+- **Reading History** - Track article progress, completion state, and recently opened stories locally, with configurable retention
 - **Configurable Mirrors** - Multiple Freedium server mirrors with automatic failover
 - **Material You Theming** - Dynamic app colors and matching light or dark article styling
 - **Site Popup Control** - Optionally hide Freedium announcement popups while reading
@@ -175,20 +176,25 @@ lib/
 ├── features/
 │   ├── bookmarks/
 │   │   ├── application/
-│   │   │   ├── bookmarks_provider.dart
+│   │   │   ├── bookmarks_provider.dart   # Bookmarks + BookmarkFolders + import
+│   │   │   ├── bookmark_io.dart          # JSON backup export/import
 │   │   │   └── bookmarks_service.dart
 │   │   ├── domain/
-│   │   │   └── bookmarked_article.dart
+│   │   │   ├── bookmarked_article.dart   # ...with folder field
+│   │   │   └── bookmark_folder.dart      # Folder rules (normalize/merge)
 │   │   └── presentation/
-│   │       └── bookmarks_screen.dart
+│   │       ├── bookmarks_screen.dart     # Filter chips, export/import menu
+│   │       └── widgets/
+│   │           ├── move_to_folder_sheet.dart
+│   │           └── manage_folders_sheet.dart
 │   ├── history/
 │   │   ├── application/
-│   │   │   ├── history_provider.dart
-│   │   │   └── history_service.dart
+│   │   │   ├── history_provider.dart     # History + HistoryLimit
+│   │   │   └── history_service.dart      # Retention limit persistence
 │   │   ├── domain/
 │   │   │   └── reading_history.dart
 │   │   └── presentation/
-│   │       └── history_screen.dart
+│   │       └── history_screen.dart       # Retention options menu
 │   ├── home/
 │   │   ├── application/
 │   │   │   └── home_provider.dart    # Home state management
@@ -240,7 +246,7 @@ The app follows a **feature-based architecture** with **Riverpod 3.0** for state
 
 #### Key Patterns
 
-- **State Management:** Riverpod 3.x Notifier API (not StateNotifier)
+- **State Management:** Riverpod 3.x `@Riverpod` codegen (regenerate with `dart run build_runner build --delete-conflicting-outputs`)
 - **Theme Injection:** Flutter → CSS variables → WebView DOM
 - **Intent Handling:** Two-phase (initial + streaming) with duplicate prevention
 
@@ -261,7 +267,7 @@ Contributions are welcome! Here's how you can help:
 ### Development Guidelines
 
 - Follow the existing code architecture and patterns
-- Use **Riverpod 3.0 Notifier API** for state management
+- Use **`@Riverpod` codegen** for state management (not hand-written providers)
 - Always use `copyWith()` for state updates
 - Use `debugPrint()` instead of `print()` for logging
 - Test changes thoroughly on Android devices

@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.13.0] - 2026-09-26
+
+### Added
+
+- Bookmark folders: single-level labels with filter chips, an Unsorted view,
+  a move-to-folder sheet (also via long-press on the WebView bookmark
+  button), and a manage-folders sheet (create, rename, delete). Deleting a
+  folder keeps its articles as Unsorted.
+- Bookmark export/import: shareable versioned JSON backups with validation,
+  duplicate merging, and an imported/skipped report.
+- History retention controls: keep the last 30, 100, or 500 articles plus
+  clearing entries older than 30 days, from the History options menu.
+- Finished stories section on Home for re-reading completed articles.
+- Full-page article theming: component token aliases (`--primary`,
+  `--accent`, `--muted`, `--card`, `--popover`, `--border`, `--ring`),
+  Table of Contents, footer, brand lockup, tables, blockquotes, embeds,
+  selection, and scrollbar coverage.
+- Full Shiki code-token recoloring: canonical github-light/github-dark
+  palettes remapped to the app palette (JS remap with CSS fallbacks),
+  verified against the live Freedium DOM in light and dark modes.
+
+### Improved
+
+- Ships the post-0.12.0 modernization pile-up: Riverpod `@Riverpod`
+  codegen, Freezed models with JSON serialization, unified URL/date/mirror
+  helpers, shared library list widgets, strict analyzer lints, and expanded
+  test coverage (217 tests, analyzer clean).
+- CI and release both run on Flutter stable with locked dependencies.
+
+### Fixed
+
+- Corrected the fallback app version reported by local/debug builds without
+  `--dart-define=APP_VERSION`.
+- Aligned ModeWatcher localStorage keys (`mode-watcher-theme`) with the
+  current Freedium page.
+- Repaired the `theme.js` injection flow (restored reading-progress
+  tracking during the Shiki recoloring work).
+
+### Notes
+
+- Releases ship Android APKs only; the repository has no `ios/` target yet,
+  so the 0.11.0 "iOS platform support" note should be read as dependency
+  groundwork (WKWebView package), not a shippable iOS build.
+
 ## [0.12.0] - 2026-08-10
 
 ### Added
@@ -89,3 +133,4 @@ All notable changes to this project will be documented in this file.
 [0.10.0]: https://github.com/AmanSikarwar/freedium_mobile/compare/v0.9.0...v0.10.0
 [0.11.0]: https://github.com/AmanSikarwar/freedium_mobile/compare/v0.10.0...v0.11.0
 [0.12.0]: https://github.com/AmanSikarwar/freedium_mobile/compare/v0.11.0...v0.12.0
+[0.13.0]: https://github.com/AmanSikarwar/freedium_mobile/compare/v0.12.0...v0.13.0
