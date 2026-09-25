@@ -11,6 +11,7 @@ _BookmarkedArticle _$BookmarkedArticleFromJson(Map<String, dynamic> json) =>
       url: json['url'] as String,
       title: json['title'] as String? ?? '',
       savedAt: _savedAtFromJson(json['savedAt'] as String),
+      folder: json['folder'] as String?,
     );
 
 Map<String, dynamic> _$BookmarkedArticleToJson(_BookmarkedArticle instance) =>
@@ -18,4 +19,5 @@ Map<String, dynamic> _$BookmarkedArticleToJson(_BookmarkedArticle instance) =>
       'url': instance.url,
       'title': instance.title,
       'savedAt': _savedAtToJson(instance.savedAt),
+      'folder': instance.folder,
     };

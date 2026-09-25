@@ -16,7 +16,7 @@ T _$identity<T>(T value) => value;
 /// @nodoc
 mixin _$BookmarkedArticle {
 
- String get url; String get title;@JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) DateTime get savedAt;
+ String get url; String get title;@JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) DateTime get savedAt; String? get folder;
 /// Create a copy of BookmarkedArticle
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -30,20 +30,20 @@ $BookmarkedArticleCopyWith<BookmarkedArticle> get copyWith => _$BookmarkedArticl
 @override
 bool operator ==(Object other) {
   final _this = this as BookmarkedArticle;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is BookmarkedArticle&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.savedAt, _this.savedAt) || other.savedAt == _this.savedAt));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is BookmarkedArticle&&(identical(other.url, _this.url) || other.url == _this.url)&&(identical(other.title, _this.title) || other.title == _this.title)&&(identical(other.savedAt, _this.savedAt) || other.savedAt == _this.savedAt)&&(identical(other.folder, _this.folder) || other.folder == _this.folder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
   final _this = this as BookmarkedArticle;
-  return Object.hash(runtimeType,_this.url,_this.title,_this.savedAt);
+  return Object.hash(runtimeType,_this.url,_this.title,_this.savedAt,_this.folder);
 }
 
 @override
 String toString() {
   final _this = this as BookmarkedArticle;
-  return 'BookmarkedArticle(url: ${_this.url}, title: ${_this.title}, savedAt: ${_this.savedAt})';
+  return 'BookmarkedArticle(url: ${_this.url}, title: ${_this.title}, savedAt: ${_this.savedAt}, folder: ${_this.folder})';
 }
 
 
@@ -54,7 +54,7 @@ abstract mixin class $BookmarkedArticleCopyWith<$Res>  {
   factory $BookmarkedArticleCopyWith(BookmarkedArticle value, $Res Function(BookmarkedArticle) _then) = _$BookmarkedArticleCopyWithImpl;
 @useResult
 $Res call({
- String url, String title,@JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) DateTime savedAt
+ String url, String title,@JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) DateTime savedAt, String? folder
 });
 
 
@@ -71,12 +71,13 @@ class _$BookmarkedArticleCopyWithImpl<$Res>
 
 /// Create a copy of BookmarkedArticle
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? url = null,Object? title = null,Object? savedAt = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? url = null,Object? title = null,Object? savedAt = null,Object? folder = freezed,}) {
   return _then(BookmarkedArticle(
 url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,savedAt: null == savedAt ? _self.savedAt : savedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,folder: freezed == folder ? _self.folder : folder // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 
@@ -161,10 +162,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String url,  String title, @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson)  DateTime savedAt)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( String url,  String title, @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson)  DateTime savedAt,  String? folder)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _BookmarkedArticle() when $default != null:
-return $default(_that.url,_that.title,_that.savedAt);case _:
+return $default(_that.url,_that.title,_that.savedAt,_that.folder);case _:
   return orElse();
 
 }
@@ -182,10 +183,10 @@ return $default(_that.url,_that.title,_that.savedAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String url,  String title, @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson)  DateTime savedAt)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( String url,  String title, @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson)  DateTime savedAt,  String? folder)  $default,) {final _that = this;
 switch (_that) {
 case _BookmarkedArticle():
-return $default(_that.url,_that.title,_that.savedAt);case _:
+return $default(_that.url,_that.title,_that.savedAt,_that.folder);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -202,10 +203,10 @@ return $default(_that.url,_that.title,_that.savedAt);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String url,  String title, @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson)  DateTime savedAt)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( String url,  String title, @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson)  DateTime savedAt,  String? folder)?  $default,) {final _that = this;
 switch (_that) {
 case _BookmarkedArticle() when $default != null:
-return $default(_that.url,_that.title,_that.savedAt);case _:
+return $default(_that.url,_that.title,_that.savedAt,_that.folder);case _:
   return null;
 
 }
@@ -217,12 +218,13 @@ return $default(_that.url,_that.title,_that.savedAt);case _:
 @JsonSerializable()
 
 class _BookmarkedArticle implements BookmarkedArticle {
-  const _BookmarkedArticle({required this.url, this.title = '', @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) required this.savedAt});
+  const _BookmarkedArticle({required this.url, this.title = '', @JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) required this.savedAt, this.folder});
   factory _BookmarkedArticle.fromJson(Map<String, dynamic> json) => _$BookmarkedArticleFromJson(json);
 
 @override final  String url;
 @override@JsonKey() final  String title;
 @override@JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) final  DateTime savedAt;
+@override final  String? folder;
 
 /// Create a copy of BookmarkedArticle
 /// with the given fields replaced by the non-null parameter values.
@@ -237,18 +239,18 @@ Map<String, dynamic> toJson() {
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BookmarkedArticle&&(identical(other.url, url) || other.url == url)&&(identical(other.title, title) || other.title == title)&&(identical(other.savedAt, savedAt) || other.savedAt == savedAt));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _BookmarkedArticle&&(identical(other.url, url) || other.url == url)&&(identical(other.title, title) || other.title == title)&&(identical(other.savedAt, savedAt) || other.savedAt == savedAt)&&(identical(other.folder, folder) || other.folder == folder));
 }
 
 @JsonKey(includeFromJson: false, includeToJson: false)
 @override
 int get hashCode {
-    return Object.hash(runtimeType,url,title,savedAt);
+    return Object.hash(runtimeType,url,title,savedAt,folder);
 }
 
 @override
 String toString() {
-    return 'BookmarkedArticle(url: $url, title: $title, savedAt: $savedAt)';
+    return 'BookmarkedArticle(url: $url, title: $title, savedAt: $savedAt, folder: $folder)';
 }
 
 
@@ -259,7 +261,7 @@ abstract mixin class _$BookmarkedArticleCopyWith<$Res> implements $BookmarkedArt
   factory _$BookmarkedArticleCopyWith(_BookmarkedArticle value, $Res Function(_BookmarkedArticle) _then) = __$BookmarkedArticleCopyWithImpl;
 @override @useResult
 $Res call({
- String url, String title,@JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) DateTime savedAt
+ String url, String title,@JsonKey(fromJson: _savedAtFromJson, toJson: _savedAtToJson) DateTime savedAt, String? folder
 });
 
 
@@ -276,12 +278,13 @@ class __$BookmarkedArticleCopyWithImpl<$Res>
 
 /// Create a copy of BookmarkedArticle
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? url = null,Object? title = null,Object? savedAt = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? url = null,Object? title = null,Object? savedAt = null,Object? folder = freezed,}) {
   return _then(_BookmarkedArticle(
 url: null == url ? _self.url : url // ignore: cast_nullable_to_non_nullable
 as String,title: null == title ? _self.title : title // ignore: cast_nullable_to_non_nullable
 as String,savedAt: null == savedAt ? _self.savedAt : savedAt // ignore: cast_nullable_to_non_nullable
-as DateTime,
+as DateTime,folder: freezed == folder ? _self.folder : folder // ignore: cast_nullable_to_non_nullable
+as String?,
   ));
 }
 

@@ -3,10 +3,12 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
 class BookmarksService(this._prefs) {
   static const String _bookmarksKey = 'bookmarked_articles';
+  static const String _foldersKey = 'bookmark_folders';
   final SharedPreferences _prefs;
 
   List<BookmarkedArticle> getBookmarks() {
@@ -25,7 +27,11 @@ class BookmarksService(this._prefs) {
         }
         final title = bookmark.title.trim();
         bookmarks.add(
-          bookmark.copyWith(url: url, title: title.isNotEmpty ? title : url),
+          bookmark.copyWith(
+            url: url,
+            title: title.isNotEmpty ? title : url,
+            folder: normalizeBookmarkFolderName(bookmark.folder),
+          ),
         );
       } catch (e) {
         debugPrint('Failed to parse bookmark entry: $e');
@@ -59,6 +65,27 @@ class BookmarksService(this._prefs) {
       }
     } catch (e) {
       debugPrint('Failed to clear bookmarks key "$_bookmarksKey": $e');
+      rethrow;
+    }
+  }
+
+  /// Reads the stored folder list (normalized, deduped, sorted).
+  /// Folders referenced only by articles are unioned in by the provider.
+  List<String> getFolders() {
+    final raw = _prefs.getStringList(_foldersKey);
+    if (raw == null) return [];
+    return mergeBookmarkFolders(raw, const []);
+  }
+
+  Future<void> saveFolders(List<String> folders) async {
+    try {
+      final normalized = mergeBookmarkFolders(folders, const []);
+      final success = await _prefs.setStringList(_foldersKey, normalized);
+      if (!success) {
+        throw Exception('setStringList returned false for key "$_foldersKey"');
+      }
+    } catch (e) {
+      debugPrint('Failed to save folders to "$_foldersKey": $e');
       rethrow;
     }
   }
