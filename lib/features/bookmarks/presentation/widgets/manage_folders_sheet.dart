@@ -166,14 +166,17 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
             ),
             const SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: TextField(
                     controller: _createController,
                     decoration: const InputDecoration(
                       hintText: 'New folder name',
+                      prefixIcon: Icon(Icons.create_new_folder_outlined),
                       border: OutlineInputBorder(),
                       isDense: true,
+                      counterText: '',
                     ),
                     maxLength: maxBookmarkFolderNameLength,
                     textInputAction: TextInputAction.done,
@@ -181,10 +184,19 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FilledButton.tonalIcon(
-                  onPressed: _saving ? null : _create,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add'),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: ValueListenableBuilder(
+                    valueListenable: _createController,
+                    builder: (context, value, _) {
+                      final hasText = value.text.trim().isNotEmpty;
+                      return FilledButton.tonalIcon(
+                        onPressed: _saving || !hasText ? null : _create,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add'),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),

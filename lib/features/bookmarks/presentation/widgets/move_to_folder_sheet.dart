@@ -138,14 +138,17 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
             ),
             const Divider(),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: TextField(
                     controller: _newFolderController,
                     decoration: const InputDecoration(
                       hintText: 'New folder name',
+                      prefixIcon: Icon(Icons.create_new_folder_outlined),
                       border: OutlineInputBorder(),
                       isDense: true,
+                      counterText: '',
                     ),
                     maxLength: maxBookmarkFolderNameLength,
                     textInputAction: TextInputAction.done,
@@ -153,10 +156,19 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                FilledButton.tonalIcon(
-                  onPressed: _saving ? null : _createAndMove,
-                  icon: const Icon(Icons.create_new_folder_outlined),
-                  label: const Text('Create'),
+                Padding(
+                  padding: const EdgeInsets.only(top: 4),
+                  child: ValueListenableBuilder(
+                    valueListenable: _newFolderController,
+                    builder: (context, value, _) {
+                      final hasText = value.text.trim().isNotEmpty;
+                      return FilledButton.tonalIcon(
+                        onPressed: _saving || !hasText ? null : _createAndMove,
+                        icon: const Icon(Icons.create_new_folder_outlined),
+                        label: const Text('Create'),
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
