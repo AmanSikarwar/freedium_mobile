@@ -11,8 +11,6 @@ part 'history_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class History() extends _$History {
-  static const int maxHistoryEntries = 100;
-
   Future<HistoryService?> _service() async {
     try {
       final prefs = await ref.read(sharedPreferencesProvider.future);
@@ -26,7 +24,22 @@ class History() extends _$History {
   @override
   FutureOr<List<ReadingHistory>> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
-    return HistoryService(prefs).getHistory();
+    final service = HistoryService(prefs);
+    final history = service.getHistory();
+    final limit = service.getHistoryLimit();
+    if (history.length <= limit) return history;
+    final trimmed = history.sublist(0, limit);
+    try {
+      await service.saveHistory(trimmed);
+    } catch (e) {
+      debugPrint('Failed to trim history to limit: $e');
+    }
+    return trimmed;
+  }
+
+  /// Current retention size (newest entries kept).
+  int historyLimit() {
+    return ref.read(historyLimitProvider).value ?? HistoryService.defaultLimit;
   }
 
   Future<void> addHistory(String url, String title) async {
@@ -57,8 +70,9 @@ class History() extends _$History {
       ),
     );
 
-    if (newList.length > maxHistoryEntries) {
-      newList.removeLast();
+    final limit = service.getHistoryLimit();
+    if (newList.length > limit) {
+      newList.removeRange(limit, newList.length);
     }
 
     try {
@@ -133,5 +147,90 @@ class History() extends _$History {
       debugPrint('Failed to clear history: $e');
       return false;
     }
+  }
+
+  /// Trims the list to [limit] newest entries and persists. Used when the
+  /// retention setting changes.
+  Future<bool> applyLimit(int limit) async {
+    final service = await _service();
+    if (service == null) return false;
+
+    final current = state.value ?? const <ReadingHistory>[];
+    final newList = current.length > limit
+        ? current.sublist(0, limit)
+        : current;
+    if (identical(newList, current)) return true;
+
+    try {
+      await service.saveHistory(newList);
+      state = AsyncData(newList);
+      return true;
+    } catch (e) {
+      debugPrint('Failed to trim history: $e');
+      return false;
+    }
+  }
+
+  /// Removes entries older than [maxAge] and persists.
+  /// Returns the number of entries removed, or -1 on failure.
+  Future<int> clearOlderThan(Duration maxAge) async {
+    final service = await _service();
+    if (service == null) return -1;
+
+    final cutoff = DateTime.now().subtract(maxAge);
+    final current = state.value ?? const <ReadingHistory>[];
+    final newList = current
+        .where((item) => item.timestamp.isAfter(cutoff))
+        .toList();
+    final removed = current.length - newList.length;
+    if (removed == 0) return 0;
+
+    try {
+      await service.saveHistory(newList);
+      state = AsyncData(newList);
+      return removed;
+    } catch (e) {
+      debugPrint('Failed to clear old history: $e');
+      return -1;
+    }
+  }
+}
+
+/// Retention size (newest history entries kept) persisted to
+/// SharedPreferences.
+@Riverpod(keepAlive: true)
+class HistoryLimit() extends _$HistoryLimit {
+  Future<HistoryService?> _service() async {
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      return HistoryService(prefs);
+    } catch (e) {
+      debugPrint('HistoryService unavailable: $e');
+      return null;
+    }
+  }
+
+  @override
+  FutureOr<int> build() async {
+    final prefs = await ref.watch(sharedPreferencesProvider.future);
+    return HistoryService(prefs).getHistoryLimit();
+  }
+
+  /// Persists [limit] and trims history to match. Returns false when the
+  /// value is unsupported or persistence fails.
+  Future<bool> setLimit(int limit) async {
+    final service = await _service();
+    if (service == null) return false;
+    if (!HistoryService.allowedLimits.contains(limit)) return false;
+
+    try {
+      await service.saveHistoryLimit(limit);
+    } catch (e) {
+      debugPrint('Failed to save history limit: $e');
+      return false;
+    }
+    final trimmed = await ref.read(historyProvider.notifier).applyLimit(limit);
+    state = AsyncData(limit);
+    return trimmed;
   }
 }

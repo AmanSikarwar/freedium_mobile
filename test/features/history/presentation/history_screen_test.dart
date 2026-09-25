@@ -164,5 +164,60 @@ void main() {
       expect(find.text('No reading history yet.'), findsNothing);
       expect(tester.takeException(), isNull);
     });
+
+    testWidgets('changes the retention limit from the options menu', (
+      tester,
+    ) async {
+      final prefs = await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [
+            for (var i = 0; i < 35; i++)
+              jsonEncode(
+                ReadingHistory(
+                  url: 'https://medium.com/story-$i',
+                  title: 'Story $i',
+                  timestamp: TestFixtures.seedDate.add(Duration(minutes: i)),
+                ).toJson(),
+              ),
+          ],
+        },
+      );
+
+      await tester.tap(find.byTooltip('History options'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Keep last 30').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Keeping last 30 articles'), findsOneWidget);
+      expect(prefs.getInt('history_limit'), 30);
+      expect(prefs.getStringList('reading_history'), hasLength(30));
+    });
+
+    testWidgets('prunes history older than 30 days', (tester) async {
+      final prefs = await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [
+            jsonEncode(
+              ReadingHistory(
+                url: TestFixtures.storyUrl,
+                timestamp: DateTime.utc(2020, 2, 3),
+              ).toJson(),
+            ),
+          ],
+        },
+      );
+
+      await tester.tap(find.byTooltip('History options'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear older than 30 days'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cleared 1 article'), findsOneWidget);
+      expect(prefs.getStringList('reading_history'), isEmpty);
+    });
   });
 }

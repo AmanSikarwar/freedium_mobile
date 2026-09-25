@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
+import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
@@ -68,12 +69,38 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
           ],
         ),
         actions: [
-          if (history.isNotEmpty)
+          if (history.isNotEmpty) ...[
+            PopupMenuButton<String>(
+              tooltip: 'History options',
+              onSelected: (value) => _onOption(context, value),
+              itemBuilder: (context) {
+                final limit =
+                    ref.watch(historyLimitProvider).value ??
+                    HistoryService.defaultLimit;
+                return [
+                  for (final option in HistoryService.allowedLimits)
+                    CheckedPopupMenuItem(
+                      value: 'keep_$option',
+                      checked: limit == option,
+                      child: Text('Keep last $option'),
+                    ),
+                  const PopupMenuItem(
+                    value: 'prune_30d',
+                    child: Text('Clear older than 30 days'),
+                  ),
+                  const PopupMenuItem(
+                    value: 'clear',
+                    child: Text('Clear history'),
+                  ),
+                ];
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.delete_sweep),
               tooltip: 'Clear History',
               onPressed: () => _confirmClear(context),
             ),
+          ],
         ],
         bottom: history.isNotEmpty
             ? LibrarySearchHeader(
@@ -141,6 +168,48 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
         ),
       ),
     );
+  }
+
+  void _onOption(BuildContext context, String value) async {
+    if (value.startsWith('keep_')) {
+      final limit = int.tryParse(value.substring('keep_'.length));
+      if (limit == null) return;
+      final didApply = await ref
+          .read(historyLimitProvider.notifier)
+          .setLimit(limit);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            didApply
+                ? 'Keeping last $limit articles'
+                : 'Could not update history limit',
+          ),
+        ),
+      );
+      return;
+    }
+    if (value == 'prune_30d') {
+      final removed = await ref
+          .read(historyProvider.notifier)
+          .clearOlderThan(const Duration(days: 30));
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            removed < 0
+                ? 'Could not clear old history'
+                : removed == 0
+                ? 'No articles older than 30 days'
+                : 'Cleared $removed article${removed == 1 ? '' : 's'}',
+          ),
+        ),
+      );
+      return;
+    }
+    if (value == 'clear') {
+      _confirmClear(context);
+    }
   }
 
   void _confirmClear(BuildContext context) {
