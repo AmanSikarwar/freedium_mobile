@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
@@ -105,6 +106,33 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     );
   }
 
+  /// Long-press action: ensures the article is bookmarked, then opens the
+  /// move-to-folder sheet.
+  Future<void> _moveBookmarkToFolder(
+    Bookmarks bookmarksNotifier,
+    WebviewState webviewState,
+  ) async {
+    if (!bookmarksNotifier.isBookmarked(widget.url)) {
+      final didSave = await bookmarksNotifier.addBookmark(
+        widget.url,
+        webviewState.articleMeta?.title ?? '',
+      );
+      if (!mounted) return;
+      if (!didSave) {
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update bookmark'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+    if (!mounted) return;
+    await showMoveToFolderSheet(context, ref, url: widget.url);
+  }
+
   @override
   Widget build(BuildContext context) {
     final webviewState = ref.watch(webviewProvider(widget.url));
@@ -161,7 +189,9 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
               if (mounted) {
                 _resetSharingIntent();
                 navigator.pushReplacement(
-                  MaterialPageRoute<void>(builder: (context) => const HomeScreen()),
+                  MaterialPageRoute<void>(
+                    builder: (context) => const HomeScreen(),
+                  ),
                 );
               }
             });
@@ -355,6 +385,12 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
               onTap: () {
                 HapticFeedback.lightImpact();
                 unawaited(_toggleBookmark(bookmarksNotifier, webviewState));
+              },
+              onLongPress: () {
+                HapticFeedback.mediumImpact();
+                unawaited(
+                  _moveBookmarkToFolder(bookmarksNotifier, webviewState),
+                );
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(
