@@ -551,3 +551,150 @@ pre code[class*="bg-"] {
 .p-2.overflow-x-auto {
   background-color: var(--app-surface-container-highest) !important;
 }
+
+/* ============================================================
+   COMPONENT TOKENS + FULL-PAGE COVERAGE
+   ============================================================
+   Freedium's shadcn-style component classes (text-primary, bg-accent,
+   muted/popover/card, ring) resolve through CSS variables. The injected
+   --primary/--accent/--muted/... aliases point them at the app palette;
+   the explicit rules below are backups for elements whose cascade keeps
+   the site default, plus per-surface treatment for header, TOC, footer,
+   brand lockup, and long-tail article content (tables, quotes, embeds).
+   ============================================================ */
+
+/* shadcn class backups */
+.text-primary {
+  color: var(--app-primary) !important;
+}
+.bg-primary {
+  background-color: var(--app-primary) !important;
+  color: var(--app-on-primary) !important;
+}
+.text-accent-foreground {
+  color: var(--app-on-primary) !important;
+}
+.bg-accent {
+  background-color: var(--app-primary) !important;
+}
+.text-muted-foreground {
+  color: var(--app-on-surface-variant) !important;
+}
+.bg-muted {
+  background-color: var(--app-surface-variant) !important;
+}
+.bg-card {
+  background-color: var(--app-surface) !important;
+}
+.bg-popover {
+  background-color: var(--app-surface-container) !important;
+  color: var(--app-on-surface) !important;
+}
+
+/* Support/donate button (amber scale has no neutral equivalent) */
+.text-amber-600,
+.dark [class*="dark:text-amber-400"] {
+  color: var(--app-tertiary) !important;
+}
+button[class*="hover:bg-amber-500/10"]:hover {
+  background-color: var(--app-tertiary-container) !important;
+}
+button[class*="hover:bg-amber-500/10"]:hover span {
+  color: var(--app-on-tertiary-container) !important;
+}
+.dark [class*="dark:hover:text-amber-300"]:hover {
+  color: var(--app-tertiary) !important;
+}
+
+/* Table of contents */
+.dark [class*="dark:text-gray-200"] {
+  color: var(--app-on-surface-variant) !important;
+}
+#toc-heading {
+  color: var(--app-primary) !important;
+}
+#toc-list a:hover {
+  background-color: var(--app-surface-container) !important;
+}
+
+/* Footer */
+footer {
+  background-color: var(--app-surface-container-low) !important;
+  border-top: 1px solid var(--app-outline-variant) !important;
+  color: var(--app-on-surface-variant) !important;
+}
+footer .left,
+footer .built {
+  color: var(--app-on-surface-variant) !important;
+}
+footer nav a {
+  color: var(--app-on-surface-variant) !important;
+}
+footer nav a:hover {
+  color: var(--app-primary) !important;
+}
+
+/* Brand lockup */
+#header .brand-link,
+#header .brand-mark {
+  color: var(--app-on-surface) !important;
+}
+#header .brand-dot {
+  color: var(--app-primary) !important;
+}
+#header .brand-tag {
+  color: var(--app-on-surface-variant) !important;
+}
+
+/* Long-tail article content */
+article table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 1em 0 !important;
+  font-size: calc(var(--app-font-size, 18px) * 0.9) !important;
+}
+article th,
+article td {
+  border: 1px solid var(--app-outline-variant) !important;
+  padding: 8px 12px !important;
+  text-align: left !important;
+}
+article thead th {
+  background-color: var(--app-surface-container) !important;
+  color: var(--app-on-surface) !important;
+  font-weight: 600 !important;
+}
+article tbody tr:nth-child(even) {
+  background-color: var(--app-surface-container-low) !important;
+}
+article blockquote {
+  border-left: 3px solid var(--app-primary) !important;
+  color: var(--app-on-surface-variant) !important;
+  padding-left: 16px !important;
+  margin: 1em 0 !important;
+  font-style: italic !important;
+}
+article hr {
+  border-color: var(--app-outline-variant) !important;
+}
+article iframe {
+  background-color: var(--app-surface-container) !important;
+  border-radius: 8px !important;
+  max-width: 100% !important;
+}
+
+/* Selection and scrollbar */
+::selection {
+  background-color: var(--app-primary-container) !important;
+  color: var(--app-on-primary-container) !important;
+}
+::-webkit-scrollbar {
+  width: 10px !important;
+}
+::-webkit-scrollbar-track {
+  background: var(--app-surface) !important;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--app-outline) !important;
+  border-radius: 5px !important;
+}

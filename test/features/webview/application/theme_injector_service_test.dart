@@ -38,6 +38,7 @@ void main() {
       );
 
       expect(script, contains('mode-watcher-mode'));
+      expect(script, contains('mode-watcher-theme'));
       expect(script, contains('.theme-toggle'));
       expect(script, contains('button.code-copy-btn[data-code]'));
       expect(script, contains('article header'));
@@ -46,6 +47,29 @@ void main() {
       expect(script, contains(r'.replace(/^By\s+/i, "")'));
       expect(script, contains("img[alt='Post cover image']"));
       expect(script, contains('ReadingProgress.postMessage'));
+    });
+
+    test('aliases component tokens to the app palette', () async {
+      final service = ThemeInjectorService();
+      final script = await service.getThemeInjectionScript(
+        ColorScheme.fromSeed(seedColor: Colors.teal),
+      );
+
+      for (final token in [
+        '"--primary": "var(--app-primary)"',
+        '"--primary-foreground": "var(--app-on-primary)"',
+        '"--accent-foreground": "var(--app-on-primary)"',
+        '"--muted": "var(--app-surface-variant)"',
+        '"--card": "var(--app-surface)"',
+        '"--popover": "var(--app-surface-container)"',
+        '"--border": "var(--app-outline-variant)"',
+        '"--ring": "var(--app-primary)"',
+      ]) {
+        expect(script, contains(token));
+      }
+      expect(script, contains('.text-primary'));
+      expect(script, contains('#toc-heading'));
+      expect(script, contains('article blockquote'));
     });
 
     test('pre-theme script primes mode-watcher and Freedium tokens', () {
@@ -62,10 +86,16 @@ void main() {
         script,
         contains('localStorage.setItem("mode-watcher-mode", "dark")'),
       );
+      expect(
+        script,
+        contains('localStorage.setItem("mode-watcher-theme", "dark")'),
+      );
       expect(script, contains('root.classList.add("dark")'));
       expect(script, contains('root.style.colorScheme = "dark"'));
       expect(script, contains("root.style.setProperty('--bg'"));
       expect(script, contains("root.style.setProperty('--accent'"));
+      expect(script, contains("root.style.setProperty('--primary'"));
+      expect(script, contains("root.style.setProperty('--border'"));
       expect(
         script,
         contains(

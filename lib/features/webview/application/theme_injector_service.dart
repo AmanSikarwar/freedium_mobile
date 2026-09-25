@@ -18,6 +18,19 @@ Map<String, String> _freediumThemeTokenValues(ColorScheme colorScheme) {
     '--ink-4': _colorToHex(colorScheme.outline),
     '--accent': _colorToHex(colorScheme.primary),
     '--accent-deep': _colorToHex(colorScheme.primaryContainer),
+    // shadcn aliases consumed by Freedium's component classes
+    // (text-primary, bg-accent, ring, popovers, cards, muted text).
+    '--primary': _colorToHex(colorScheme.primary),
+    '--primary-foreground': _colorToHex(colorScheme.onPrimary),
+    '--accent-foreground': _colorToHex(colorScheme.onPrimary),
+    '--muted': _colorToHex(colorScheme.surfaceContainerHighest),
+    '--muted-foreground': _colorToHex(colorScheme.onSurfaceVariant),
+    '--card': _colorToHex(colorScheme.surface),
+    '--card-foreground': _colorToHex(colorScheme.onSurface),
+    '--popover': _colorToHex(colorScheme.surfaceContainer),
+    '--popover-foreground': _colorToHex(colorScheme.onSurface),
+    '--border': _colorToHex(colorScheme.outlineVariant),
+    '--ring': _colorToHex(colorScheme.primary),
   };
 }
 
@@ -137,6 +150,7 @@ class ThemeInjectorService() {
     try {
       localStorage.setItem("theme", "$themeValue");
       localStorage.setItem("mode-watcher-mode", "$themeValue");
+      localStorage.setItem("mode-watcher-theme", "$themeValue");
     } catch (e) {
       console.warn('Failed to persist pre-theme mode "$themeValue" to localStorage:', e);
     }

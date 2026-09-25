@@ -88,6 +88,17 @@
       "--ink-4": "var(--app-outline)",
       "--accent": "var(--app-primary)",
       "--accent-deep": "var(--app-primary-container)",
+      "--primary": "var(--app-primary)",
+      "--primary-foreground": "var(--app-on-primary)",
+      "--accent-foreground": "var(--app-on-primary)",
+      "--muted": "var(--app-surface-variant)",
+      "--muted-foreground": "var(--app-on-surface-variant)",
+      "--card": "var(--app-surface)",
+      "--card-foreground": "var(--app-on-surface)",
+      "--popover": "var(--app-surface-container)",
+      "--popover-foreground": "var(--app-on-surface)",
+      "--border": "var(--app-outline-variant)",
+      "--ring": "var(--app-primary)",
     };
 
     Object.keys(freediumTokens).forEach(function (key) {
@@ -97,6 +108,7 @@
     try {
       localStorage.setItem("theme", themeName);
       localStorage.setItem("mode-watcher-mode", themeName);
+      localStorage.setItem("mode-watcher-theme", themeName);
     } catch (e) {
       console.warn("Failed to set localStorage theme:", e);
     }
