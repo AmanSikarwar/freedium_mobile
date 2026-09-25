@@ -41,16 +41,16 @@ void main() {
 
       expect(find.text('Tech story'), findsOneWidget);
       expect(find.text('Example story'), findsOneWidget);
-      expect(find.text('Tech'), findsWidgets);
-      expect(find.text('Unsorted'), findsOneWidget);
+      expect(find.widgetWithText(FilterChip, 'All · 2'), findsOneWidget);
+      expect(find.widgetWithText(FilterChip, 'Unsorted · 1'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Tech'));
+      await tester.tap(find.widgetWithText(FilterChip, 'Tech · 1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Tech story'), findsOneWidget);
       expect(find.text('Example story'), findsNothing);
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Unsorted'));
+      await tester.tap(find.widgetWithText(FilterChip, 'Unsorted · 1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Tech story'), findsNothing);
@@ -87,7 +87,7 @@ void main() {
       await tester.tap(find.text('Create'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Tech'), findsWidgets);
+      expect(find.text('Tech'), findsOneWidget);
       final stored = prefs.getStringList('bookmark_folders');
       expect(stored, ['Tech']);
     });
@@ -119,7 +119,7 @@ void main() {
       await tester.tap(find.text('Add'));
       await tester.pumpAndSettle();
 
-      expect(find.text('Reading'), findsWidgets);
+      expect(find.text('Reading'), findsOneWidget);
     });
 
     testWidgets('exports bookmarks as shareable JSON', (tester) async {
@@ -201,7 +201,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Imported story'), findsOneWidget);
-      expect(find.text('Tech'), findsWidgets);
+      expect(find.widgetWithText(FilterChip, 'All · 2'), findsOneWidget);
       expect(prefs.getStringList('bookmarked_articles'), hasLength(2));
     });
 

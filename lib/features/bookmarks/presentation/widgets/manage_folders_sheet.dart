@@ -122,7 +122,17 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final foldersAsync = ref.watch(bookmarkFoldersProvider);
+    final bookmarks =
+        ref.watch(bookmarksProvider).value ?? const <BookmarkedArticle>[];
+    final counts = <String, int>{};
+    for (final article in bookmarks) {
+      final folder = article.folder;
+      if (folder != null) {
+        counts[folder] = (counts[folder] ?? 0) + 1;
+      }
+    }
 
     return SafeArea(
       child: Padding(
@@ -136,10 +146,23 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Manage folders',
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    'Manage folders',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${foldersAsync.value?.length ?? 0} of $maxBookmarkFolders',
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             Row(
@@ -169,37 +192,76 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
             Flexible(
               child: foldersAsync.when(
                 data: (folders) => folders.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 16),
-                        child: Text(
-                          'No folders yet. Create one above.',
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    : ListView(
-                        shrinkWrap: true,
-                        children: [
-                          for (final folder in folders)
-                            ListTile(
-                              leading: const Icon(Icons.folder_outlined),
-                              title: Text(folder),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_outlined),
-                                    tooltip: 'Rename',
-                                    onPressed: () => _rename(folder),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline),
-                                    tooltip: 'Delete',
-                                    onPressed: () => _delete(folder),
-                                  ),
-                                ],
+                    ? Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.create_new_folder_outlined,
+                              size: 40,
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              'No folders yet. Create one above to organize your bookmarks.',
+                              textAlign: TextAlign.center,
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: theme.colorScheme.onSurfaceVariant,
                               ),
                             ),
-                        ],
+                          ],
+                        ),
+                      )
+                    : ListView.separated(
+                        shrinkWrap: true,
+                        itemCount: folders.length,
+                        separatorBuilder: (_, _) => const Divider(height: 1),
+                        itemBuilder: (context, index) {
+                          final folder = folders[index];
+                          final count = counts[folder] ?? 0;
+                          return ListTile(
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 4,
+                            ),
+                            leading: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: BoxDecoration(
+                                color: theme.colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Icon(
+                                Icons.folder,
+                                color: theme.colorScheme.onPrimaryContainer,
+                              ),
+                            ),
+                            title: Text(folder),
+                            subtitle: Text(
+                              count == 0
+                                  ? 'Empty'
+                                  : '$count article${count == 1 ? '' : 's'}',
+                            ),
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                IconButton(
+                                  icon: const Icon(Icons.edit_outlined),
+                                  tooltip: 'Rename',
+                                  onPressed: () => _rename(folder),
+                                ),
+                                IconButton(
+                                  icon: Icon(
+                                    Icons.delete_outline,
+                                    color: theme.colorScheme.error,
+                                  ),
+                                  tooltip: 'Delete',
+                                  onPressed: () => _delete(folder),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
                       ),
                 loading: () => const Center(
                   child: Padding(

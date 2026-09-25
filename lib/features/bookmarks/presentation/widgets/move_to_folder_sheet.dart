@@ -84,10 +84,21 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final folders = ref.watch(allBookmarkFoldersProvider);
     final bookmarks =
         ref.watch(bookmarksProvider).value ?? const <BookmarkedArticle>[];
     final current = _currentFolder(bookmarks);
+    final counts = <String, int>{};
+    var unsortedCount = 0;
+    for (final article in bookmarks) {
+      final folder = article.folder;
+      if (folder == null) {
+        unsortedCount++;
+      } else {
+        counts[folder] = (counts[folder] ?? 0) + 1;
+      }
+    }
 
     return SafeArea(
       child: Padding(
@@ -98,8 +109,9 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
           children: [
             Text(
               'Move to folder',
-              style: Theme.of(context).textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 12),
             Flexible(
@@ -108,6 +120,7 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
                 children: [
                   _FolderOption(
                     label: 'Unsorted',
+                    subtitle: '$unsortedCount here',
                     icon: Icons.folder_outlined,
                     selected: current == null,
                     onTap: () => _move(null),
@@ -115,6 +128,7 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
                   for (final folder in folders)
                     _FolderOption(
                       label: folder,
+                      subtitle: '${counts[folder] ?? 0} here',
                       icon: Icons.folder,
                       selected: current == folder,
                       onTap: () => _move(folder),
@@ -155,21 +169,42 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
 
 class const _FolderOption({
   required this.label,
+  required this.subtitle,
   required this.icon,
   required this.selected,
   required this.onTap,
 }) extends StatelessWidget {
   final String label;
+  final String subtitle;
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return ListTile(
-      leading: Icon(icon),
+      leading: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: selected
+              ? theme.colorScheme.primaryContainer
+              : theme.colorScheme.surfaceContainerHigh,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          icon,
+          color: selected
+              ? theme.colorScheme.onPrimaryContainer
+              : theme.colorScheme.onSurfaceVariant,
+        ),
+      ),
       title: Text(label),
-      trailing: selected ? const Icon(Icons.check) : null,
+      subtitle: Text(subtitle),
+      trailing: selected
+          ? Icon(Icons.check, color: theme.colorScheme.primary)
+          : null,
       onTap: onTap,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );

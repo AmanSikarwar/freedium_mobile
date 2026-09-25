@@ -155,6 +155,16 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
     };
     final filtered = _filtered(bookmarks);
     final hasUnsorted = bookmarks.any((item) => item.folder == null);
+    final counts = <String, int>{};
+    var unsortedCount = 0;
+    for (final item in bookmarks) {
+      final folder = item.folder;
+      if (folder == null) {
+        unsortedCount++;
+      } else {
+        counts[folder] = (counts[folder] ?? 0) + 1;
+      }
+    }
     final showFilters = folders.isNotEmpty || _folderFilter != null;
 
     final grouped = du.buildGroupedList<BookmarkedArticle>(
@@ -197,9 +207,27 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                 }
               },
               itemBuilder: (context) => const [
-                PopupMenuItem(value: 'export', child: Text('Export bookmarks')),
-                PopupMenuItem(value: 'import', child: Text('Import bookmarks')),
-                PopupMenuItem(value: 'clear', child: Text('Clear bookmarks')),
+                PopupMenuItem(
+                  value: 'export',
+                  child: _OverflowMenuRow(
+                    icon: Icons.upload_outlined,
+                    label: 'Export bookmarks',
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'import',
+                  child: _OverflowMenuRow(
+                    icon: Icons.download_outlined,
+                    label: 'Import bookmarks',
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 'clear',
+                  child: _OverflowMenuRow(
+                    icon: Icons.delete_sweep_outlined,
+                    label: 'Clear bookmarks',
+                  ),
+                ),
               ],
             ),
           ],
@@ -243,6 +271,9 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                       if (showFilters)
                         _FolderFilterBar(
                           folders: folders,
+                          counts: counts,
+                          totalCount: bookmarks.length,
+                          unsortedCount: unsortedCount,
                           hasUnsorted: hasUnsorted,
                           selected: _folderFilter,
                           onSelected: (folder) =>
@@ -330,13 +361,37 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
   }
 }
 
+class const _OverflowMenuRow({required this.icon, required this.label})
+    extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 20),
+        const SizedBox(width: 12),
+        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+      ],
+    );
+  }
+}
+
 class const _FolderFilterBar({
   required this.folders,
+  required this.counts,
+  required this.totalCount,
+  required this.unsortedCount,
   required this.hasUnsorted,
   required this.selected,
   required this.onSelected,
 }) extends StatelessWidget {
   final List<String> folders;
+  final Map<String, int> counts;
+  final int totalCount;
+  final int unsortedCount;
   final bool hasUnsorted;
 
   /// null = All, '' = Unsorted, otherwise the folder name.
@@ -345,39 +400,47 @@ class const _FolderFilterBar({
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-      child: Row(
-        children: [
-          _FilterChip(
-            label: 'All',
-            selected: selected == null,
-            onSelected: () => onSelected(null),
-          ),
-          if (hasUnsorted)
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
+        child: Row(
+          children: [
             _FilterChip(
-              label: 'Unsorted',
-              selected: selected == unsortedFolderFilter,
-              onSelected: () => onSelected(unsortedFolderFilter),
+              icon: Icons.bookmarks_outlined,
+              label: 'All · $totalCount',
+              selected: selected == null,
+              onSelected: () => onSelected(null),
             ),
-          for (final folder in folders)
-            _FilterChip(
-              label: folder,
-              selected: selected == folder,
-              onSelected: () => onSelected(folder),
-            ),
-        ],
+            if (hasUnsorted)
+              _FilterChip(
+                icon: Icons.folder_outlined,
+                label: 'Unsorted · $unsortedCount',
+                selected: selected == unsortedFolderFilter,
+                onSelected: () => onSelected(unsortedFolderFilter),
+              ),
+            for (final folder in folders)
+              _FilterChip(
+                icon: Icons.folder,
+                label: '$folder · ${counts[folder] ?? 0}',
+                selected: selected == folder,
+                onSelected: () => onSelected(folder),
+              ),
+          ],
+        ),
       ),
     );
   }
 }
 
 class const _FilterChip({
+  required this.icon,
   required this.label,
   required this.selected,
   required this.onSelected,
 }) extends StatelessWidget {
+  final IconData icon;
   final String label;
   final bool selected;
   final VoidCallback onSelected;
@@ -387,6 +450,7 @@ class const _FilterChip({
     return Padding(
       padding: const EdgeInsets.only(right: 8),
       child: FilterChip(
+        avatar: Icon(icon, size: 18),
         label: Text(label),
         selected: selected,
         onSelected: (_) => onSelected(),
