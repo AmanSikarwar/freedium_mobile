@@ -16,42 +16,45 @@ core/
   constants/     # AppConstants (freediumUrl, urlRegExp, appVersion)
 ```
 
-**Three Features**: 
-- `home/` - URL input form
-- `webview/` - article display with theme injection
+**Features** (`lib/features/`, each with `application/` + `domain/` + `presentation/`):
+- `home/` - URL input form, continue-reading, update card
+- `webview/` - article display with theme injection, reading progress
 - `settings/` - app settings, theme, mirrors configuration
+- `bookmarks/` - saved articles with folders (`BookmarkedArticle{url,title,savedAt,folder}`)
+- `history/` - reading history with progress (`ReadingHistory{url,title,timestamp,progress}`)
+- `onboarding/` - first-run flow
+- `lib/shared/` - `ArticleCard`, `LibraryListView`, search header, clear dialog, date utils
+- `lib/core/routing/` - global navigator key + route observer + webview navigation helpers
 
 ## Riverpod Patterns (Critical)
 
-Use **Notifier API** (Riverpod 3.x), NOT StateNotifier:
+Use **`@Riverpod` codegen** (`riverpod_generator`) with `keepAlive: true` for
+long-lived providers, NOT hand-written `NotifierProvider`/`NotifierProvider.family`:
 ```dart
-// Family provider for URL-specific state
-class WebviewNotifier extends Notifier<WebviewState> {
-  final String url;
-  WebviewNotifier(this.url);
-  @override WebviewState build() => WebviewState();
+@Riverpod(keepAlive: true)
+class Bookmarks extends _$Bookmarks {
+  @override
+  Future<List<BookmarkedArticle>> build() async =>
+      bookmarksService.getBookmarks();
+  ...
 }
-final webviewProvider = NotifierProvider.family<WebviewNotifier, WebviewState, String>(WebviewNotifier.new);
 
-// Simple notifier
-class HomeNotifier extends Notifier<HomeState> {
-  @override HomeState build() => HomeState(...);
+// URL-scoped state: autoDispose family via codegen
+@riverpod
+class Webview extends _$Webview {
+  Webview({required this.url});
+  ...
 }
-final homeProvider = NotifierProvider<HomeNotifier, HomeState>(HomeNotifier.new);
-
-// Settings provider with persistence
-class SettingsNotifier extends Notifier<SettingsState> {
-  @override SettingsState build() => _loadFromPrefs();
-}
-final settingsProvider = NotifierProvider<SettingsNotifier, SettingsState>(SettingsNotifier.new);
 ```
 
 **Provider Types Used**:
-- `NotifierProvider.family` → URL-specific state (`webviewProvider`)
-- `NotifierProvider` → Singleton state (`homeProvider`, `settingsProvider`)
-- `StreamProvider` → Intent stream (`intentStreamProvider`)
-- `FutureProvider` → Async init (`dynamicThemeProvider`, `activeFreediumUrlProvider`)
-- `Provider` → Services (`intentServiceProvider`, `clipboardServiceProvider`, `freediumUrlServiceProvider`)
+- `@Riverpod(keepAlive: true)` class → singleton state (`Home`, `Settings`, `History`, `Bookmarks`, `Onboarding`)
+- `@riverpod` class with constructor args → URL/family state (`Webview(url)`)
+- `@riverpod` function → derived/stream/future (`intentStreamProvider`, `dynamicThemeProvider`)
+- `Provider` → services (`intentServiceProvider`, `clipboardServiceProvider`, `freediumUrlServiceProvider`)
+
+**Domain models**: Freezed (`freezed` + `json_serializable`, `copyWith()` for
+immutability). Regenerate with `dart run build_runner build --delete-conflicting-outputs`.
 
 **State Updates**: Always `copyWith()` for immutability:
 ```dart

@@ -203,8 +203,7 @@ class Webview() extends _$Webview {
               controller
                   .runJavaScript(preScript)
                   .catchError(
-                    (Object e) =>
-                        debugPrint('Pre-theme injection failed: $e'),
+                    (Object e) => debugPrint('Pre-theme injection failed: $e'),
                   );
             }
           },

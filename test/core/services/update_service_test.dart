@@ -16,8 +16,8 @@ void main() {
 
         return http.Response(
           jsonEncode({
-            'tag_name': 'v0.11.0',
-            'html_url': 'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
+            'tag_name': 'v0.14.0',
+            'html_url': 'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.14.0',
             'body': null,
           }),
           200,
@@ -27,10 +27,10 @@ void main() {
       final updateInfo = await UpdateService(client: client).checkForUpdate();
 
       expect(updateInfo, isNotNull);
-      expect(updateInfo!.latestVersion, 'v0.11.0');
+      expect(updateInfo!.latestVersion, 'v0.14.0');
       expect(
         updateInfo.releaseUrl,
-        'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
+        'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.14.0',
       );
       expect(updateInfo.releaseNotes, isEmpty);
     });
@@ -39,8 +39,8 @@ void main() {
       final client = MockClient((request) async {
         return http.Response(
           jsonEncode({
-            'tag_name': ' V0.11.0 ',
-            'html_url': ' https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0 ',
+            'tag_name': ' V0.14.0 ',
+            'html_url': ' https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.14.0 ',
             'body': ['not a string'],
           }),
           200,
@@ -50,10 +50,10 @@ void main() {
       final updateInfo = await UpdateService(client: client).checkForUpdate();
 
       expect(updateInfo, isNotNull);
-      expect(updateInfo!.latestVersion, 'v0.11.0');
+      expect(updateInfo!.latestVersion, 'v0.14.0');
       expect(
         updateInfo.releaseUrl,
-        'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
+        'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.14.0',
       );
       expect(updateInfo.releaseNotes, isEmpty);
     });
@@ -62,7 +62,7 @@ void main() {
       final client = MockClient((request) async {
         return http.Response(
           jsonEncode({
-            'tag_name': 'v0.11.0',
+            'tag_name': 'v0.14.0',
             'html_url': 'not a url',
             'body': 'Release notes',
           }),

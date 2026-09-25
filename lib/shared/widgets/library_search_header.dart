@@ -8,14 +8,13 @@ import 'package:freedium_mobile/shared/widgets/article_card.dart'
 /// Extracts the previously duplicated search header: fixed heights, centered
 /// max-width constrained [SearchBar] with a clear button.
 class const LibrarySearchHeader({
-    super.key,
-    required this.controller,
-    required this.hintText,
-    required this.query,
-    required this.onChanged,
-    required this.onClear,
-  }) extends StatelessWidget
-    implements PreferredSizeWidget {
+  super.key,
+  required this.controller,
+  required this.hintText,
+  required this.query,
+  required this.onChanged,
+  required this.onClear,
+}) extends StatelessWidget implements PreferredSizeWidget {
   static const double searchBarHeight = 56.0;
   static const double searchBarBottomPadding = 8.0;
   static const double searchAreaHeight =

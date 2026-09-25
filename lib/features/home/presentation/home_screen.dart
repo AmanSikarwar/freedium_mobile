@@ -144,7 +144,9 @@ class _HomeScreenState()
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute<void>(builder: (context) => const HistoryScreen()),
+                MaterialPageRoute<void>(
+                  builder: (context) => const HistoryScreen(),
+                ),
               );
             },
             tooltip: 'History',
@@ -155,7 +157,9 @@ class _HomeScreenState()
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute<void>(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute<void>(
+                  builder: (context) => const SettingsScreen(),
+                ),
               );
             },
             tooltip: 'Settings',

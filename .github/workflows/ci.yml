@@ -24,7 +24,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
         with:
-          channel: "beta"
+          channel: "stable"
           cache: true
 
       - uses: actions/setup-java@v6.0.1
@@ -33,7 +33,7 @@ jobs:
           java-version: "17"
 
       - name: Install dependencies
-        run: flutter pub get
+        run: flutter pub get --enforce-lockfile
 
       - name: Check formatting
         run: dart format --set-exit-if-changed .

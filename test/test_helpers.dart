@@ -122,8 +122,8 @@ class FakeClipboardService([this.text]) extends ClipboardService {
 /// Unifies the two same-named `_FakeIntentService` fakes: callers that only
 /// need `getInitialIntent` use the default empty stream.
 class FakeIntentService([
-    this._intentStream = const Stream<List<SharedMediaFile>>.empty(),
-  ]) extends IntentService {
+  this._intentStream = const Stream<List<SharedMediaFile>>.empty(),
+]) extends IntentService {
   final Stream<List<SharedMediaFile>> _intentStream;
   int resetRequests = 0;
 

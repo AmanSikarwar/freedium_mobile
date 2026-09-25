@@ -55,7 +55,9 @@ Future<void> _pumpApp({
         intentServiceProvider.overrideWith(
           (ref) => intentService ?? FakeIntentService(),
         ),
-        intentStreamProvider.overrideWith((ref) => const Stream<String>.empty()),
+        intentStreamProvider.overrideWith(
+          (ref) => const Stream<String>.empty(),
+        ),
         updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
       ],
       child: const App(),

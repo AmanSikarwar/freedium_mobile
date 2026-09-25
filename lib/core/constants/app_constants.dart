@@ -9,6 +9,6 @@ class AppConstants() {
       'https://github.com/AmanSikarwar/freedium_mobile';
   static const String appVersion = .fromEnvironment(
     'APP_VERSION',
-    defaultValue: '0.10.0',
+    defaultValue: '0.13.0',
   );
 }
