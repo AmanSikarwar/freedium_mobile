@@ -698,3 +698,60 @@ article iframe {
   background: var(--app-outline) !important;
   border-radius: 5px !important;
 }
+
+/* ============================================================
+   SHIKI TOKEN RECOLOR FALLBACKS
+   ============================================================
+   The JS recolor pass (recolorShikiTokens) is primary; these rules
+   cover tokens in blocks rendered after the delayed passes. Hexes are
+   the canonical Shiki github-light/github-dark foregrounds.
+   ============================================================ */
+
+/* Light variant */
+html:not(.dark) pre.shiki.github-light code span[style*="#24292e" i] {
+  color: var(--app-on-surface) !important;
+}
+html:not(.dark) pre.shiki.github-light code span[style*="#6a737d" i],
+html:not(.dark) pre.shiki.github-light code span[style*="#586069" i] {
+  color: var(--app-on-surface-variant) !important;
+}
+html:not(.dark) pre.shiki.github-light code span[style*="#d73a49" i],
+html:not(.dark) pre.shiki.github-light code span[style*="#b31d28" i] {
+  color: var(--app-error) !important;
+}
+html:not(.dark) pre.shiki.github-light code span[style*="#032f62" i] {
+  color: var(--app-primary) !important;
+}
+html:not(.dark) pre.shiki.github-light code span[style*="#6f42c1" i],
+html:not(.dark) pre.shiki.github-light code span[style*="#22863a" i] {
+  color: var(--app-tertiary) !important;
+}
+html:not(.dark) pre.shiki.github-light code span[style*="#005cc5" i],
+html:not(.dark) pre.shiki.github-light code span[style*="#e36209" i] {
+  color: var(--app-secondary) !important;
+}
+
+/* Dark variant */
+html.dark pre.shiki.github-dark code span[style*="#e1e4e8" i] {
+  color: var(--app-on-surface) !important;
+}
+html.dark pre.shiki.github-dark code span[style*="#6a737d" i],
+html.dark pre.shiki.github-dark code span[style*="#d1d5da" i] {
+  color: var(--app-on-surface-variant) !important;
+}
+html.dark pre.shiki.github-dark code span[style*="#f97583" i],
+html.dark pre.shiki.github-dark code span[style*="#fdaeb7" i] {
+  color: var(--app-error) !important;
+}
+html.dark pre.shiki.github-dark code span[style*="#9ecbff" i],
+html.dark pre.shiki.github-dark code span[style*="#dbedff" i] {
+  color: var(--app-primary) !important;
+}
+html.dark pre.shiki.github-dark code span[style*="#b392f0" i],
+html.dark pre.shiki.github-dark code span[style*="#85e89d" i] {
+  color: var(--app-tertiary) !important;
+}
+html.dark pre.shiki.github-dark code span[style*="#79b8ff" i],
+html.dark pre.shiki.github-dark code span[style*="#ffab70" i] {
+  color: var(--app-secondary) !important;
+}

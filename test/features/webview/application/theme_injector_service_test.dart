@@ -72,6 +72,40 @@ void main() {
       expect(script, contains('article blockquote'));
     });
 
+    test('recolors Shiki code tokens to the app palette', () async {
+      final service = ThemeInjectorService();
+      final script = await service.getThemeInjectionScript(
+        ColorScheme.fromSeed(seedColor: Colors.teal),
+      );
+
+      expect(script, contains('recolorShikiTokens'));
+      expect(script, contains('SHIKI_ROLE_HEXES'));
+      expect(script, contains('pre.shiki code span[style]'));
+      // Canonical github-light/github-dark foregrounds are all mapped.
+      for (final hex in [
+        '#24292e',
+        '#e1e4e8',
+        '#6a737d',
+        '#d73a49',
+        '#f97583',
+        '#032f62',
+        '#9ecbff',
+        '#6f42c1',
+        '#b392f0',
+        '#005cc5',
+        '#79b8ff',
+        '#e36209',
+        '#ffab70',
+        '#22863a',
+        '#85e89d',
+      ]) {
+        expect(script, contains(hex));
+      }
+      expect(script, contains('--app-error'));
+      expect(script, contains('--app-tertiary'));
+      expect(script, contains('--app-secondary'));
+    });
+
     test('pre-theme script primes mode-watcher and Freedium tokens', () {
       final service = ThemeInjectorService();
       final script = service.getPreThemeScript(
