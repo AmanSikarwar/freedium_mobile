@@ -9,18 +9,19 @@ import 'package:freedium_mobile/shared/widgets/article_card.dart';
 /// this widget owns the [ListView] shell, date-group headers, swipe to
 /// remove, and [ArticleCard] wiring.
 class const LibraryListView<T extends Object>({
-    super.key,
-    required this.grouped,
-    required this.keyFor,
-    required this.titleFor,
-    required this.subtitleFor,
-    required this.urlFor,
-    required this.progressFor,
-    required this.trailingFor,
-    required this.onRemove,
-    required this.removeFailMessage,
-    required this.onTap,
-  }) extends StatelessWidget {
+  super.key,
+  required this.grouped,
+  required this.keyFor,
+  required this.titleFor,
+  required this.subtitleFor,
+  required this.urlFor,
+  required this.progressFor,
+  required this.trailingFor,
+  required this.onRemove,
+  required this.removeFailMessage,
+  required this.onTap,
+  this.badgeFor,
+}) extends StatelessWidget {
   /// `(groupLabel, item)` entries, e.g. from `buildGroupedList`.
   final List<(String, T)> grouped;
   final String Function(T item) keyFor;
@@ -29,6 +30,10 @@ class const LibraryListView<T extends Object>({
   final String Function(T item) urlFor;
   final double? Function(T item) progressFor;
   final Widget? Function(T item) trailingFor;
+
+  /// Optional per-item badge label (e.g. bookmark folder). Null everywhere
+  /// when unused.
+  final String? Function(T item)? badgeFor;
 
   /// Removes [item]; returns true when the removal persisted.
   final Future<bool> Function(T item) onRemove;
@@ -70,6 +75,7 @@ class const LibraryListView<T extends Object>({
                 url: urlFor(item),
                 progress: progressFor(item),
                 trailingIcon: trailingFor(item),
+                badge: badgeFor?.call(item),
                 onTap: () => onTap(item),
               ),
             ),

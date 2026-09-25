@@ -13,6 +13,7 @@ class const ArticleCard({
   required this.onTap,
   this.trailingIcon,
   this.progress,
+  this.badge,
 }) extends StatelessWidget {
   final String title;
   final String subtitle;
@@ -20,6 +21,9 @@ class const ArticleCard({
   final VoidCallback onTap;
   final Widget? trailingIcon;
   final double? progress;
+
+  /// Optional small label chip (e.g. bookmark folder) shown under the source.
+  final String? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -105,6 +109,40 @@ class const ArticleCard({
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (badge != null && badge!.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.folder_outlined,
+                              size: 12,
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                badge!,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (progress case final progress?) ...[
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
