@@ -41,6 +41,15 @@ dev_dependencies:
   freezed: ^4.0.2
   json_serializable: ^6.14.1
 
+# Forced past the ceiling of flutter_launcher_icons (cli_util).
+# Re-verify with flutter test, flutter analyze and an APK build after
+# any pub upgrade. cross_file is intentionally NOT overridden: 0.4.0 is
+# a breaking major that share_plus 13.3.0 does not compile against.
+# test_api and material_color_utilities are pinned by the Flutter SDK
+# itself and intentionally left alone.
+dependency_overrides:
+  cli_util: ^0.6.0
+
 flutter:
   uses-material-design: true
   assets:
