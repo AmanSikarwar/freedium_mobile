@@ -485,14 +485,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.1"
-  listen_sharing_intent:
-    dependency: "direct main"
-    description:
-      name: listen_sharing_intent
-      sha256: df12e6c78666018985c39df494fc12412ece6510c38c79fe1230f2abef0965fa
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.9.2"
   logging:
     dependency: transitive
     description:
@@ -677,6 +669,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.6.0"
+  receive_intent:
+    dependency: "direct main"
+    description:
+      name: receive_intent
+      sha256: "0fdb0bf57e6759f586803c4a42e35fbe9e49ee948298c6d2ae75bf99c06be005"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.8"
   record_use:
     dependency: transitive
     description:
