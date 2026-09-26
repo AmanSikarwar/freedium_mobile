@@ -3,42 +3,80 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+import 'package:receive_intent/receive_intent.dart';
 
 import '../../test_helpers.dart';
 
-class _ThrowingResetSharingIntent() extends ReceiveSharingIntent {
-  int resetRequests = 0;
-
+class _ThrowingGateway() extends ReceiveIntentGateway {
   @override
-  Future<List<SharedMediaFile>> getInitialMedia() async => <SharedMediaFile>[];
-
-  @override
-  Stream<List<SharedMediaFile>> getMediaStream() => const Stream.empty();
-
-  @override
-  Future<dynamic> reset() async {
-    resetRequests++;
-    throw Exception('reset unavailable');
+  Future<Intent?> getInitialIntent() async {
+    throw Exception('initial intent unavailable');
   }
 }
 
+Intent _sendIntent(String text) => Intent(
+  isNull: false,
+  action: 'android.intent.action.SEND',
+  extra: {intentExtraText: text},
+);
+
+Intent _viewIntent(String data) =>
+    Intent(isNull: false, action: 'android.intent.action.VIEW', data: data);
+
 void main() {
+  group('intentShareText', () {
+    test('reads VIEW data URIs', () {
+      expect(
+        intentShareText(_viewIntent(' https://medium.com/example/story ')),
+        'https://medium.com/example/story',
+      );
+    });
+
+    test('reads SEND extra text', () {
+      expect(
+        intentShareText(_sendIntent('Read this: https://medium.com/x')),
+        'Read this: https://medium.com/x',
+      );
+    });
+
+    test('rejects null, empty and textless intents', () {
+      expect(intentShareText(null), isNull);
+      expect(intentShareText(const Intent()), isNull);
+      expect(intentShareText(_viewIntent('   ')), isNull);
+      expect(intentShareText(_sendIntent('   ')), isNull);
+      expect(
+        intentShareText(
+          const Intent(action: 'android.intent.action.SEND', extra: {}),
+        ),
+        isNull,
+      );
+      expect(
+        intentShareText(
+          const Intent(
+            action: 'android.intent.action.SEND',
+            extra: {'other': 'https://medium.com/x'},
+          ),
+        ),
+        isNull,
+      );
+    });
+  });
+
   group('IntentService', () {
-    test('suppresses plugin reset failures', () async {
-      final sharingIntent = _ThrowingResetSharingIntent();
-      final intentService = IntentService(sharingIntent: sharingIntent);
+    test('delegates lookup failures to callers', () async {
+      final intentService = IntentService(gateway: _ThrowingGateway());
 
-      await intentService.reset();
-
-      expect(sharingIntent.resetRequests, 1);
+      await expectLater(
+        intentService.getInitialIntent(),
+        throwsA(isA<Exception>()),
+      );
     });
   });
 
   group('intentStreamProvider', () {
-    test('emits shared article URLs and resets consumed intents', () async {
-      final mediaController = StreamController<List<SharedMediaFile>>();
-      final intentService = FakeIntentService(mediaController.stream);
+    test('emits shared article URLs without reset semantics', () async {
+      final intentController = StreamController<Intent?>();
+      final intentService = FakeIntentService(intentController.stream);
       final container = ProviderContainer(
         overrides: [intentServiceProvider.overrideWith((ref) => intentService)],
       );
@@ -58,25 +96,28 @@ void main() {
       addTearDown(() async {
         subscription.close();
         container.dispose();
-        await mediaController.close();
+        await intentController.close();
       });
 
-      mediaController.add([
-        SharedMediaFile(
-          path: 'Read this: https://Medium.COM/example/story/',
-          type: SharedMediaType.text,
-        ),
-      ]);
+      intentController.add(
+        _sendIntent('Read this: https://Medium.COM/example/story/'),
+      );
+      await Future<void>.delayed(Duration.zero);
+      intentController.add(_viewIntent('https://medium.com/example/other'));
+      await Future<void>.delayed(Duration.zero);
+      intentController.add(_sendIntent('no url here'));
       await Future<void>.delayed(Duration.zero);
 
-      expect(emittedUrls, [TestFixtures.storyUrl]);
+      expect(emittedUrls, [
+        TestFixtures.storyUrl,
+        'https://medium.com/example/other',
+      ]);
       expect(providerErrors, isEmpty);
-      expect(intentService.resetRequests, 1);
     });
 
     test('keeps listening when the platform stream emits an error', () async {
-      final mediaController = StreamController<List<SharedMediaFile>>();
-      final intentService = FakeIntentService(mediaController.stream);
+      final intentController = StreamController<Intent?>();
+      final intentService = FakeIntentService(intentController.stream);
       final container = ProviderContainer(
         overrides: [intentServiceProvider.overrideWith((ref) => intentService)],
       );
@@ -96,22 +137,16 @@ void main() {
       addTearDown(() async {
         subscription.close();
         container.dispose();
-        await mediaController.close();
+        await intentController.close();
       });
 
-      mediaController.addError(Exception('share stream unavailable'));
+      intentController.addError(Exception('share stream unavailable'));
       await Future<void>.delayed(Duration.zero);
-      mediaController.add([
-        SharedMediaFile(
-          path: TestFixtures.storyUrl,
-          type: SharedMediaType.text,
-        ),
-      ]);
+      intentController.add(_sendIntent(TestFixtures.storyUrl));
       await Future<void>.delayed(Duration.zero);
 
       expect(providerErrors, isEmpty);
       expect(emittedUrls, [TestFixtures.storyUrl]);
-      expect(intentService.resetRequests, 1);
     });
   });
 }

@@ -9,14 +9,14 @@ import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'test_helpers.dart';
 
 class _FailingIntentService() extends IntentService {
   @override
-  Future<List<SharedMediaFile>> getInitialIntent() async {
+  Future<platform.Intent?> getInitialIntent() async {
     throw Exception('initial intent unavailable');
   }
 }
@@ -25,9 +25,9 @@ class _RecordingIntentService() extends IntentService {
   int initialIntentRequests = 0;
 
   @override
-  Future<List<SharedMediaFile>> getInitialIntent() async {
+  Future<platform.Intent?> getInitialIntent() async {
     initialIntentRequests++;
-    return <SharedMediaFile>[];
+    return null;
   }
 }
 

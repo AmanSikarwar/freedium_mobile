@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
@@ -117,24 +117,21 @@ class FakeClipboardService([this.text]) extends ClipboardService {
   }
 }
 
-/// Configurable [IntentService] fake with a scripted stream.
+/// Configurable [IntentService] fake with a scripted stream and initial
+/// intent.
 ///
-/// Unifies the two same-named `_FakeIntentService` fakes: callers that only
-/// need `getInitialIntent` use the default empty stream.
+/// Callers that only need `getInitialIntent` pass it positionally and
+/// read nothing back from the default empty stream.
 class FakeIntentService([
-  this._intentStream = const Stream<List<SharedMediaFile>>.empty(),
+  this._intentStream = const Stream<platform.Intent?>.empty(),
+  this._initialIntent,
 ]) extends IntentService {
-  final Stream<List<SharedMediaFile>> _intentStream;
-  int resetRequests = 0;
+  final Stream<platform.Intent?> _intentStream;
+  final platform.Intent? _initialIntent;
 
   @override
-  Stream<List<SharedMediaFile>> get intentStream => _intentStream;
+  Stream<platform.Intent?> get intentStream => _intentStream;
 
   @override
-  Future<List<SharedMediaFile>> getInitialIntent() async => <SharedMediaFile>[];
-
-  @override
-  Future<void> reset() async {
-    resetRequests++;
-  }
+  Future<platform.Intent?> getInitialIntent() async => _initialIntent;
 }
