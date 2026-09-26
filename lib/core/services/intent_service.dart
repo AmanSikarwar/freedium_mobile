@@ -25,9 +25,7 @@ String? intentShareText(platform.Intent? intent) {
 }
 
 /// Thin seam over the static ReceiveIntent API for testability.
-class ReceiveIntentGateway {
-  const ReceiveIntentGateway();
-
+class const ReceiveIntentGateway() {
   Future<platform.Intent?> getInitialIntent() =>
       platform.ReceiveIntent.getInitialIntent();
 
