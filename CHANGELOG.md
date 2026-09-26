@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Changed
+
+- Replaced `listen_sharing_intent` with `receive_intent` (pinned 0.2.8)
+  for share-to-app intents: VIEW data URIs and SEND extra text are mapped
+  through `intentShareText`, with no media-file handling (unused) and no
+  reset API (initial intents are consumed exactly once). This removes the
+  last Kotlin Gradle Plugin build warning.
+
 ## [0.13.0] - 2026-09-26
 
 ### Added

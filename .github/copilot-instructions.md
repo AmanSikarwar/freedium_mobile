@@ -107,16 +107,20 @@ controller.addJavaScriptChannel('themeApplied', onMessageReceived: ...);
 
 ## Intent Handling (Share-to-App)
 
-**Two-phase system** (`lib/app.dart`, `intent_service.dart`):
+**Two-phase system** (`lib/app.dart`, `intent_service.dart`, via
+`receive_intent` behind the injectable `ReceiveIntentGateway`):
 - **Initial**: `getInitialIntent()` on app launch (with 400ms delay for UI ready)
 - **Streaming**: `intentStreamProvider` for intents while app is running
+
+**Mapping**: `intentShareText()` takes the VIEW data URI or SEND
+`EXTRA_TEXT`; URL validation stays in `article_url_parser.dart`.
 
 **Duplicate Prevention** (critical):
 ```dart
 // Check if already on webview route before navigating
 final isCurrentlyOnWebview = currentRoute?.settings.name?.startsWith('/webview/') ?? false;
-// Always reset after navigation and in dispose()
-ReceiveSharingIntent.instance.reset();
+// No reset API exists: getInitialIntent() replays the launching intent,
+// so consume the initial intent exactly once per launch.
 ```
 
 ## Navigation
@@ -160,7 +164,7 @@ dart format .                # Format code
 1. **State**: Always `copyWith()`, never mutate directly
 2. **Errors**: Try-catch with `debugPrint()` fallbacks (see `_injectTheme`)
 3. **Navigation**: Check `context.mounted` before async navigation
-4. **Intents**: Always `ReceiveSharingIntent.instance.reset()` on disposal
+4. **Intents**: Consume the initial intent exactly once (no reset API); fake via `FakeIntentService` / `ReceiveIntentGateway` subclasses
 5. **Theme injection**: Only for configured Freedium mirror URLs
 6. **Logging**: Use `debugPrint()`, not `print()`
 7. **Widgets**: Use `ConsumerStatefulWidget` for stateful screens needing `ref`
