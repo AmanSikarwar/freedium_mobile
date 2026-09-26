@@ -64,7 +64,6 @@ class const App({super.key}) extends ConsumerWidget {
     }
 
     _navigateToWebview(url);
-    unawaited(ref.read(intentServiceProvider).reset());
   }
 
   Future<void> _processInitialIntent(
@@ -75,13 +74,14 @@ class const App({super.key}) extends ConsumerWidget {
     if (!context.mounted) return;
 
     try {
-      final value = await ref.read(intentServiceProvider).getInitialIntent();
+      // Single consumption: the plugin replays the launching intent.
+      final intent = await ref.read(intentServiceProvider).getInitialIntent();
       if (!context.mounted) return;
 
-      final url = extractFirstArticleUrl(value.map((item) => item.path));
-      if (url == null) return;
+      final text = intentShareText(intent);
+      if (text == null) return;
 
-      _handleIncomingIntent(ref, url);
+      _handleIncomingIntent(ref, text);
     } catch (e) {
       debugPrint('Failed to process initial intent: $e');
     }
@@ -103,7 +103,6 @@ class const App({super.key}) extends ConsumerWidget {
 
       ref.read(pendingIntentUrlProvider.notifier).clear();
       _navigateToWebview(pendingUrl);
-      unawaited(ref.read(intentServiceProvider).reset());
     });
 
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {

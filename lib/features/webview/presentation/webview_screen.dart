@@ -5,7 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
-import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
@@ -38,12 +37,10 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
   WebViewController? _controller;
   ColorScheme? _prevColorScheme;
-  late final IntentService _intentService;
 
   @override
   void initState() {
     super.initState();
-    _intentService = ref.read(intentServiceProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeWebView();
     });
@@ -79,12 +76,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
 
   @override
   void dispose() {
-    _resetSharingIntent();
     super.dispose();
-  }
-
-  void _resetSharingIntent() {
-    unawaited(_intentService.reset());
   }
 
   Future<void> _toggleBookmark(
@@ -175,7 +167,6 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                _resetSharingIntent();
                 navigator.pop();
               }
             });
@@ -187,7 +178,6 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                _resetSharingIntent();
                 navigator.pushReplacement(
                   MaterialPageRoute<void>(
                     builder: (context) => const HomeScreen(),

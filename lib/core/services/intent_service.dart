@@ -1,31 +1,48 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
 
 part 'intent_service.g.dart';
 
-class IntentService({ReceiveSharingIntent? sharingIntent}) {
-  this : _sharingIntent = sharingIntent ?? ReceiveSharingIntent.instance;
+/// Extra key carrying shared text in SEND intents.
+const String intentExtraText = 'android.intent.extra.TEXT';
 
-  final ReceiveSharingIntent _sharingIntent;
-
-  Stream<List<SharedMediaFile>> get intentStream =>
-      _sharingIntent.getMediaStream();
-
-  Future<List<SharedMediaFile>> getInitialIntent() async {
-    return _sharingIntent.getInitialMedia();
+/// Extracts shareable text from a raw platform intent: the data URI for
+/// VIEW intents, `EXTRA_TEXT` otherwise. Returns null for null/empty or
+/// textless intents. URL validation stays with [extractArticleUrl].
+String? intentShareText(platform.Intent? intent) {
+  if (intent == null || intent.isNull) return null;
+  if (intent.action == 'android.intent.action.VIEW') {
+    final data = intent.data?.trim();
+    return (data == null || data.isEmpty) ? null : data;
   }
+  final text = intent.extra?[intentExtraText];
+  if (text is! String) return null;
+  return text.trim().isEmpty ? null : text;
+}
 
-  Future<void> reset() async {
-    try {
-      await _sharingIntent.reset();
-    } catch (e) {
-      debugPrint('Failed to reset sharing intent: $e');
-    }
-  }
+/// Thin seam over the static ReceiveIntent API for testability.
+class ReceiveIntentGateway {
+  const ReceiveIntentGateway();
+
+  Future<platform.Intent?> getInitialIntent() =>
+      platform.ReceiveIntent.getInitialIntent();
+
+  Stream<platform.Intent?> get intentStream =>
+      platform.ReceiveIntent.receivedIntentStream;
+}
+
+class IntentService({this.gateway = const ReceiveIntentGateway()}) {
+  final ReceiveIntentGateway gateway;
+
+  Stream<platform.Intent?> get intentStream => gateway.intentStream;
+
+  /// NOTE: the plugin replays the launching intent on every call (there is
+  /// no reset API), so callers must consume the result exactly once.
+  Future<platform.Intent?> getInitialIntent() => gateway.getInitialIntent();
 }
 
 @Riverpod(keepAlive: true)
@@ -43,13 +60,13 @@ Stream<String> intentStream(Ref ref) {
   }
 
   final sub = intentService.intentStream.listen(
-    (value) {
+    (intent) {
       if (controller.isClosed) return;
 
-      final url = extractFirstArticleUrl(value.map((item) => item.path));
+      final text = intentShareText(intent);
+      final url = text == null ? null : extractArticleUrl(text);
       if (url != null) {
         controller.add(url);
-        unawaited(intentService.reset());
       }
     },
     onError: (Object e, StackTrace stack) {
@@ -61,7 +78,6 @@ Stream<String> intentStream(Ref ref) {
   ref.onDispose(() {
     unawaited(sub.cancel());
     closeController();
-    unawaited(intentService.reset());
   });
 
   return controller.stream;
