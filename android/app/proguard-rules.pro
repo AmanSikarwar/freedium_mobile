@@ -23,8 +23,8 @@
 # Keep url_launcher classes
 -keep class io.flutter.plugins.urllauncher.** { *; }
 
-# Keep listen_sharing_intent classes
--keep class com.kasem.receive_sharing_intent.** { *; }
+# Keep receive_intent classes
+-keep class com.bhikadia.receive_intent.** { *; }
 
 # Keep shared_preferences classes
 -keep class io.flutter.plugins.sharedpreferences.** { *; }

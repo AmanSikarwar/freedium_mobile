@@ -29,6 +29,9 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // The app ships English-only; strip translated strings bundled by
+        // libraries (material, webview, androidx) to shrink resources.arsc.
+        resourceConfigurations.add("en")
     }
 
     signingConfigs {
