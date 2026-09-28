@@ -1,69 +1,50 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart' show ColorScheme, Colors;
+import 'package:material_ui/material_ui.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show trimTrailingSlash;
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
+import 'package:freedium_mobile/features/webview/application/webview_error_mapper.dart'
+    show getUserFriendlyWebviewErrorMessage;
+import 'package:freedium_mobile/features/webview/application/webview_navigation_policy.dart'
+    show
+        WebviewNavigationAction,
+        buildReadingProgressRestoreScript,
+        resolveWebviewNavigationAction;
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
 
+export 'webview_error_mapper.dart' show getUserFriendlyWebviewErrorMessage;
+export 'webview_navigation_policy.dart'
+    show
+        WebviewNavigationAction,
+        buildReadingProgressRestoreScript,
+        resolveWebviewNavigationAction;
+
+part 'webview_provider.g.dart';
+
 typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 
-@visibleForTesting
-enum WebviewNavigationAction { navigate, launchExternal, block }
-
-@visibleForTesting
-WebviewNavigationAction resolveWebviewNavigationAction({
-  required String requestUrl,
-  required bool Function(String url) isFreediumUrl,
-}) {
-  final uri = parseExternalHttpUrl(requestUrl);
-  if (uri == null) {
-    return WebviewNavigationAction.block;
-  }
-
-  if (isFreediumUrl(uri.toString())) {
-    return WebviewNavigationAction.navigate;
-  }
-
-  return WebviewNavigationAction.launchExternal;
-}
-
-@visibleForTesting
-String buildReadingProgressRestoreScript(double progress) {
-  final normalizedProgress = normalizeReadingProgress(progress);
-  return '''
-    (function () {
-      const progress = $normalizedProgress;
-      const restore = function () {
-        const root = document.documentElement;
-        const height = Math.max(root.scrollHeight, document.body.scrollHeight);
-        const scrollable = Math.max(0, height - window.innerHeight);
-        window.scrollTo(0, Math.round(scrollable * progress));
-      };
-      requestAnimationFrame(restore);
-      setTimeout(restore, 300);
-      setTimeout(restore, 1000);
-    })();
-  ''';
-}
-
-class WebviewNotifier extends Notifier<WebviewState> {
+@riverpod
+class Webview() extends _$Webview {
   late ThemeInjectorService _themeInjector;
   late FreediumUrlService _freediumUrlService;
   WebViewController? _controller;
   ColorScheme? _colorScheme;
-  final String url;
   int _currentMirrorIndex = 0;
   int _retryCount = 0;
   bool _hasSwitchedMirror = false;
@@ -74,14 +55,16 @@ class WebviewNotifier extends Notifier<WebviewState> {
   static const Duration _articleMetaWaitDuration = Duration(milliseconds: 900);
   static const int _maxRetries = 3;
 
-  WebviewNotifier(this.url);
-
   @override
-  WebviewState build() {
+  WebviewState build(String url) {
     _freediumUrlService = ref.read(freediumUrlServiceProvider);
 
     ref.listen<double>(
-      settingsProvider.select((settings) => settings.defaultFontSize),
+      settingsProvider.select(
+        (settings) =>
+            settings.value?.defaultFontSize ??
+            SettingsState.defaultDefaultFontSize,
+      ),
       (previous, next) {
         final normalizedFontSize = FontSizeService.normalizeFontSize(next);
         if (!ref.mounted || state.fontSize == normalizedFontSize) {
@@ -104,7 +87,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
     return WebviewState(
       fontSize: FontSizeService.normalizeFontSize(
-        ref.read(settingsProvider).defaultFontSize,
+        ref.read(settingsProvider).value?.defaultFontSize ??
+            SettingsState.defaultDefaultFontSize,
       ),
     );
   }
@@ -120,7 +104,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
     final currentUrl = state.currentUrl;
     if (!ref.mounted ||
-        state.controller == null ||
+        _controller == null ||
         currentUrl == null ||
         !_freediumUrlService.isFreediumUrl(currentUrl)) {
       return;
@@ -132,7 +116,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   /// Clears the one-shot [WebviewState.userMessage] after the screen has
   /// displayed it as a SnackBar.
   void clearUserMessage() {
-    state = state.copyWith(clearUserMessage: true);
+    state = state.copyWith(userMessage: null);
   }
 
   WebViewController createController({String? baseUrl}) {
@@ -207,8 +191,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
               progress: 0,
               currentUrl: url,
               hasError: false,
-              clearErrorMessage: true,
-              clearArticleMeta: true,
+              errorMessage: null,
+              articleMeta: null,
             );
             // Inject the pre-theme script as early as possible so the page's
             // own inline scripts read the correct localStorage.theme value and
@@ -219,7 +203,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
               controller
                   .runJavaScript(preScript)
                   .catchError(
-                    (e) => debugPrint('Pre-theme injection failed: $e'),
+                    (Object e) => debugPrint('Pre-theme injection failed: $e'),
                   );
             }
           },
@@ -278,15 +262,13 @@ class WebviewNotifier extends Notifier<WebviewState> {
       }
     }
 
-    state = state.copyWith(
-      controller: controller,
-      activeBaseUrl: activeBaseUrl,
-    );
+    state = state.copyWith(activeBaseUrl: activeBaseUrl);
     return controller;
   }
 
   void _setCurrentMirrorIndex(String baseUrl) {
-    final mirrors = ref.read(settingsProvider).mirrors;
+    final mirrors =
+        ref.read(settingsProvider).value?.mirrors ?? const <FreediumMirror>[];
     final mirrorIndex = mirrors.indexWhere((mirror) => mirror.url == baseUrl);
     _currentMirrorIndex = mirrorIndex >= 0 ? mirrorIndex : 0;
   }
@@ -302,10 +284,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   String _normalizeUrl(String value) {
     try {
       final uri = Uri.parse(value);
-      var normalizedPath = uri.path;
-      while (normalizedPath.length > 1 && normalizedPath.endsWith('/')) {
-        normalizedPath = normalizedPath.substring(0, normalizedPath.length - 1);
-      }
+      final normalizedPath = trimTrailingSlash(uri.path);
       return uri.replace(path: normalizedPath, fragment: '').toString();
     } catch (_) {
       return value;
@@ -320,7 +299,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   Future<void> _handleLoadError(WebResourceError error) async {
-    final settings = ref.read(settingsProvider);
+    final settings = ref.read(settingsProvider).value ?? const SettingsState();
 
     if (settings.autoSwitchMirror &&
         _retryCount < _maxRetries &&
@@ -344,7 +323,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
         articleUrl: url,
       );
       state = state.copyWith(activeBaseUrl: nextMirror.url);
-      state.controller?.loadRequest(newUrl);
+      _controller?.loadRequest(newUrl);
     } else {
       state = state.copyWith(
         isPageLoaded: true,
@@ -358,7 +337,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   Future<void> _recordHistoryWhenReady(String currentUrl) async {
-    final controller = state.controller;
+    final controller = _controller;
     if (controller == null || !_freediumUrlService.isFreediumUrl(currentUrl)) {
       return;
     }
@@ -440,7 +419,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
 
     _latestReadingProgress = progress;
     try {
-      await state.controller?.runJavaScript(
+      await _controller?.runJavaScript(
         buildReadingProgressRestoreScript(progress),
       );
     } catch (e) {
@@ -465,47 +444,14 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   String _getUserFriendlyErrorMessage(WebResourceError error) {
-    final rawDescription = error.description.toLowerCase();
-
-    // Android (Chromium) errors
-    if (rawDescription.contains('err_internet_disconnected')) {
-      return 'No internet connection. Please check your network and try again.';
-    } else if (rawDescription.contains('err_name_not_resolved') ||
-        rawDescription.contains('err_connection_refused') ||
-        rawDescription.contains('err_connection_timed_out') ||
-        rawDescription.contains('err_connection_reset')) {
-      return 'Could not connect to the server. The current mirror might be down or blocked.';
-    } else if (rawDescription.contains('err_cert_') ||
-        rawDescription.contains('ssl')) {
-      return 'Security certificate issue with the server. Connection might not be secure.';
-    }
-
-    // iOS (WebKit) errors
-    if (rawDescription.contains('nsurlerrordomain') ||
-        rawDescription.contains('webkit')) {
-      if (rawDescription.contains('-1009')) {
-        return 'No internet connection. Please check your network and try again.';
-      } else if (rawDescription.contains('-1001') ||
-          rawDescription.contains('-1003') ||
-          rawDescription.contains('-1004')) {
-        return 'Could not connect to the server. The current mirror might be down or timed out.';
-      } else if (rawDescription.contains('-1200') ||
-          rawDescription.contains('-1202')) {
-        return 'A secure connection could not be established with the server.';
-      }
-    }
-
-    // Default formatting if it doesn't match known patterns
-    if (error.errorType != null) {
-      final typeString = error.errorType.toString().split('.').last;
-      return 'Connection failed: $typeString\n\nPlease try another mirror.';
-    }
-
-    return 'Failed to load page.\n\nPlease try another mirror or check your connection.';
+    return getUserFriendlyWebviewErrorMessage(
+      description: error.description,
+      errorTypeLabel: error.errorType?.toString().split('.').last,
+    );
   }
 
   Future<void> retryWithNextMirror() async {
-    final settings = ref.read(settingsProvider);
+    final settings = ref.read(settingsProvider).value ?? const SettingsState();
     if (settings.mirrors.isEmpty) {
       debugPrint('No mirrors available to retry');
       return;
@@ -516,7 +462,6 @@ class WebviewNotifier extends Notifier<WebviewState> {
     _rememberArticleRequestUrl(nextMirror.url);
 
     state = WebviewState(
-      controller: state.controller,
       fontSize: state.fontSize,
       activeBaseUrl: nextMirror.url,
     );
@@ -525,7 +470,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
       mirrorUrl: nextMirror.url,
       articleUrl: url,
     );
-    state.controller?.loadRequest(newUrl);
+    _controller?.loadRequest(newUrl);
   }
 
   Future<void> shareArticle() async {
@@ -556,17 +501,18 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   Future<void> _injectTheme() async {
-    if (_colorScheme == null || state.controller == null) return;
+    if (_colorScheme == null || _controller == null) return;
     try {
       final script = await _themeInjector.getThemeInjectionScript(
         _colorScheme!,
         fontSize: state.fontSize,
-        showSitePopups: ref.read(settingsProvider).showSitePopups,
+        showSitePopups:
+            ref.read(settingsProvider).value?.showSitePopups ?? true,
       );
 
       if (!ref.mounted) return;
 
-      await state.controller!.runJavaScript(script);
+      await _controller!.runJavaScript(script);
     } catch (e) {
       debugPrint('Failed to inject theme script: $e');
       if (ref.mounted) {
@@ -587,15 +533,15 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 
   Future<bool> canGoBack() async {
-    return await state.controller?.canGoBack() ?? false;
+    return await _controller?.canGoBack() ?? false;
   }
 
   void goBack() {
-    state.controller?.goBack();
+    _controller?.goBack();
   }
 
   void reload() {
-    state.controller?.reload();
+    _controller?.reload();
   }
 
   Future<bool> updateFontSize(double fontSize) async {
@@ -618,7 +564,7 @@ class WebviewNotifier extends Notifier<WebviewState> {
   Future<void> _applyFontSize(double fontSize) async {
     final normalizedFontSize = FontSizeService.normalizeFontSize(fontSize);
     state = state.copyWith(fontSize: normalizedFontSize);
-    final controller = state.controller;
+    final controller = _controller;
     if (controller != null && state.isPageLoaded) {
       final script = _themeInjector.getFontSizeUpdateScript(normalizedFontSize);
       try {
@@ -630,13 +576,8 @@ class WebviewNotifier extends Notifier<WebviewState> {
   }
 }
 
-final webviewProvider =
-    NotifierProvider.family<WebviewNotifier, WebviewState, String>(
-      WebviewNotifier.new,
-    );
+@Riverpod(keepAlive: true)
+ThemeInjectorService themeInjectorService(Ref ref) => ThemeInjectorService();
 
-final themeInjectorServiceProvider = Provider((ref) => ThemeInjectorService());
-
-final shareLauncherProvider = Provider<ShareLauncher>(
-  (ref) => SharePlus.instance.share,
-);
+@Riverpod(keepAlive: true)
+ShareLauncher shareLauncher(Ref ref) => SharePlus.instance.share;

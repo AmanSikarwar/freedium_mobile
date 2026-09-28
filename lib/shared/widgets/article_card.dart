@@ -1,11 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 const libraryContentMaxWidth = 720.0;
 
 /// A reusable article list tile used by both History and Bookmarks screens.
 /// Supports a trailing icon (e.g. bookmark indicator) via [trailingIcon].
-class ArticleCard extends StatelessWidget {
+class const ArticleCard({
+  super.key,
+  required this.title,
+  required this.subtitle,
+  required this.url,
+  required this.onTap,
+  this.trailingIcon,
+  this.progress,
+  this.badge,
+}) extends StatelessWidget {
   final String title;
   final String subtitle;
   final String url;
@@ -13,15 +22,8 @@ class ArticleCard extends StatelessWidget {
   final Widget? trailingIcon;
   final double? progress;
 
-  const ArticleCard({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.url,
-    required this.onTap,
-    this.trailingIcon,
-    this.progress,
-  });
+  /// Optional small label chip (e.g. bookmark folder) shown under the source.
+  final String? badge;
 
   @override
   Widget build(BuildContext context) {
@@ -107,6 +109,40 @@ class ArticleCard extends StatelessWidget {
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
+                    if (badge != null && badge!.isNotEmpty) ...[
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primaryContainer,
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.folder_outlined,
+                              size: 12,
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                            const SizedBox(width: 4),
+                            Flexible(
+                              child: Text(
+                                badge!,
+                                style: theme.textTheme.labelSmall?.copyWith(
+                                  color: theme.colorScheme.onPrimaryContainer,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                     if (progress case final progress?) ...[
                       const SizedBox(height: 8),
                       LinearProgressIndicator(
@@ -138,9 +174,7 @@ class ArticleCard extends StatelessWidget {
   }
 }
 
-class ArticleDismissBackground extends StatelessWidget {
-  const ArticleDismissBackground({super.key});
-
+class const ArticleDismissBackground({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
@@ -170,21 +204,19 @@ class ArticleDismissBackground extends StatelessWidget {
   }
 }
 
-class LibraryEmptyState extends StatelessWidget {
+class const LibraryEmptyState({
+  super.key,
+  required this.icon,
+  required this.title,
+  required this.message,
+  this.actionLabel,
+  this.onAction,
+}) extends StatelessWidget {
   final IconData icon;
   final String title;
   final String message;
   final String? actionLabel;
   final VoidCallback? onAction;
-
-  const LibraryEmptyState({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.message,
-    this.actionLabel,
-    this.onAction,
-  });
 
   @override
   Widget build(BuildContext context) {
@@ -240,10 +272,9 @@ class LibraryEmptyState extends StatelessWidget {
 }
 
 /// A section-header divider used by the date-grouped list.
-class DateGroupHeader extends StatelessWidget {
+class const DateGroupHeader({super.key, required this.label})
+    extends StatelessWidget {
   final String label;
-
-  const DateGroupHeader({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {

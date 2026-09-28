@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
@@ -90,8 +90,7 @@ void main() {
                           context,
                           const UpdateInfo(
                             latestVersion: 'v1.2.3',
-                            releaseUrl:
-                                'https://github.com/example/app/releases/tag/v1.2.3',
+                            releaseUrl: 'https://github.com/example/app/releases/tag/v1.2.3',
                             releaseNotes: '[Release notes]($releaseNoteUrl)',
                           ),
                         );

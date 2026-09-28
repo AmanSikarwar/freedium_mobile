@@ -6,25 +6,12 @@ import 'package:freedium_mobile/features/webview/application/webview_provider.da
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => {};
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
+import '../../../test_helpers.dart';
 
 void main() {
   group('WebviewNotifier font size', () {
     test('loads persisted font size through supported bounds', () async {
-      SharedPreferences.setMockInitialValues({'webview_font_size': 100.0});
+      await mockPrefs({'webview_font_size': 100.0});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [
@@ -33,7 +20,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);
@@ -42,7 +29,7 @@ void main() {
     });
 
     test('clamps font size updates before saving state', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [
@@ -51,7 +38,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);
@@ -60,14 +47,14 @@ void main() {
 
       expect(container.read(provider).fontSize, FontSizeService.maxFontSize);
       expect(
-        container.read(settingsProvider).defaultFontSize,
+        container.read(settingsProvider).requireValue.defaultFontSize,
         FontSizeService.maxFontSize,
       );
       expect(prefs.getDouble('webview_font_size'), FontSizeService.maxFontSize);
     });
 
     test('tracks font size changes made from settings', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [
@@ -76,7 +63,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);
@@ -89,8 +76,7 @@ void main() {
 
     test('keeps font size and reports message when saving fails', () async {
       final previousStore = SharedPreferencesStorePlatform.instance;
-      SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() {
         SharedPreferences.setMockInitialValues({});
@@ -104,7 +90,7 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      final provider = webviewProvider('https://medium.com/example/story');
+      final provider = webviewProvider(TestFixtures.storyUrl);
       container.read(provider);
       await container.read(sharedPreferencesProvider.future);
       await Future<void>.delayed(Duration.zero);

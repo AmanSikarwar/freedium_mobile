@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -6,9 +6,9 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 void showFontSettingsSheet(
   BuildContext context, {
   required double initialFontSize,
-  required Function(double) onFontSizeChanged,
+  required void Function(double) onFontSizeChanged,
 }) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
@@ -21,21 +21,19 @@ void showFontSettingsSheet(
   );
 }
 
-class FontSettingsSheet extends ConsumerStatefulWidget {
+class const FontSettingsSheet({
+  super.key,
+  required this.initialFontSize,
+  required this.onFontSizeChanged,
+}) extends ConsumerStatefulWidget {
   final double initialFontSize;
-  final Function(double) onFontSizeChanged;
-
-  const FontSettingsSheet({
-    super.key,
-    required this.initialFontSize,
-    required this.onFontSizeChanged,
-  });
+  final void Function(double) onFontSizeChanged;
 
   @override
   ConsumerState<FontSettingsSheet> createState() => _FontSettingsSheetState();
 }
 
-class _FontSettingsSheetState extends ConsumerState<FontSettingsSheet> {
+class _FontSettingsSheetState() extends ConsumerState<FontSettingsSheet> {
   late double _currentFontSize;
 
   @override

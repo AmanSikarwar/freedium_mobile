@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:flutter/material.dart';
+
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
@@ -9,6 +10,7 @@ import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
+import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
@@ -17,14 +19,13 @@ import 'package:freedium_mobile/features/home/presentation/widgets/update_card.d
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
-  const HomeScreen({super.key});
-
+class const HomeScreen({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends ConsumerState<HomeScreen>
+class _HomeScreenState()
+    extends ConsumerState<HomeScreen>
     with WidgetsBindingObserver {
   bool _isUpdateCardDismissed = false;
   late final TextEditingController _urlController;
@@ -103,7 +104,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   Widget build(BuildContext context) {
     final homeNotifier = ref.read(homeProvider.notifier);
     final updateAsync = ref.watch(updateCheckProvider);
-    final history = ref.watch(historyProvider);
+    final history =
+        ref.watch(historyProvider).value ?? const <ReadingHistory>[];
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
@@ -129,7 +131,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute(
+                MaterialPageRoute<void>(
                   builder: (context) => const BookmarksScreen(),
                 ),
               );
@@ -142,7 +144,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const HistoryScreen()),
+                MaterialPageRoute<void>(
+                  builder: (context) => const HistoryScreen(),
+                ),
               );
             },
             tooltip: 'History',
@@ -153,7 +157,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               HapticFeedback.lightImpact();
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                MaterialPageRoute<void>(
+                  builder: (context) => const SettingsScreen(),
+                ),
               );
             },
             tooltip: 'Settings',
@@ -250,7 +256,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                               _urlController.text = url;
                               homeNotifier.setUrl(url);
                               Navigator.of(context).push(
-                                MaterialPageRoute(
+                                MaterialPageRoute<void>(
                                   builder: (context) => WebviewScreen(url: url),
                                 ),
                               );
@@ -262,7 +268,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
                       ContinueReadingSection(
                         history: history,
                         onArticleTap: (article) => Navigator.of(context).push(
-                          MaterialPageRoute(
+                          MaterialPageRoute<void>(
                             builder: (_) => WebviewScreen(url: article.url),
                           ),
                         ),

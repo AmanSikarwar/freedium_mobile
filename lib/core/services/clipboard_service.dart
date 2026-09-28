@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
-class ClipboardService {
+part 'clipboard_service.g.dart';
+
+class ClipboardService() {
   Future<String?> paste() async {
     try {
       final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
@@ -14,4 +16,5 @@ class ClipboardService {
   }
 }
 
-final clipboardServiceProvider = Provider((ref) => ClipboardService());
+@Riverpod(keepAlive: true)
+ClipboardService clipboardService(Ref ref) => ClipboardService();

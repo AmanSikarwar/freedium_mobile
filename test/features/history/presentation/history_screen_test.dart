@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -9,32 +9,14 @@ import 'package:freedium_mobile/features/history/presentation/history_screen.dar
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
-  _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
-    : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
-
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
+import '../../../test_helpers.dart';
 
 void main() {
   group('HistoryScreen', () {
     testWidgets('shows in-progress and finished reading states', (
       tester,
     ) async {
-      final timestamp = DateTime.utc(2026, 8, 10);
+      final timestamp = TestFixtures.groupDate;
       final history = [
         ReadingHistory(
           url: 'https://medium.com/in-progress',
@@ -49,22 +31,15 @@ void main() {
           progress: 1,
         ),
       ];
-      SharedPreferences.setMockInitialValues({
-        'reading_history': [
-          for (final item in history) jsonEncode(item.toJson()),
-        ],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+      await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [
+            for (final item in history) jsonEncode(item.toJson()),
           ],
-          child: const MaterialApp(home: HistoryScreen()),
-        ),
+        },
       );
-      await tester.pumpAndSettle();
 
       expect(find.textContaining('42% read'), findsOneWidget);
       expect(find.textContaining('Finished •'), findsOneWidget);
@@ -77,11 +52,11 @@ void main() {
       tester,
     ) async {
       final history = ReadingHistory(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        timestamp: DateTime.utc(2026, 2, 3),
+        timestamp: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.reading_history': [jsonEncode(history.toJson())],
       });
       SharedPreferences.resetStatic();
@@ -113,24 +88,17 @@ void main() {
       tester,
     ) async {
       final history = ReadingHistory(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        timestamp: DateTime.utc(2026, 2, 3),
+        timestamp: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
-        'reading_history': [jsonEncode(history.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: HistoryScreen()),
-        ),
+      final prefs = await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [jsonEncode(history.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.descendant(
@@ -155,11 +123,11 @@ void main() {
       tester,
     ) async {
       final history = ReadingHistory(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        timestamp: DateTime.utc(2026, 2, 3),
+        timestamp: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.reading_history': [jsonEncode(history.toJson())],
       });
       SharedPreferences.resetStatic();
@@ -195,6 +163,61 @@ void main() {
       expect(find.text('No results for "Missing"'), findsOneWidget);
       expect(find.text('No reading history yet.'), findsNothing);
       expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('changes the retention limit from the options menu', (
+      tester,
+    ) async {
+      final prefs = await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [
+            for (var i = 0; i < 35; i++)
+              jsonEncode(
+                ReadingHistory(
+                  url: 'https://medium.com/story-$i',
+                  title: 'Story $i',
+                  timestamp: TestFixtures.seedDate.add(Duration(minutes: i)),
+                ).toJson(),
+              ),
+          ],
+        },
+      );
+
+      await tester.tap(find.byTooltip('History options'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Keep last 30').last);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Keeping last 30 articles'), findsOneWidget);
+      expect(prefs.getInt('history_limit'), 30);
+      expect(prefs.getStringList('reading_history'), hasLength(30));
+    });
+
+    testWidgets('prunes history older than 30 days', (tester) async {
+      final prefs = await pumpApp(
+        tester,
+        child: const HistoryScreen(),
+        initialPrefs: {
+          'reading_history': [
+            jsonEncode(
+              ReadingHistory(
+                url: TestFixtures.storyUrl,
+                timestamp: DateTime.utc(2020, 2, 3),
+              ).toJson(),
+            ),
+          ],
+        },
+      );
+
+      await tester.tap(find.byTooltip('History options'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear older than 30 days'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Cleared 1 article'), findsOneWidget);
+      expect(prefs.getStringList('reading_history'), isEmpty);
     });
   });
 }

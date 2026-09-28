@@ -8,30 +8,15 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _RecordingFreediumUrlService extends FreediumUrlService {
-  _RecordingFreediumUrlService(super.ref);
+import '../../../test_helpers.dart';
 
+class _RecordingFreediumUrlService(super.ref) extends FreediumUrlService {
   int invalidateCount = 0;
 
   @override
   void invalidateCache() {
     invalidateCount++;
   }
-}
-
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => {};
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
 }
 
 void main() {
@@ -94,7 +79,7 @@ void main() {
 
   group('SettingsNotifier', () {
     test('invalidates active URL cache when mirror list changes', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -134,7 +119,7 @@ void main() {
     });
 
     test('invalidates active URL cache when mirror policy changes', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -158,7 +143,7 @@ void main() {
     });
 
     test('clamps numeric setting updates to supported bounds', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final container = ProviderContainer(
         overrides: [
@@ -172,7 +157,7 @@ void main() {
       await notifier.setDefaultFontSize(100);
       await notifier.setMirrorTimeout(0);
 
-      final settings = container.read(settingsProvider);
+      final settings = container.read(settingsProvider).requireValue;
       expect(settings.defaultFontSize, SettingsState.maxDefaultFontSize);
       expect(settings.mirrorTimeout, SettingsState.minMirrorTimeout);
       expect(
@@ -183,8 +168,7 @@ void main() {
     });
 
     test('keeps state and mirror cache unchanged when saving fails', () async {
-      SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -199,9 +183,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       final notifier = container.read(settingsProvider.notifier);
       final added = await notifier.addMirror(
@@ -213,7 +197,7 @@ void main() {
       );
       await notifier.setAutoSwitchMirror(false);
 
-      final settings = container.read(settingsProvider);
+      final settings = container.read(settingsProvider).requireValue;
       expect(added, isFalse);
       expect(settings.mirrors, SettingsState.defaultMirrors);
       expect(settings.autoSwitchMirror, isTrue);
@@ -221,7 +205,7 @@ void main() {
     });
 
     test('normalizes custom mirrors before saving live state', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -234,9 +218,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       final added = await container
           .read(settingsProvider.notifier)
@@ -249,7 +233,7 @@ void main() {
           );
 
       expect(added, isTrue);
-      final mirror = container.read(settingsProvider).mirrors.last;
+      final mirror = container.read(settingsProvider).requireValue.mirrors.last;
       expect(mirror.name, 'Custom');
       expect(mirror.url, 'https://custom.example');
       expect(freediumUrlService.invalidateCount, 1);
@@ -263,7 +247,7 @@ void main() {
     test(
       'deduplicates custom mirrors after dropping query and fragment',
       () async {
-        SharedPreferences.setMockInitialValues({});
+        await mockPrefs({});
         final prefs = await SharedPreferences.getInstance();
         late _RecordingFreediumUrlService freediumUrlService;
         final container = ProviderContainer(
@@ -276,9 +260,9 @@ void main() {
           ],
         );
         addTearDown(container.dispose);
-        freediumUrlService =
-            container.read(freediumUrlServiceProvider)
-                as _RecordingFreediumUrlService;
+        freediumUrlService = container.read(
+          freediumUrlServiceProvider,
+        ) as _RecordingFreediumUrlService;
 
         final notifier = container.read(settingsProvider.notifier);
         await notifier.addMirror(
@@ -298,6 +282,7 @@ void main() {
 
         final customMirrors = container
             .read(settingsProvider)
+            .requireValue
             .mirrors
             .where((mirror) => mirror.url == 'https://custom.example/base');
         expect(customMirrors, hasLength(1));
@@ -306,7 +291,7 @@ void main() {
     );
 
     test('rejects invalid and duplicate custom mirrors', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -319,9 +304,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       final notifier = container.read(settingsProvider.notifier);
       final duplicateAdded = await notifier.addMirror(
@@ -341,14 +326,14 @@ void main() {
 
       expect(duplicateAdded, isFalse);
       expect(invalidAdded, isFalse);
-      final settings = container.read(settingsProvider);
+      final settings = container.read(settingsProvider).requireValue;
       expect(settings.mirrors, SettingsState.defaultMirrors);
       expect(freediumUrlService.invalidateCount, 0);
       expect(prefs.getStringList('freedium_mirrors'), isNull);
     });
 
     test('ignores selected mirror URLs outside current mirrors', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -361,16 +346,16 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       await container
           .read(settingsProvider.notifier)
           .setSelectedMirror('https://missing.example');
 
       expect(
-        container.read(settingsProvider).selectedMirrorUrl,
+        container.read(settingsProvider).requireValue.selectedMirrorUrl,
         SettingsState.defaultMirrors.first.url,
       );
       expect(freediumUrlService.invalidateCount, 0);
@@ -378,7 +363,7 @@ void main() {
     });
 
     test('ignores stale mirror remove and update requests', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       late _RecordingFreediumUrlService freediumUrlService;
       final container = ProviderContainer(
@@ -391,9 +376,9 @@ void main() {
         ],
       );
       addTearDown(container.dispose);
-      freediumUrlService =
-          container.read(freediumUrlServiceProvider)
-              as _RecordingFreediumUrlService;
+      freediumUrlService = container.read(
+        freediumUrlServiceProvider,
+      ) as _RecordingFreediumUrlService;
 
       const staleMirror = FreediumMirror(
         name: 'Stale',
@@ -413,7 +398,7 @@ void main() {
       );
 
       expect(
-        container.read(settingsProvider).mirrors,
+        container.read(settingsProvider).requireValue.mirrors,
         SettingsState.defaultMirrors,
       );
       expect(freediumUrlService.invalidateCount, 0);
@@ -428,7 +413,7 @@ void main() {
           url: 'https://custom.example',
           isCustom: true,
         );
-        SharedPreferences.setMockInitialValues({
+        await mockPrefs({
           'freedium_mirrors': [jsonEncode(customMirror.toJson())],
           'selected_mirror_url': customMirror.url,
         });
@@ -444,7 +429,7 @@ void main() {
             .read(settingsProvider.notifier)
             .removeMirror(customMirror);
 
-        final settings = container.read(settingsProvider);
+        final settings = container.read(settingsProvider).requireValue;
         expect(settings.mirrors, SettingsState.defaultMirrors);
         expect(
           settings.selectedMirrorUrl,

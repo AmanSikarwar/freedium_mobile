@@ -1,21 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 void showThemeChooserBottomSheet(BuildContext context) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     builder: (context) => const ThemeChooserBottomSheet(),
   );
 }
 
-class ThemeChooserBottomSheet extends ConsumerWidget {
-  const ThemeChooserBottomSheet({super.key});
-
+class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
   Future<void> _selectTheme(
     BuildContext context,
-    SettingsNotifier settingsNotifier,
+    Settings settingsNotifier,
     ThemeMode themeMode,
   ) async {
     HapticFeedback.selectionClick();
@@ -37,7 +36,7 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
+    final settings = ref.watch(settingsProvider).value ?? const SettingsState();
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
     return SafeArea(
@@ -50,9 +49,8 @@ class ThemeChooserBottomSheet extends ConsumerWidget {
               padding: const .symmetric(horizontal: 16, vertical: 8),
               child: Text(
                 'Choose Theme',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: .bold),
+                style: Theme.of(context).textTheme.titleLarge
+                    ?.copyWith(fontWeight: .bold),
               ),
             ),
             const Divider(),

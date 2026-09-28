@@ -5,6 +5,8 @@ import 'package:freedium_mobile/features/settings/application/settings_service.d
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../test_helpers.dart';
+
 void main() {
   group('SettingsService', () {
     test(
@@ -15,12 +17,11 @@ void main() {
           url: 'https://custom.example',
           isCustom: true,
         );
-        SharedPreferences.setMockInitialValues({
+        await mockPrefs({
           'freedium_mirrors': ['{bad json', jsonEncode(customMirror.toJson())],
         });
 
-        final prefs = await SharedPreferences.getInstance();
-        final service = SettingsService(prefs);
+        final service = SettingsService(await SharedPreferences.getInstance());
 
         expect(service.loadMirrors(), [customMirror]);
       },
@@ -32,7 +33,7 @@ void main() {
         url: 'https://custom.example',
         isCustom: true,
       );
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'freedium_mirrors': [
           jsonEncode({'name': '', 'url': 'https://blank-name.example'}),
           jsonEncode({'name': 'Missing host', 'url': 'https://'}),
@@ -45,14 +46,13 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = SettingsService(prefs);
+      final service = SettingsService(await SharedPreferences.getInstance());
 
       expect(service.loadMirrors(), [customMirror]);
     });
 
     test('loadMirrors normalizes mirror names and URL origins', () async {
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'freedium_mirrors': [
           jsonEncode({
             'name': ' Custom ',
@@ -62,8 +62,7 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = SettingsService(prefs);
+      final service = SettingsService(await SharedPreferences.getInstance());
 
       expect(service.loadMirrors(), [
         const FreediumMirror(
@@ -80,13 +79,12 @@ void main() {
         url: 'https://custom.example',
         isCustom: true,
       );
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'freedium_mirrors': [jsonEncode(customMirror.toJson())],
         'selected_mirror_url': ' HTTPS://Custom.Example/ ',
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = SettingsService(prefs);
+      final service = SettingsService(await SharedPreferences.getInstance());
 
       final settings = service.loadAllSettings();
 
@@ -97,12 +95,11 @@ void main() {
     test(
       'loadMirrors falls back to defaults when every entry is invalid',
       () async {
-        SharedPreferences.setMockInitialValues({
+        await mockPrefs({
           'freedium_mirrors': ['{bad json'],
         });
 
-        final prefs = await SharedPreferences.getInstance();
-        final service = SettingsService(prefs);
+        final service = SettingsService(await SharedPreferences.getInstance());
 
         expect(service.loadMirrors(), SettingsState.defaultMirrors);
       },
@@ -116,14 +113,13 @@ void main() {
           url: 'https://custom.example',
           isCustom: true,
         );
-        SharedPreferences.setMockInitialValues({
+        await mockPrefs({
           'freedium_mirrors': [jsonEncode(customMirror.toJson())],
           'selected_mirror_url': 'https://missing.example',
           'auto_switch_mirror': false,
         });
 
-        final prefs = await SharedPreferences.getInstance();
-        final service = SettingsService(prefs);
+        final service = SettingsService(await SharedPreferences.getInstance());
 
         final settings = service.loadAllSettings();
 
@@ -134,13 +130,9 @@ void main() {
     );
 
     test('loadAllSettings clamps persisted numeric preferences', () async {
-      SharedPreferences.setMockInitialValues({
-        'webview_font_size': 100.0,
-        'mirror_timeout': 0,
-      });
+      await mockPrefs({'webview_font_size': 100.0, 'mirror_timeout': 0});
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = SettingsService(prefs);
+      final service = SettingsService(await SharedPreferences.getInstance());
 
       final settings = service.loadAllSettings();
 
@@ -149,16 +141,15 @@ void main() {
     });
 
     test('loadAllSettings reads legacy default font size key', () async {
-      SharedPreferences.setMockInitialValues({'default_font_size': 22.0});
+      await mockPrefs({'default_font_size': 22.0});
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = SettingsService(prefs);
+      final service = SettingsService(await SharedPreferences.getInstance());
 
       expect(service.loadAllSettings().defaultFontSize, 22.0);
     });
 
     test('site popups default to shown and persist changes', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final service = SettingsService(prefs);
 
@@ -171,7 +162,7 @@ void main() {
     });
 
     test('save numeric preferences clamps out-of-range values', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final service = SettingsService(prefs);
 

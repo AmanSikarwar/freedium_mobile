@@ -1,19 +1,17 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 
-class UpdateCard extends ConsumerWidget {
-  const UpdateCard({
-    super.key,
-    required this.updateInfo,
-    required this.onDismissed,
-  });
-
+class const UpdateCard({
+  super.key,
+  required this.updateInfo,
+  required this.onDismissed,
+}) extends ConsumerWidget {
   final UpdateInfo updateInfo;
   final VoidCallback onDismissed;
 
@@ -45,9 +43,9 @@ class UpdateCard extends ConsumerWidget {
                           style: TextStyle(
                             fontWeight: .bold,
                             fontSize: 16,
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.onSecondaryContainer,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSecondaryContainer,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -78,9 +76,9 @@ class UpdateCard extends ConsumerWidget {
                     icon: const Icon(Icons.article_outlined, size: 18),
                     label: const Text('View Changelog'),
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(
-                        context,
-                      ).colorScheme.onSecondaryContainer,
+                      foregroundColor: Theme.of(context)
+                          .colorScheme
+                          .onSecondaryContainer,
                       side: BorderSide(
                         color: Theme.of(context)
                             .colorScheme

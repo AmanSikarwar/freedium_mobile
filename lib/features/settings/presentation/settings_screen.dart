@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
@@ -15,121 +15,141 @@ import 'package:freedium_mobile/features/settings/presentation/widgets/mirror_li
 import 'package:freedium_mobile/features/settings/presentation/widgets/add_mirror_dialog.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 
-class SettingsScreen extends ConsumerWidget {
-  const SettingsScreen({super.key});
-
+class const SettingsScreen({super.key}) extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final settings = ref.watch(settingsProvider);
+    final settingsAsync = ref.watch(settingsProvider);
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
-      body: ListView(
-        children: [
-          _buildSectionHeader(context, 'Appearance'),
-          _buildThemeTile(context, settings, settingsNotifier),
-          _buildFontSizeTile(context, settings, settingsNotifier),
-          _buildSitePopupsTile(context, settings, settingsNotifier),
-          const Divider(),
+    return settingsAsync.when(
+      data: (settings) => Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
+        body: ListView(
+          children: [
+            _buildSectionHeader(context, 'Appearance'),
+            _buildThemeTile(context, settings, settingsNotifier),
+            _buildFontSizeTile(context, settings, settingsNotifier),
+            _buildSitePopupsTile(context, settings, settingsNotifier),
+            const Divider(),
 
-          _buildSectionHeader(context, 'Freedium Mirrors'),
-          _buildAutoSwitchTile(context, settings, settingsNotifier),
-          _buildMirrorTimeoutTile(context, settings, settingsNotifier),
-          const Divider(height: 1),
-          Padding(
-            padding: const .symmetric(horizontal: 16, vertical: 8),
-            child: Text(
-              'Available Mirrors',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+            _buildSectionHeader(context, 'Freedium Mirrors'),
+            _buildAutoSwitchTile(context, settings, settingsNotifier),
+            _buildMirrorTimeoutTile(context, settings, settingsNotifier),
+            const Divider(height: 1),
+            Padding(
+              padding: const .symmetric(horizontal: 16, vertical: 8),
+              child: Text(
+                'Available Mirrors',
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.primary),
               ),
             ),
-          ),
-          RadioGroup<String>(
-            groupValue: settings.selectedMirrorUrl,
-            onChanged: (url) async {
-              if (url != null) {
-                HapticFeedback.selectionClick();
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
-                final didSave = await settingsNotifier.setSelectedMirror(url);
-                if (!context.mounted) return;
-                if (!didSave) {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to save selected mirror'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
+            RadioGroup<String>(
+              groupValue: settings.selectedMirrorUrl,
+              onChanged: (url) async {
+                if (url != null) {
+                  HapticFeedback.selectionClick();
+                  final scaffoldMessenger = ScaffoldMessenger.of(context);
+                  final didSave = await settingsNotifier.setSelectedMirror(url);
+                  if (!context.mounted) return;
+                  if (!didSave) {
+                    scaffoldMessenger.showSnackBar(
+                      const SnackBar(
+                        content: Text('Failed to save selected mirror'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
-              }
-            },
-            child: Column(
-              children: settings.mirrors
-                  .map(
-                    (mirror) => MirrorListTile(
-                      mirror: mirror,
-                      isSelected: mirror.url == settings.selectedMirrorUrl,
-                      onEdit: mirror.isCustom
-                          ? () => _showEditMirrorDialog(context, ref, mirror)
-                          : null,
-                      onDelete: mirror.isCustom
-                          ? () => _confirmDeleteMirror(context, ref, mirror)
-                          : null,
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
-          Padding(
-            padding: const .symmetric(horizontal: 16, vertical: 8),
-            child: OutlinedButton.icon(
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                _showAddMirrorDialog(context, ref);
               },
-              icon: const Icon(Icons.add),
-              label: const Text('Add Custom Mirror'),
+              child: Column(
+                children: settings.mirrors
+                    .map(
+                      (mirror) => MirrorListTile(
+                        mirror: mirror,
+                        isSelected: mirror.url == settings.selectedMirrorUrl,
+                        onEdit: mirror.isCustom
+                            ? () => _showEditMirrorDialog(context, ref, mirror)
+                            : null,
+                        onDelete: mirror.isCustom
+                            ? () => _confirmDeleteMirror(context, ref, mirror)
+                            : null,
+                      ),
+                    )
+                    .toList(),
+              ),
             ),
-          ),
-          const Divider(),
+            Padding(
+              padding: const .symmetric(horizontal: 16, vertical: 8),
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _showAddMirrorDialog(context, ref);
+                },
+                icon: const Icon(Icons.add),
+                label: const Text('Add Custom Mirror'),
+              ),
+            ),
+            const Divider(),
 
-          _buildSectionHeader(context, 'Storage & Updates'),
-          ListTile(
-            leading: const Icon(Icons.delete_outline),
-            title: const Text('Clear Cache'),
-            subtitle: const Text('Clear WebView cache and local storage'),
-            onTap: () => _clearCache(context, ref),
-          ),
-          ListTile(
-            leading: const Icon(Icons.update),
-            title: const Text('Check for Updates'),
-            subtitle: const Text('Check if a new version is available'),
-            onTap: () => _checkForUpdates(context, ref),
-          ),
-          const Divider(),
+            _buildSectionHeader(context, 'Storage & Updates'),
+            ListTile(
+              leading: const Icon(Icons.delete_outline),
+              title: const Text('Clear Cache'),
+              subtitle: const Text('Clear WebView cache and local storage'),
+              onTap: () => _clearCache(context, ref),
+            ),
+            ListTile(
+              leading: const Icon(Icons.update),
+              title: const Text('Check for Updates'),
+              subtitle: const Text('Check if a new version is available'),
+              onTap: () => _checkForUpdates(context, ref),
+            ),
+            const Divider(),
 
-          _buildSectionHeader(context, 'About'),
-          ListTile(
-            leading: const Icon(Icons.info_outline),
-            title: const Text('Version'),
-            subtitle: Text(AppConstants.appVersion),
+            _buildSectionHeader(context, 'About'),
+            ListTile(
+              leading: const Icon(Icons.info_outline),
+              title: const Text('Version'),
+              subtitle: Text(AppConstants.appVersion),
+            ),
+            ListTile(
+              leading: const Icon(Icons.code),
+              title: const Text('Source Code'),
+              subtitle: const Text('View on GitHub'),
+              onTap: () => unawaited(
+                _launchUrl(context, ref, AppConstants.appSourceUrl),
+              ),
+            ),
+            ListTile(
+              leading: const Icon(Icons.restore),
+              title: const Text('Reset to Defaults'),
+              subtitle: const Text('Reset all settings to default values'),
+              onTap: () => _confirmResetDefaults(context, ref),
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+      loading: () => Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
+        body: const Center(child: CircularProgressIndicator()),
+      ),
+      error: (error, _) => Scaffold(
+        appBar: AppBar(title: const Text('Settings')),
+        body: Center(
+          child: Column(
+            mainAxisSize: .min,
+            children: [
+              const Text('Could not load settings.'),
+              const SizedBox(height: 12),
+              FilledButton(
+                onPressed: () => ref.invalidate(settingsProvider),
+                child: const Text('Retry'),
+              ),
+            ],
           ),
-          ListTile(
-            leading: const Icon(Icons.code),
-            title: const Text('Source Code'),
-            subtitle: const Text('View on GitHub'),
-            onTap: () =>
-                unawaited(_launchUrl(context, ref, AppConstants.appSourceUrl)),
-          ),
-          ListTile(
-            leading: const Icon(Icons.restore),
-            title: const Text('Reset to Defaults'),
-            subtitle: const Text('Reset all settings to default values'),
-            onTap: () => _confirmResetDefaults(context, ref),
-          ),
-          const SizedBox(height: 24),
-        ],
+        ),
       ),
     );
   }
@@ -150,7 +170,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget _buildThemeTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return ListTile(
       leading: const Icon(Icons.brightness_6),
@@ -161,20 +181,17 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   String _getThemeModeName(ThemeMode themeMode) {
-    switch (themeMode) {
-      case .light:
-        return 'Light';
-      case .dark:
-        return 'Dark';
-      case .system:
-        return 'System';
-    }
+    return switch (themeMode) {
+      .light => 'Light',
+      .dark => 'Dark',
+      .system => 'System',
+    };
   }
 
   Widget _buildFontSizeTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return ListTile(
       leading: const Icon(Icons.text_fields),
@@ -203,7 +220,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget _buildAutoSwitchTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return SwitchListTile(
       secondary: const Icon(Icons.swap_horiz),
@@ -230,7 +247,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget _buildSitePopupsTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return SwitchListTile(
       secondary: const Icon(Icons.notifications_outlined),
@@ -255,7 +272,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget _buildMirrorTimeoutTile(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     return ListTile(
       leading: const Icon(Icons.timer),
@@ -268,11 +285,11 @@ class SettingsScreen extends ConsumerWidget {
   void _showTimeoutDialog(
     BuildContext context,
     SettingsState settings,
-    SettingsNotifier notifier,
+    Settings notifier,
   ) {
     int timeout = SettingsState.normalizeMirrorTimeout(settings.mirrorTimeout);
 
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
@@ -330,7 +347,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _showAddMirrorDialog(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AddMirrorDialog(
         onAdd: (mirror) {
@@ -345,7 +362,7 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref,
     FreediumMirror mirror,
   ) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AddMirrorDialog(
         existingMirror: mirror,
@@ -363,7 +380,7 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref,
     FreediumMirror mirror,
   ) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Delete Mirror'),
@@ -401,7 +418,7 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   void _confirmResetDefaults(BuildContext context, WidgetRef ref) {
-    showDialog(
+    showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Reset to Defaults'),
@@ -444,6 +461,7 @@ class SettingsScreen extends ConsumerWidget {
   Future<void> _clearCache(BuildContext context, WidgetRef ref) async {
     HapticFeedback.mediumImpact();
     final cacheService = ref.read(cacheServiceProvider);
+    ref.read(freediumUrlServiceProvider).invalidateCache();
     final success = await cacheService.clearWebViewCache();
     if (context.mounted) {
       if (success) {
@@ -504,7 +522,7 @@ class SettingsScreen extends ConsumerWidget {
 
     final availableUpdate = updateInfo;
     if (availableUpdate != null) {
-      showDialog(
+      showDialog<void>(
         context: context,
         builder: (dialogContext) => AlertDialog(
           title: const Text('Update Available'),

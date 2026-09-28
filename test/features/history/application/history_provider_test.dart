@@ -8,38 +8,14 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
-  _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
-    : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
-
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
+import '../../../test_helpers.dart';
 
 void main() {
   group('HistoryNotifier', () {
     late ProviderContainer container;
 
     setUp(() async {
-      SharedPreferences.setMockInitialValues({});
-      final prefs = await SharedPreferences.getInstance();
-      container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWith((ref) async => prefs),
-        ],
-      );
+      container = prefsContainer(await mockPrefs());
     });
 
     tearDown(() {
@@ -51,9 +27,9 @@ void main() {
           .read(historyProvider.notifier)
           .addHistory(' HTTPS://Medium.COM/example/story/ ', ' Example story ');
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history, hasLength(1));
-      expect(history.single.url, 'https://medium.com/example/story');
+      expect(history.single.url, TestFixtures.storyUrl);
       expect(history.single.title, 'Example story');
     });
 
@@ -62,9 +38,9 @@ void main() {
           .read(historyProvider.notifier)
           .addHistory(' HTTPS://Medium.COM/example/story/ ', '  ');
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history, hasLength(1));
-      expect(history.single.title, 'https://medium.com/example/story');
+      expect(history.single.title, TestFixtures.storyUrl);
     });
 
     test('ignores invalid history URLs', () async {
@@ -74,33 +50,30 @@ void main() {
       await notifier.addHistory('not a url', 'Invalid');
       await notifier.addHistory('', 'Invalid');
 
-      expect(container.read(historyProvider), isEmpty);
+      expect(container.read(historyProvider).requireValue, isEmpty);
     });
 
     test('deduplicates history by normalized URL', () async {
       final notifier = container.read(historyProvider.notifier);
-      await notifier.addHistory('https://medium.com/example/story', 'First');
+      await notifier.addHistory(TestFixtures.storyUrl, 'First');
       await notifier.addHistory(
         ' HTTPS://Medium.COM/example/story/ ',
         'Second',
       );
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history, hasLength(1));
-      expect(history.single.url, 'https://medium.com/example/story');
+      expect(history.single.url, TestFixtures.storyUrl);
       expect(history.single.title, 'Second');
     });
 
     test('updates and preserves reading progress when reopening', () async {
       final notifier = container.read(historyProvider.notifier);
-      await notifier.addHistory('https://medium.com/example/story', 'First');
-      await notifier.updateReadingProgress(
-        'https://medium.com/example/story',
-        0.42,
-      );
-      await notifier.addHistory('https://medium.com/example/story', 'Second');
+      await notifier.addHistory(TestFixtures.storyUrl, 'First');
+      await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.42);
+      await notifier.addHistory(TestFixtures.storyUrl, 'Second');
 
-      final history = container.read(historyProvider);
+      final history = container.read(historyProvider).requireValue;
       expect(history.single.title, 'Second');
       expect(history.single.progress, 0.42);
       expect(
@@ -113,29 +86,23 @@ void main() {
 
     test('normalizes reading progress thresholds', () async {
       final notifier = container.read(historyProvider.notifier);
-      await notifier.addHistory('https://medium.com/example/story', 'Story');
+      await notifier.addHistory(TestFixtures.storyUrl, 'Story');
 
-      await notifier.updateReadingProgress(
-        'https://medium.com/example/story',
-        0.04,
-      );
-      expect(container.read(historyProvider).single.progress, 0);
+      await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.04);
+      expect(container.read(historyProvider).requireValue.single.progress, 0);
 
-      await notifier.updateReadingProgress(
-        'https://medium.com/example/story',
-        0.96,
-      );
-      expect(container.read(historyProvider).single.progress, 1);
+      await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.96);
+      expect(container.read(historyProvider).requireValue.single.progress, 1);
     });
 
     test('reports failure and preserves history when removing fails', () async {
       container.dispose();
       final history = ReadingHistory(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Story',
-        timestamp: DateTime.utc(2026, 2, 3),
+        timestamp: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.reading_history': [jsonEncode(history.toJson())],
       });
       SharedPreferences.resetStatic();
@@ -148,25 +115,23 @@ void main() {
       );
 
       final notifier = container.read(historyProvider.notifier);
-      container.read(historyProvider);
-      await container.read(sharedPreferencesProvider.future);
-      await Future<void>.delayed(Duration.zero);
-      expect(container.read(historyProvider), hasLength(1));
+      await container.read(historyProvider.future);
+      expect(container.read(historyProvider).requireValue, hasLength(1));
 
       final didRemove = await notifier.removeHistory(history);
 
       expect(didRemove, isFalse);
-      expect(container.read(historyProvider), hasLength(1));
+      expect(container.read(historyProvider).requireValue, hasLength(1));
     });
 
     test('reports failure and preserves history when clearing fails', () async {
       container.dispose();
       final history = ReadingHistory(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Story',
-        timestamp: DateTime.utc(2026, 2, 3),
+        timestamp: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.reading_history': [jsonEncode(history.toJson())],
       });
       SharedPreferences.resetStatic();
@@ -179,15 +144,13 @@ void main() {
       );
 
       final notifier = container.read(historyProvider.notifier);
-      container.read(historyProvider);
-      await container.read(sharedPreferencesProvider.future);
-      await Future<void>.delayed(Duration.zero);
-      expect(container.read(historyProvider), hasLength(1));
+      await container.read(historyProvider.future);
+      expect(container.read(historyProvider).requireValue, hasLength(1));
 
       final didClear = await notifier.clearHistory();
 
       expect(didClear, isFalse);
-      expect(container.read(historyProvider), hasLength(1));
+      expect(container.read(historyProvider).requireValue, hasLength(1));
     });
   });
 }

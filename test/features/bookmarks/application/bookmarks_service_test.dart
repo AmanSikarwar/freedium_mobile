@@ -5,17 +5,19 @@ import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../test_helpers.dart';
+
 void main() {
   group('BookmarksService', () {
     test('getBookmarks skips invalid and duplicate bookmark entries', () async {
-      final savedAt = DateTime.utc(2026, 2, 3);
+      final savedAt = TestFixtures.seedDate;
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
         savedAt: savedAt,
       );
 
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'bookmarked_articles': [
           '{bad json',
           jsonEncode({
@@ -40,15 +42,14 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = BookmarksService(prefs);
+      final service = BookmarksService(await SharedPreferences.getInstance());
 
       expect(service.getBookmarks(), [bookmark]);
     });
 
     test('getBookmarks falls back to URL when title is blank', () async {
-      final savedAt = DateTime.utc(2026, 2, 3);
-      SharedPreferences.setMockInitialValues({
+      final savedAt = TestFixtures.seedDate;
+      await mockPrefs({
         'bookmarked_articles': [
           jsonEncode({
             'url': ' HTTPS://Medium.COM/example/story/ ',
@@ -58,12 +59,11 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = BookmarksService(prefs);
+      final service = BookmarksService(await SharedPreferences.getInstance());
 
       final bookmarks = service.getBookmarks();
       expect(bookmarks, hasLength(1));
-      expect(bookmarks.single.title, 'https://medium.com/example/story');
+      expect(bookmarks.single.title, TestFixtures.storyUrl);
     });
   });
 }

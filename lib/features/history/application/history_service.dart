@@ -1,14 +1,20 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 
-class HistoryService {
+class HistoryService(this._prefs) {
   static const String _historyKey = 'reading_history';
-  final SharedPreferences _prefs;
+  static const String _historyLimitKey = 'history_limit';
 
-  HistoryService(this._prefs);
+  /// Allowed retention sizes (newest entries kept).
+  static const List<int> allowedLimits = [30, 100, 500];
+
+  /// Default retention size.
+  static const int defaultLimit = 100;
+  final SharedPreferences _prefs;
 
   List<ReadingHistory> getHistory() {
     final historyJson = _prefs.getStringList(_historyKey);
@@ -63,6 +69,29 @@ class HistoryService {
       }
     } catch (e) {
       debugPrint('Failed to clear history key "$_historyKey": $e');
+      rethrow;
+    }
+  }
+
+  /// Reads the retention size, falling back to [defaultLimit] for missing
+  /// or unrecognized values.
+  int getHistoryLimit() {
+    final stored = _prefs.getInt(_historyLimitKey);
+    if (stored != null && allowedLimits.contains(stored)) return stored;
+    return defaultLimit;
+  }
+
+  Future<void> saveHistoryLimit(int limit) async {
+    if (!allowedLimits.contains(limit)) {
+      throw ArgumentError.value(limit, 'limit', 'Unsupported history limit');
+    }
+    try {
+      final success = await _prefs.setInt(_historyLimitKey, limit);
+      if (!success) {
+        throw Exception('setInt returned false for key "$_historyLimitKey"');
+      }
+    } catch (e) {
+      debugPrint('Failed to save history limit: $e');
       rethrow;
     }
   }

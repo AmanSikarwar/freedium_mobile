@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
@@ -13,30 +13,12 @@ import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
-  _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
-    : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
-
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
+import '../../../test_helpers.dart';
 
 void main() {
   group('SettingsScreen', () {
     testWidgets('toggles Freedium site popups', (tester) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
 
       await tester.pumpWidget(
@@ -62,15 +44,14 @@ void main() {
     testWidgets('closes the update dialog before opening changelog', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final updateService = UpdateService(
         client: MockClient(
           (_) async => http.Response(
             jsonEncode({
-              'tag_name': 'v0.11.0',
-              'html_url':
-                  'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0',
+              'tag_name': 'v0.14.0',
+              'html_url': 'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.14.0',
               'body': 'Release notes',
             }),
             200,
@@ -106,8 +87,7 @@ void main() {
     testWidgets('shows reset failure when defaults cannot be saved', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -138,16 +118,16 @@ void main() {
     testWidgets('shows link failure when update URL cannot be opened', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final launchedUrls = <String?>[];
       const releaseUrl =
-          'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.11.0';
+          'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.14.0';
       final updateService = UpdateService(
         client: MockClient(
           (_) async => http.Response(
             jsonEncode({
-              'tag_name': 'v0.11.0',
+              'tag_name': 'v0.14.0',
               'html_url': releaseUrl,
               'body': 'Release notes',
             }),
@@ -190,7 +170,7 @@ void main() {
     testWidgets('shows update check failure when the request fails', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final updateService = UpdateService(
         client: MockClient((_) async => http.Response('rate limited', 403)),
@@ -220,8 +200,7 @@ void main() {
     });
 
     testWidgets('keeps timeout dialog open when saving fails', (tester) async {
-      SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -255,8 +234,7 @@ void main() {
     testWidgets('shows default font size failure when saving fails', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -283,8 +261,7 @@ void main() {
     testWidgets('shows selected mirror failure when saving fails', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -313,8 +290,7 @@ void main() {
     });
 
     testWidgets('shows auto-switch failure when saving fails', (tester) async {
-      SharedPreferencesStorePlatform.instance =
-          _FailingSharedPreferencesStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -347,7 +323,7 @@ void main() {
         'isDefault': false,
         'isCustom': true,
       };
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.freedium_mirrors': [jsonEncode(customMirror)],
       });
       SharedPreferences.resetStatic();

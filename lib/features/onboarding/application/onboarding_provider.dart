@@ -1,26 +1,29 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/features/onboarding/application/onboarding_service.dart';
 
-@immutable
-class OnboardingState {
-  final bool hasSeenOnboarding;
-  final bool isLoading;
-  const OnboardingState({
-    this.hasSeenOnboarding = false,
-    this.isLoading = false,
-  });
+part 'onboarding_provider.freezed.dart';
+part 'onboarding_provider.g.dart';
+
+@freezed
+abstract class OnboardingState with _$OnboardingState {
+  const factory OnboardingState({
+    @Default(false) bool hasSeenOnboarding,
+    @Default(false) bool isLoading,
+  }) = _OnboardingState;
 }
 
-class OnboardingNotifier extends Notifier<OnboardingState> {
-  static const _key = 'has_seen_onboarding';
-
+@Riverpod(keepAlive: true)
+class Onboarding() extends _$Onboarding {
   @override
   OnboardingState build() {
     final prefsAsync = ref.watch(sharedPreferencesProvider);
     return prefsAsync.when(
-      data: (prefs) =>
-          OnboardingState(hasSeenOnboarding: prefs.getBool(_key) ?? false),
+      data: (prefs) => OnboardingState(
+        hasSeenOnboarding: OnboardingService(prefs).hasSeenOnboarding(),
+      ),
       loading: () => const OnboardingState(isLoading: true),
       // On error, skip onboarding to avoid blocking the user
       error: (_, _) => const OnboardingState(hasSeenOnboarding: true),
@@ -30,10 +33,7 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   Future<bool> completeOnboarding() async {
     try {
       final prefs = await ref.read(sharedPreferencesProvider.future);
-      final success = await prefs.setBool(_key, true);
-      if (!success) {
-        throw Exception('setBool returned false for key "$_key"');
-      }
+      await OnboardingService(prefs).completeOnboarding();
       state = const OnboardingState(hasSeenOnboarding: true);
       return true;
     } catch (e) {
@@ -43,7 +43,12 @@ class OnboardingNotifier extends Notifier<OnboardingState> {
   }
 }
 
-final onboardingProvider =
-    NotifierProvider<OnboardingNotifier, OnboardingState>(
-      OnboardingNotifier.new,
-    );
+@Riverpod(keepAlive: true)
+OnboardingService? onboardingService(Ref ref) {
+  final prefsAsync = ref.watch(sharedPreferencesProvider);
+  return prefsAsync.when(
+    data: OnboardingService.new,
+    loading: () => null,
+    error: (_, _) => null,
+  );
+}
