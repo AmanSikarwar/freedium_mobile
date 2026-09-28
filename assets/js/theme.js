@@ -52,6 +52,7 @@
       lockNativeThemeControls(isDark);
       installCopyButtonOverrides();
       installReadingProgressTracking();
+      recolorShikiTokens();
       notifyThemeApplied();
 
       setTimeout(extractArticleMeta, 800);
@@ -88,6 +89,17 @@
       "--ink-4": "var(--app-outline)",
       "--accent": "var(--app-primary)",
       "--accent-deep": "var(--app-primary-container)",
+      "--primary": "var(--app-primary)",
+      "--primary-foreground": "var(--app-on-primary)",
+      "--accent-foreground": "var(--app-on-primary)",
+      "--muted": "var(--app-surface-variant)",
+      "--muted-foreground": "var(--app-on-surface-variant)",
+      "--card": "var(--app-surface)",
+      "--card-foreground": "var(--app-on-surface)",
+      "--popover": "var(--app-surface-container)",
+      "--popover-foreground": "var(--app-on-surface)",
+      "--border": "var(--app-outline-variant)",
+      "--ring": "var(--app-primary)",
     };
 
     Object.keys(freediumTokens).forEach(function (key) {
@@ -97,6 +109,7 @@
     try {
       localStorage.setItem("theme", themeName);
       localStorage.setItem("mode-watcher-mode", themeName);
+      localStorage.setItem("mode-watcher-theme", themeName);
     } catch (e) {
       console.warn("Failed to set localStorage theme:", e);
     }
@@ -223,8 +236,11 @@
       }
 
       setTimeout(overrideCopyButtons, 250);
+      setTimeout(recolorShikiTokens, 250);
       setTimeout(overrideCopyButtons, 900);
+      setTimeout(recolorShikiTokens, 900);
       setTimeout(overrideCopyButtons, 1600);
+      setTimeout(recolorShikiTokens, 1600);
 
       window._freediumCopyObserver = new MutationObserver(function (
         mutations
@@ -362,6 +378,61 @@
       }
     } catch (e) {
       console.warn("Failed to call Flutter handler:", e);
+    }
+  }
+
+  // Canonical Shiki github-light/github-dark foregrounds
+  // (harvested from @shikijs/themes) mapped to app palette roles.
+  // Material roles self-adapt per brightness, so one map covers both modes.
+  var SHIKI_ROLE_HEXES = {
+    "on-surface": ["#24292e", "#e1e4e8"],
+    "on-surface-variant": ["#6a737d", "#586069", "#d1d5da"],
+    error: ["#d73a49", "#f97583", "#b31d28", "#fdaeb7"],
+    primary: ["#032f62", "#9ecbff", "#dbedff"],
+    tertiary: ["#6f42c1", "#b392f0", "#22863a", "#85e89d"],
+    secondary: ["#005cc5", "#79b8ff", "#e36209", "#ffab70"],
+  };
+
+  var SHIKI_ROLE_VARS = {
+    "on-surface": "--app-on-surface",
+    "on-surface-variant": "--app-on-surface-variant",
+    error: "--app-error",
+    primary: "--app-primary",
+    tertiary: "--app-tertiary",
+    secondary: "--app-secondary",
+  };
+
+  function recolorShikiTokens() {
+    try {
+      var computed = getComputedStyle(document.documentElement);
+      var lookup = {};
+      Object.keys(SHIKI_ROLE_HEXES).forEach(function (role) {
+        var appColor = computed
+          .getPropertyValue(SHIKI_ROLE_VARS[role])
+          .trim();
+        if (!appColor) {
+          return;
+        }
+        SHIKI_ROLE_HEXES[role].forEach(function (hex) {
+          lookup[hex] = appColor;
+        });
+      });
+
+      document
+        .querySelectorAll("pre.shiki code span[style]")
+        .forEach(function (el) {
+          var style = el.getAttribute("style") || "";
+          var match = style.match(/color\s*:\s*(#[0-9a-fA-F]{3,8})/);
+          if (!match) {
+            return;
+          }
+          var replacement = lookup[match[1].toLowerCase()];
+          if (replacement) {
+            el.style.setProperty("color", replacement, "important");
+          }
+        });
+    } catch (e) {
+      console.warn("Failed to recolor Shiki tokens:", e);
     }
   }
 

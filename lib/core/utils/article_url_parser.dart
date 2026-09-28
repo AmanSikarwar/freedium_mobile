@@ -1,4 +1,4 @@
-import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 
 String? extractArticleUrl(String input) {
   final trimmed = input.trim();

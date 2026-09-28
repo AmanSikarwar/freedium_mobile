@@ -3,13 +3,12 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _RemoveTrackingSharedPreferencesStore
-    extends SharedPreferencesStorePlatform {
-  _RemoveTrackingSharedPreferencesStore(
-    this.initialValues, {
-    required this.removeResult,
-  });
+import '../../test_helpers.dart';
 
+class _RemoveTrackingSharedPreferencesStore(
+  this.initialValues, {
+  required this.removeResult,
+}) extends SharedPreferencesStorePlatform {
   final Map<String, Object> initialValues;
   final bool removeResult;
   final removeCalls = <String>[];
@@ -34,23 +33,21 @@ class _RemoveTrackingSharedPreferencesStore
 void main() {
   group('FontSizeService', () {
     test('loadFontSize clamps persisted values to supported bounds', () async {
-      SharedPreferences.setMockInitialValues({'webview_font_size': 100.0});
-      final prefs = await SharedPreferences.getInstance();
-      final service = FontSizeService(prefs);
+      await mockPrefs({'webview_font_size': 100.0});
+      final service = FontSizeService(await SharedPreferences.getInstance());
 
       expect(service.loadFontSize(), FontSizeService.maxFontSize);
     });
 
     test('loadFontSize falls back to legacy settings key', () async {
-      SharedPreferences.setMockInitialValues({'default_font_size': 22.0});
-      final prefs = await SharedPreferences.getInstance();
-      final service = FontSizeService(prefs);
+      await mockPrefs({'default_font_size': 22.0});
+      final service = FontSizeService(await SharedPreferences.getInstance());
 
       expect(service.loadFontSize(), 22.0);
     });
 
     test('saveFontSize clamps out-of-range values', () async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final service = FontSizeService(prefs);
 
@@ -78,8 +75,7 @@ void main() {
         SharedPreferencesStorePlatform.instance = previousStore;
         SharedPreferences.resetStatic();
       });
-      final prefs = await SharedPreferences.getInstance();
-      final service = FontSizeService(prefs);
+      final service = FontSizeService(await SharedPreferences.getInstance());
 
       await service.resetFontSize();
 
@@ -99,8 +95,7 @@ void main() {
           SharedPreferencesStorePlatform.instance = previousStore;
           SharedPreferences.resetStatic();
         });
-        final prefs = await SharedPreferences.getInstance();
-        final service = FontSizeService(prefs);
+        final service = FontSizeService(await SharedPreferences.getInstance());
 
         expect(
           service.resetFontSize(),

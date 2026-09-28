@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/app.dart';
@@ -9,57 +9,59 @@ import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:listen_sharing_intent/listen_sharing_intent.dart';
+import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:shared_preferences/shared_preferences.dart';
 
-class _FakeClipboardService extends ClipboardService {
-  @override
-  Future<String?> paste() async => null;
-}
+import 'test_helpers.dart';
 
-class _FakeIntentService extends IntentService {
+class _FailingIntentService() extends IntentService {
   @override
-  Future<List<SharedMediaFile>> getInitialIntent() async => <SharedMediaFile>[];
-}
-
-class _FailingIntentService extends IntentService {
-  @override
-  Future<List<SharedMediaFile>> getInitialIntent() async {
+  Future<platform.Intent?> getInitialIntent() async {
     throw Exception('initial intent unavailable');
   }
 }
 
-class _RecordingIntentService extends IntentService {
+class _RecordingIntentService() extends IntentService {
   int initialIntentRequests = 0;
 
   @override
-  Future<List<SharedMediaFile>> getInitialIntent() async {
+  Future<platform.Intent?> getInitialIntent() async {
     initialIntentRequests++;
-    return <SharedMediaFile>[];
+    return null;
   }
 }
 
-class _FakeUpdateService extends UpdateService {
+class _FakeUpdateService() extends UpdateService {
   @override
   Future<UpdateInfo?> checkForUpdate() async => null;
 }
 
-Widget _buildApp({
+/// Pumps [App] with mock services.
+///
+/// The [ProviderScope] is created directly inside [tester.pumpWidget] (rather
+/// than returned from this helper) so the scope is not treated as a nested
+/// scope by `scoped_providers_should_specify_dependencies`.
+Future<void> _pumpApp({
+  required WidgetTester tester,
   required SharedPreferences prefs,
   IntentService? intentService,
 }) {
-  return ProviderScope(
-    overrides: [
-      sharedPreferencesProvider.overrideWith((ref) async => prefs),
-      dynamicThemeProvider.overrideWith((ref) => ref.watch(themeProvider)),
-      clipboardServiceProvider.overrideWith((ref) => _FakeClipboardService()),
-      intentServiceProvider.overrideWith(
-        (ref) => intentService ?? _FakeIntentService(),
-      ),
-      intentStreamProvider.overrideWith((ref) => const Stream<String>.empty()),
-      updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
-    ],
-    child: const App(),
+  return tester.pumpWidget(
+    ProviderScope(
+      overrides: [
+        sharedPreferencesProvider.overrideWith((ref) async => prefs),
+        dynamicThemeProvider.overrideWith((ref) => ref.watch(themeProvider)),
+        clipboardServiceProvider.overrideWith((ref) => FakeClipboardService()),
+        intentServiceProvider.overrideWith(
+          (ref) => intentService ?? FakeIntentService(),
+        ),
+        intentStreamProvider.overrideWith(
+          (ref) => const Stream<String>.empty(),
+        ),
+        updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
+      ],
+      child: const App(),
+    ),
   );
 }
 
@@ -68,7 +70,7 @@ void main() {
 
   group('incoming webview navigation', () {
     test('skips only duplicate incoming webview routes', () {
-      const targetUrl = 'https://medium.com/example/story';
+      const targetUrl = TestFixtures.storyUrl;
 
       expect(
         shouldSkipIncomingWebviewNavigation(
@@ -98,7 +100,7 @@ void main() {
     testWidgets('tracks the active route for duplicate share detection', (
       tester,
     ) async {
-      const targetUrl = 'https://medium.com/example/story';
+      const targetUrl = TestFixtures.storyUrl;
       final navigatorKey = GlobalKey<NavigatorState>();
       final observer = CurrentRouteNameObserver();
 
@@ -133,10 +135,10 @@ void main() {
     testWidgets('shows home after completing onboarding without a shared URL', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(_buildApp(prefs: prefs));
+      await _pumpApp(tester: tester, prefs: prefs);
       await tester.pumpAndSettle();
 
       expect(find.byType(OnboardingScreen), findsOneWidget);
@@ -153,11 +155,13 @@ void main() {
     testWidgets('keeps home visible when initial intent lookup fails', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({'has_seen_onboarding': true});
+      await mockPrefs({'has_seen_onboarding': true});
       final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(
-        _buildApp(prefs: prefs, intentService: _FailingIntentService()),
+      await _pumpApp(
+        tester: tester,
+        prefs: prefs,
+        intentService: _FailingIntentService(),
       );
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
@@ -169,12 +173,14 @@ void main() {
     testWidgets('does not read initial intent after app disposal', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({'has_seen_onboarding': true});
+      await mockPrefs({'has_seen_onboarding': true});
       final prefs = await SharedPreferences.getInstance();
       final intentService = _RecordingIntentService();
 
-      await tester.pumpWidget(
-        _buildApp(prefs: prefs, intentService: intentService),
+      await _pumpApp(
+        tester: tester,
+        prefs: prefs,
+        intentService: intentService,
       );
       await tester.pump();
 

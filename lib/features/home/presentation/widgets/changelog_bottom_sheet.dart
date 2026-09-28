@@ -1,15 +1,14 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
-class ChangelogBottomSheet extends ConsumerWidget {
-  const ChangelogBottomSheet({super.key, required this.updateInfo});
-
+class const ChangelogBottomSheet({super.key, required this.updateInfo})
+    extends ConsumerWidget {
   final UpdateInfo updateInfo;
 
   @override
@@ -34,9 +33,8 @@ class ChangelogBottomSheet extends ConsumerWidget {
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Theme.of(
-                    context,
-                  ).colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant
+                      .withValues(alpha: 0.4),
                   borderRadius: .circular(2),
                 ),
               ),
@@ -59,9 +57,9 @@ class ChangelogBottomSheet extends ConsumerWidget {
                             'Version ${updateInfo.latestVersion}',
                             style: Theme.of(context).textTheme.bodyMedium
                                 ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .onSurfaceVariant,
                                 ),
                           ),
                         ],
@@ -170,9 +168,8 @@ class ChangelogBottomSheet extends ConsumerWidget {
                   color: Theme.of(context).colorScheme.surface,
                   boxShadow: [
                     BoxShadow(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.shadow.withValues(alpha: 0.1),
+                      color: Theme.of(context).colorScheme.shadow
+                          .withValues(alpha: 0.1),
                       blurRadius: 4,
                       offset: const Offset(0, -2),
                     ),
@@ -235,7 +232,7 @@ class ChangelogBottomSheet extends ConsumerWidget {
 }
 
 void showChangelogBottomSheet(BuildContext context, UpdateInfo updateInfo) {
-  showModalBottomSheet(
+  showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,

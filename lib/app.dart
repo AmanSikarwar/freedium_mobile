@@ -1,72 +1,31 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+export 'core/routing/app_navigation.dart'
+    show
+        CurrentRouteNameObserver,
+        currentRouteNameObserver,
+        incomingWebviewRouteName,
+        navigateToWebview,
+        navigatorKey,
+        shouldSkipIncomingWebviewNavigation;
+
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/routing/app_navigation.dart'
+    show currentRouteNameObserver, navigateToWebview, navigatorKey;
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+part 'app.g.dart';
 
-@visibleForTesting
-class CurrentRouteNameObserver extends NavigatorObserver {
-  final List<Route<dynamic>> _routeStack = [];
-
-  String? get currentRouteName =>
-      _routeStack.isEmpty ? null : _routeStack.last.settings.name;
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPush(route, previousRoute);
-    _routeStack.add(route);
-  }
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didPop(route, previousRoute);
-    _routeStack.remove(route);
-  }
-
-  @override
-  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    super.didRemove(route, previousRoute);
-    _routeStack.remove(route);
-  }
-
-  @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    if (oldRoute == null) {
-      if (newRoute != null) {
-        _routeStack.add(newRoute);
-      }
-      return;
-    }
-
-    final index = _routeStack.indexOf(oldRoute);
-    if (index == -1) return;
-
-    if (newRoute == null) {
-      _routeStack.removeAt(index);
-    } else {
-      _routeStack[index] = newRoute;
-    }
-  }
-
-  @visibleForTesting
-  void reset() {
-    _routeStack.clear();
-  }
-}
-
-final currentRouteNameObserver = CurrentRouteNameObserver();
-
-class InitialIntentHandledNotifier extends Notifier<bool> {
+@Riverpod(keepAlive: true)
+class InitialIntentHandled() extends _$InitialIntentHandled {
   @override
   bool build() => false;
 
@@ -75,12 +34,8 @@ class InitialIntentHandledNotifier extends Notifier<bool> {
   }
 }
 
-final initialIntentHandledProvider =
-    NotifierProvider<InitialIntentHandledNotifier, bool>(
-      InitialIntentHandledNotifier.new,
-    );
-
-class PendingIntentUrlNotifier extends Notifier<String?> {
+@Riverpod(keepAlive: true)
+class PendingIntentUrl() extends _$PendingIntentUrl {
   @override
   String? build() => null;
 
@@ -93,44 +48,9 @@ class PendingIntentUrlNotifier extends Notifier<String?> {
   }
 }
 
-final pendingIntentUrlProvider =
-    NotifierProvider<PendingIntentUrlNotifier, String?>(
-      PendingIntentUrlNotifier.new,
-    );
-
-@visibleForTesting
-String incomingWebviewRouteName(String url) => '/webview/$url';
-
-@visibleForTesting
-bool shouldSkipIncomingWebviewNavigation({
-  required String? currentRouteName,
-  required String targetUrl,
-}) {
-  return currentRouteName == incomingWebviewRouteName(targetUrl);
-}
-
-class App extends ConsumerWidget {
-  const App({super.key});
-
+class const App({super.key}) extends ConsumerWidget {
   void _navigateToWebview(String url) {
-    final navigator = navigatorKey.currentState;
-    if (navigator != null) {
-      if (navigator.context.mounted) {
-        if (shouldSkipIncomingWebviewNavigation(
-          currentRouteName: currentRouteNameObserver.currentRouteName,
-          targetUrl: url,
-        )) {
-          return;
-        }
-
-        navigator.push(
-          MaterialPageRoute(
-            builder: (context) => WebviewScreen(url: url),
-            settings: RouteSettings(name: incomingWebviewRouteName(url)),
-          ),
-        );
-      }
-    }
+    navigateToWebview(url);
   }
 
   void _handleIncomingIntent(WidgetRef ref, String value) {
@@ -144,7 +64,6 @@ class App extends ConsumerWidget {
     }
 
     _navigateToWebview(url);
-    unawaited(ref.read(intentServiceProvider).reset());
   }
 
   Future<void> _processInitialIntent(
@@ -155,13 +74,14 @@ class App extends ConsumerWidget {
     if (!context.mounted) return;
 
     try {
-      final value = await ref.read(intentServiceProvider).getInitialIntent();
+      // Single consumption: the plugin replays the launching intent.
+      final intent = await ref.read(intentServiceProvider).getInitialIntent();
       if (!context.mounted) return;
 
-      final url = extractFirstArticleUrl(value.map((item) => item.path));
-      if (url == null) return;
+      final text = intentShareText(intent);
+      if (text == null) return;
 
-      _handleIncomingIntent(ref, url);
+      _handleIncomingIntent(ref, text);
     } catch (e) {
       debugPrint('Failed to process initial intent: $e');
     }
@@ -183,7 +103,6 @@ class App extends ConsumerWidget {
 
       ref.read(pendingIntentUrlProvider.notifier).clear();
       _navigateToWebview(pendingUrl);
-      unawaited(ref.read(intentServiceProvider).reset());
     });
 
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {
@@ -207,16 +126,31 @@ class App extends ConsumerWidget {
         darkTheme: theme.darkTheme,
         themeMode: themeMode,
         navigatorObservers: [currentRouteNameObserver],
+        builder: (context, child) {
+          // Bridge legacy deps still on package:flutter/material.dart
+          // (webview_flutter, flutter_markdown_plus, flutter_riverpod).
+          // Remove once they migrate to package:material_ui.
+          // ignore: deprecated_member_use
+          return MaterialUiCompatibilityBridge(child: child!);
+        },
         home: onboarding.isLoading
             ? const Scaffold(body: Center(child: CircularProgressIndicator()))
             : hasSeenOnboarding
             ? const HomeScreen()
             : const OnboardingScreen(),
       ),
-      loading: () => const MaterialApp(
-        home: Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => MaterialApp(
+        builder: (context, child) {
+          // ignore: deprecated_member_use
+          return MaterialUiCompatibilityBridge(child: child!);
+        },
+        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
       ),
       error: (err, stack) => MaterialApp(
+        builder: (context, child) {
+          // ignore: deprecated_member_use
+          return MaterialUiCompatibilityBridge(child: child!);
+        },
         home: Scaffold(body: Center(child: Text('Error: $err'))),
       ),
     );

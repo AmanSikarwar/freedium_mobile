@@ -1,27 +1,21 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show isHttpUri;
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
+
+part 'external_url_launcher.g.dart';
 
 typedef ExternalUrlLauncher = Future<bool> Function(String? value);
 
-final externalUrlLauncherProvider = Provider<ExternalUrlLauncher>(
-  (ref) => launchExternalHttpUrl,
-);
+@Riverpod(keepAlive: true)
+ExternalUrlLauncher externalUrlLauncher(Ref ref) => launchExternalHttpUrl;
 
 Uri? parseExternalHttpUrl(String? value) {
   final url = value?.trim();
   if (url == null || url.isEmpty) return null;
 
   final uri = Uri.tryParse(url);
-  final scheme = uri?.scheme.toLowerCase();
-  if (uri == null ||
-      !uri.hasScheme ||
-      uri.host.isEmpty ||
-      (scheme != 'http' && scheme != 'https')) {
-    return null;
-  }
-
-  return uri;
+  return isHttpUri(uri) ? uri : null;
 }
 
 Future<bool> launchExternalHttpUrl(String? value) async {

@@ -1,7 +1,9 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/continue_reading_section.dart';
+
+import '../../../../test_helpers.dart';
 
 void main() {
   testWidgets('shows the three latest unfinished articles', (tester) async {
@@ -30,9 +32,9 @@ void main() {
     expect(find.text('First'), findsOneWidget);
     expect(find.text('Second'), findsOneWidget);
     expect(find.text('Third'), findsOneWidget);
-    expect(find.text('Finished'), findsNothing);
     expect(find.text('Not started'), findsNothing);
     expect(find.text('Fourth'), findsNothing);
+    expect(find.text('Finished stories'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsNWidgets(3));
 
     await tester.tap(find.text('Second'));
@@ -53,13 +55,37 @@ void main() {
 
     expect(find.text('Continue Reading'), findsNothing);
   });
+
+  testWidgets('shows finished stories for re-reading', (tester) async {
+    final tapped = <ReadingHistory>[];
+    final history = [_article('Finished one', 1), _article('Finished two', 1)];
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: ContinueReadingSection(
+            history: history,
+            onArticleTap: tapped.add,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Continue Reading'), findsNothing);
+    expect(find.text('Finished stories'), findsOneWidget);
+    expect(find.text('Finished one'), findsOneWidget);
+    expect(find.text('Finished • tap to read again'), findsNWidgets(2));
+
+    await tester.tap(find.text('Finished two'));
+    expect(tapped, [history[1]]);
+  });
 }
 
 ReadingHistory _article(String title, double progress) {
   return ReadingHistory(
     url: 'https://medium.com/$title',
     title: title,
-    timestamp: DateTime.utc(2026, 8, 10),
+    timestamp: TestFixtures.groupDate,
     progress: progress,
   );
 }

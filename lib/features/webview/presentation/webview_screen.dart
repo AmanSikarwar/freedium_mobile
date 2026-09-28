@@ -1,10 +1,12 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
+
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
-import 'package:freedium_mobile/core/services/intent_service.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
@@ -23,25 +25,22 @@ bool shouldRevealWebView({
   return isPageLoaded && !hasError && (!isThemedPage || isThemeApplied);
 }
 
-class WebviewScreen extends ConsumerStatefulWidget {
-  const WebviewScreen({required this.url, super.key});
-
+class const WebviewScreen({required this.url, super.key})
+    extends ConsumerStatefulWidget {
   final String url;
 
   @override
   ConsumerState<WebviewScreen> createState() => _WebviewScreenState();
 }
 
-class _WebviewScreenState extends ConsumerState<WebviewScreen> {
+class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
   bool _isVisible = true;
   WebViewController? _controller;
   ColorScheme? _prevColorScheme;
-  late final IntentService _intentService;
 
   @override
   void initState() {
     super.initState();
-    _intentService = ref.read(intentServiceProvider);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeWebView();
     });
@@ -51,7 +50,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final themeInjector = ref.read(themeInjectorServiceProvider);
     final freediumUrlService = ref.read(freediumUrlServiceProvider);
-    final settings = ref.read(settingsProvider);
+    final settings = ref.read(settingsProvider).value ?? const SettingsState();
     final initialMirrorUrl = await resolveInitialMirrorUrl(
       autoSwitchMirror: settings.autoSwitchMirror,
       selectedMirrorUrl: settings.selectedMirrorUrl,
@@ -77,16 +76,11 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
 
   @override
   void dispose() {
-    _resetSharingIntent();
     super.dispose();
   }
 
-  void _resetSharingIntent() {
-    unawaited(_intentService.reset());
-  }
-
   Future<void> _toggleBookmark(
-    BookmarksNotifier bookmarksNotifier,
+    Bookmarks bookmarksNotifier,
     WebviewState webviewState,
   ) async {
     final didSave = await bookmarksNotifier.toggleBookmark(
@@ -102,6 +96,33 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
         backgroundColor: Colors.red,
       ),
     );
+  }
+
+  /// Long-press action: ensures the article is bookmarked, then opens the
+  /// move-to-folder sheet.
+  Future<void> _moveBookmarkToFolder(
+    Bookmarks bookmarksNotifier,
+    WebviewState webviewState,
+  ) async {
+    if (!bookmarksNotifier.isBookmarked(widget.url)) {
+      final didSave = await bookmarksNotifier.addBookmark(
+        widget.url,
+        webviewState.articleMeta?.title ?? '',
+      );
+      if (!mounted) return;
+      if (!didSave) {
+        HapticFeedback.heavyImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to update bookmark'),
+            backgroundColor: Colors.red,
+          ),
+        );
+        return;
+      }
+    }
+    if (!mounted) return;
+    await showMoveToFolderSheet(context, ref, url: widget.url);
   }
 
   @override
@@ -146,7 +167,6 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                _resetSharingIntent();
                 navigator.pop();
               }
             });
@@ -158,9 +178,10 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
             });
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
-                _resetSharingIntent();
                 navigator.pushReplacement(
-                  MaterialPageRoute(builder: (context) => const HomeScreen()),
+                  MaterialPageRoute<void>(
+                    builder: (context) => const HomeScreen(),
+                  ),
                 );
               }
             });
@@ -171,10 +192,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     );
   }
 
-  Widget _buildWebView(
-    WebviewState webviewState,
-    WebviewNotifier webviewNotifier,
-  ) {
+  Widget _buildWebView(WebviewState webviewState, Webview webviewNotifier) {
     if (!_isVisible) {
       return Scaffold(backgroundColor: Theme.of(context).colorScheme.surface);
     }
@@ -222,10 +240,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     );
   }
 
-  Widget _buildErrorWidget(
-    WebviewState webviewState,
-    WebviewNotifier webviewNotifier,
-  ) {
+  Widget _buildErrorWidget(WebviewState webviewState, Webview webviewNotifier) {
     final theme = Theme.of(context);
 
     return Center(
@@ -285,7 +300,11 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final bookmarksNotifier = ref.read(bookmarksProvider.notifier);
     final isBookmarked = ref.watch(
-      bookmarksProvider.select((list) => list.any((b) => b.url == widget.url)),
+      bookmarksProvider.select(
+        (bookmarks) => (bookmarks.value ?? const <BookmarkedArticle>[]).any(
+          (b) => b.url == widget.url,
+        ),
+      ),
     );
     final divider = Container(
       width: 1,
@@ -320,7 +339,7 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
                 left: Radius.circular(30),
               ),
               onTap: () {
-                showModalBottomSheet(
+                showModalBottomSheet<void>(
                   context: context,
                   isScrollControlled: true,
                   backgroundColor: Colors.transparent,
@@ -356,6 +375,12 @@ class _WebviewScreenState extends ConsumerState<WebviewScreen> {
               onTap: () {
                 HapticFeedback.lightImpact();
                 unawaited(_toggleBookmark(bookmarksNotifier, webviewState));
+              },
+              onLongPress: () {
+                HapticFeedback.mediumImpact();
+                unawaited(
+                  _moveBookmarkToFolder(bookmarksNotifier, webviewState),
+                );
               },
               child: Container(
                 padding: const EdgeInsets.symmetric(

@@ -1,11 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class _RecordingNavigatorObserver extends NavigatorObserver {
+import '../../../test_helpers.dart';
+
+class _RecordingNavigatorObserver() extends NavigatorObserver {
   int pushedRoutes = 0;
   int replacedRoutes = 0;
 
@@ -32,7 +34,7 @@ void main() {
     testWidgets('completes onboarding without pushing its own home route', (
       tester,
     ) async {
-      SharedPreferences.setMockInitialValues({});
+      await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();
       final observer = _RecordingNavigatorObserver();
 

@@ -1,20 +1,24 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:freedium_mobile/core/utils/url.dart'
+    show normalizeMirrorUrl, trimTrailingSlash;
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
-class AddMirrorDialog extends StatefulWidget {
+class const AddMirrorDialog({
+  super.key,
+  this.existingMirror,
+  required this.onAdd,
+}) extends StatefulWidget {
   final FreediumMirror? existingMirror;
   final FutureOr<bool> Function(FreediumMirror mirror) onAdd;
-
-  const AddMirrorDialog({super.key, this.existingMirror, required this.onAdd});
 
   @override
   State<AddMirrorDialog> createState() => _AddMirrorDialogState();
 }
 
-class _AddMirrorDialogState extends State<AddMirrorDialog> {
+class _AddMirrorDialogState() extends State<AddMirrorDialog> {
   late TextEditingController _nameController;
   late TextEditingController _urlController;
   final _formKey = GlobalKey<FormState>();
@@ -78,12 +82,7 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
                 if (url == null || url.isEmpty) {
                   return 'Please enter a URL';
                 }
-                final uri = Uri.tryParse(url);
-                final scheme = uri?.scheme.toLowerCase();
-                if (uri == null ||
-                    !uri.hasScheme ||
-                    uri.host.isEmpty ||
-                    (scheme != 'http' && scheme != 'https')) {
+                if (normalizeMirrorUrl(url) == null) {
                   return 'Please enter a valid URL';
                 }
                 return null;
@@ -100,9 +99,8 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
               const SizedBox(height: 12),
               Text(
                 _submissionError!,
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.error,
-                ),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: Theme.of(context).colorScheme.error),
               ),
             ],
           ],
@@ -130,10 +128,9 @@ class _AddMirrorDialogState extends State<AddMirrorDialog> {
     }
 
     HapticFeedback.mediumImpact();
-    String url = _urlController.text.trim();
-    while (url.length > 1 && url.endsWith('/')) {
-      url = url.substring(0, url.length - 1);
-    }
+    final rawUrl = _urlController.text.trim();
+    // Validator already guarantees non-null, fallback to trimmed raw.
+    final url = normalizeMirrorUrl(rawUrl) ?? trimTrailingSlash(rawUrl);
 
     final mirror = FreediumMirror(
       name: _nameController.text.trim(),

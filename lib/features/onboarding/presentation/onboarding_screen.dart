@@ -1,15 +1,13 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
 
-class OnboardingScreen extends ConsumerStatefulWidget {
-  const OnboardingScreen({super.key});
-
+class const OnboardingScreen({super.key}) extends ConsumerStatefulWidget {
   @override
   ConsumerState<OnboardingScreen> createState() => _OnboardingScreenState();
 }
 
-class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
+class _OnboardingScreenState() extends ConsumerState<OnboardingScreen> {
   final PageController _pageController = PageController();
   int _currentPage = 0;
 
@@ -17,20 +15,17 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     _OnboardingPage(
       imagePath: 'assets/icon/icon.png',
       title: 'Welcome to Freedium',
-      body:
-          'Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times.',
+      body: 'Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times.',
     ),
     _OnboardingPage(
       icon: Icons.share,
       title: 'Share from Anywhere',
-      body:
-          'Open a supported article in Chrome or any app, tap Share, and choose Freedium from the share sheet.',
+      body: 'Open a supported article in Chrome or any app, tap Share, and choose Freedium from the share sheet.',
     ),
     _OnboardingPage(
       icon: Icons.content_paste,
       title: 'Clipboard Detection',
-      body:
-          'Copy a supported article URL, then open Freedium — it auto-fills the link for you instantly.',
+      body: 'Copy a supported article URL, then open Freedium — it auto-fills the link for you instantly.',
     ),
   ];
 
@@ -181,19 +176,20 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 }
 
-class _OnboardingPage {
+class const _OnboardingPage({
+  this.icon,
+  this.imagePath,
+  required this.title,
+  required this.body,
+}) {
   final IconData? icon;
   final String? imagePath;
   final String title;
   final String body;
 
-  const _OnboardingPage({
-    this.icon,
-    this.imagePath,
-    required this.title,
-    required this.body,
-  }) : assert(
-         icon != null || imagePath != null,
-         'Either icon or imagePath must be provided',
-       );
+  this
+    : assert(
+        icon != null || imagePath != null,
+        'Either icon or imagePath must be provided',
+      );
 }

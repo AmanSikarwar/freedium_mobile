@@ -1,27 +1,27 @@
 import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
-import 'package:freedium_mobile/core/utils/http_url_normalizer.dart';
+import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
 
-@immutable
-class UpdateInfo {
-  final String latestVersion;
-  final String releaseUrl;
-  final String releaseNotes;
+part 'update_service.freezed.dart';
+part 'update_service.g.dart';
 
-  const UpdateInfo({
-    required this.latestVersion,
-    required this.releaseUrl,
-    required this.releaseNotes,
-  });
+@freezed
+abstract class UpdateInfo with _$UpdateInfo {
+  const factory UpdateInfo({
+    required String latestVersion,
+    required String releaseUrl,
+    required String releaseNotes,
+  }) = _UpdateInfo;
 }
 
-class UpdateCheckException implements Exception {
-  const UpdateCheckException(this.message, [this.cause]);
-
+class const UpdateCheckException(this.message, [this.cause])
+    implements Exception {
   final String message;
   final Object? cause;
 
@@ -33,10 +33,10 @@ class UpdateCheckException implements Exception {
   }
 }
 
-class UpdateService {
+class UpdateService({http.Client? client}) {
   final http.Client _client;
 
-  UpdateService({http.Client? client}) : _client = client ?? http.Client();
+  this : _client = client ?? http.Client();
 
   static const String _repoOwner = 'AmanSikarwar';
   static const String _repoName = 'freedium_mobile';
@@ -74,7 +74,10 @@ class UpdateService {
           return UpdateInfo(
             latestVersion: 'v$latestVersionStr',
             releaseUrl: normalizedReleaseUrl,
-            releaseNotes: data['body'] is String ? data['body'] as String : '',
+            releaseNotes: switch (data['body']) {
+              final String notes => notes,
+              _ => '',
+            },
           );
         }
         return null;
@@ -97,9 +100,11 @@ String? _normalizeReleaseUrl(String value) {
   return normalizeHttpUrl(value);
 }
 
-final updateServiceProvider = Provider((ref) => UpdateService());
+@Riverpod(keepAlive: true)
+UpdateService updateService(Ref ref) => UpdateService();
 
-final updateCheckProvider = FutureProvider<UpdateInfo?>((ref) async {
-  final updateService = ref.watch(updateServiceProvider);
-  return await updateService.checkForUpdate();
-});
+@Riverpod(keepAlive: true)
+Future<UpdateInfo?> updateCheck(Ref ref) async {
+  final service = ref.watch(updateServiceProvider);
+  return service.checkForUpdate();
+}

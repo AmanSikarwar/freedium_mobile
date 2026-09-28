@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -10,30 +10,12 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
-class _FailingSharedPreferencesStore extends SharedPreferencesStorePlatform {
-  _FailingSharedPreferencesStore([Map<String, Object>? initialValues])
-    : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
-
-  @override
-  Future<bool> clear() async => false;
-
-  @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
-  @override
-  Future<bool> remove(String key) async => false;
-
-  @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
-}
+import '../../../test_helpers.dart';
 
 void main() {
   group('BookmarksScreen', () {
     testWidgets('shows progress from matching history entries', (tester) async {
-      final timestamp = DateTime.utc(2026, 8, 10);
+      final timestamp = TestFixtures.groupDate;
       final bookmarks = [
         BookmarkedArticle(
           url: 'https://medium.com/in-progress',
@@ -60,25 +42,18 @@ void main() {
           progress: 1,
         ),
       ];
-      SharedPreferences.setMockInitialValues({
-        'bookmarked_articles': [
-          for (final item in bookmarks) jsonEncode(item.toJson()),
-        ],
-        'reading_history': [
-          for (final item in history) jsonEncode(item.toJson()),
-        ],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+      await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [
+            for (final item in bookmarks) jsonEncode(item.toJson()),
           ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+          'reading_history': [
+            for (final item in history) jsonEncode(item.toJson()),
+          ],
+        },
       );
-      await tester.pumpAndSettle();
 
       expect(find.textContaining('42% read'), findsOneWidget);
       expect(find.textContaining('Finished •'), findsOneWidget);
@@ -91,24 +66,17 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
-        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+      await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       final appBar = tester.widget<AppBar>(find.byType(AppBar));
       expect(appBar.bottom?.preferredSize.height, 64);
@@ -116,24 +84,17 @@ void main() {
 
     testWidgets('removes a bookmark after swipe dismissal', (tester) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
-        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+      final prefs = await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       expect(find.text('Example story'), findsOneWidget);
 
@@ -149,11 +110,11 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
       SharedPreferences.resetStatic();
@@ -185,24 +146,17 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
-      SharedPreferences.setMockInitialValues({
-        'bookmarked_articles': [jsonEncode(bookmark.toJson())],
-      });
-      final prefs = await SharedPreferences.getInstance();
-
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWith((ref) async => prefs),
-          ],
-          child: const MaterialApp(home: BookmarksScreen()),
-        ),
+      final prefs = await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmarked_articles': [jsonEncode(bookmark.toJson())],
+        },
       );
-      await tester.pumpAndSettle();
 
       await tester.enterText(
         find.descendant(
@@ -213,7 +167,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Clear Bookmarks'));
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear bookmarks').last);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
       await tester.pumpAndSettle();
@@ -227,11 +183,11 @@ void main() {
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
-        savedAt: DateTime.utc(2026, 2, 3),
+        savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = _FailingSharedPreferencesStore({
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
       SharedPreferences.resetStatic();
@@ -257,7 +213,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Clear Bookmarks'));
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Clear bookmarks').last);
       await tester.pumpAndSettle();
       await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
       await tester.pumpAndSettle();

@@ -1,37 +1,54 @@
 name: freedium_mobile
 description: "Read articles from seven supported publishers without hitting the paywall"
 publish_to: "none"
-version: 0.12.0+12
+version: 0.13.0+13
 
 environment:
-  sdk: ^3.12.0
+  sdk: ^3.13.0
   flutter: ">=3.44.0"
 
 dependencies:
   dynamic_color: ^2.1.0
   flutter:
     sdk: flutter
+  material_ui: ^1.4.0
   webview_flutter: ^4.14.1
-  webview_flutter_android: ^4.13.0
-  webview_flutter_wkwebview: ^3.26.0
-  flutter_riverpod: ^3.3.2
+  webview_flutter_android: ^4.14.1
+  webview_flutter_wkwebview: ^3.26.1
+  flutter_riverpod: ^3.4.3
   flutter_markdown_plus: ^1.0.12
   http: ^1.6.0
-  listen_sharing_intent: ^1.9.2
-  pub_semver: ^2.2.0
+  receive_intent: 0.2.8
+  pub_semver: ^2.2.1
   share_plus: ^13.3.0
   shared_preferences: ^2.5.5
-  shimmer: ^3.0.0
+  shimmer: ^4.0.0
   url_launcher: ^6.3.2
   timeago: ^3.7.1
+  riverpod_annotation: ^4.0.7
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.12.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
-  riverpod_lint: ^3.1.4
+  riverpod_lint: ^3.1.9
   shared_preferences_platform_interface: ^2.4.2
+  riverpod_generator: ^4.0.9
+  build_runner: ^2.16.1
+  freezed: ^4.0.2
+  json_serializable: ^6.14.1
+
+# Forced past the ceiling of flutter_launcher_icons (cli_util).
+# Re-verify with flutter test, flutter analyze and an APK build after
+# any pub upgrade. cross_file is intentionally NOT overridden: 0.4.0 is
+# a breaking major that share_plus 13.3.0 does not compile against.
+# test_api and material_color_utilities are pinned by the Flutter SDK
+# itself and intentionally left alone.
+dependency_overrides:
+  cli_util: ^0.6.0
 
 flutter:
   uses-material-design: true

@@ -5,17 +5,19 @@ import 'package:freedium_mobile/features/history/application/history_service.dar
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../test_helpers.dart';
+
 void main() {
   group('HistoryService', () {
     test('getHistory skips invalid and duplicate history entries', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
+      final timestamp = TestFixtures.seedDate;
       final history = ReadingHistory(
-        url: 'https://medium.com/example/story',
+        url: TestFixtures.storyUrl,
         title: 'Example story',
         timestamp: timestamp.toLocal(),
       );
 
-      SharedPreferences.setMockInitialValues({
+      await mockPrefs({
         'reading_history': [
           '{bad json',
           jsonEncode({
@@ -39,15 +41,14 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = HistoryService(prefs);
+      final service = HistoryService(await SharedPreferences.getInstance());
 
       expect(service.getHistory(), [history]);
     });
 
     test('getHistory falls back to URL when title is blank', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
-      SharedPreferences.setMockInitialValues({
+      final timestamp = TestFixtures.seedDate;
+      await mockPrefs({
         'reading_history': [
           jsonEncode({
             'url': ' HTTPS://Medium.COM/example/story/ ',
@@ -57,36 +58,34 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = HistoryService(prefs);
+      final service = HistoryService(await SharedPreferences.getInstance());
 
       final history = service.getHistory();
       expect(history, hasLength(1));
-      expect(history.single.title, 'https://medium.com/example/story');
+      expect(history.single.title, TestFixtures.storyUrl);
     });
 
     test('getHistory falls back to URL when title is missing', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
-      SharedPreferences.setMockInitialValues({
+      final timestamp = TestFixtures.seedDate;
+      await mockPrefs({
         'reading_history': [
           jsonEncode({
-            'url': 'https://medium.com/example/story',
+            'url': TestFixtures.storyUrl,
             'timestamp': timestamp.toIso8601String(),
           }),
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = HistoryService(prefs);
+      final service = HistoryService(await SharedPreferences.getInstance());
 
       final history = service.getHistory();
       expect(history, hasLength(1));
-      expect(history.single.title, 'https://medium.com/example/story');
+      expect(history.single.title, TestFixtures.storyUrl);
     });
 
     test('getHistory loads progress and supports legacy entries', () async {
-      final timestamp = DateTime.utc(2026, 2, 3);
-      SharedPreferences.setMockInitialValues({
+      final timestamp = TestFixtures.seedDate;
+      await mockPrefs({
         'reading_history': [
           jsonEncode({
             'url': 'https://medium.com/with-progress',

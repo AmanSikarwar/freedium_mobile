@@ -1,9 +1,7 @@
-import "package:flutter/material.dart";
+import "package:material_ui/material_ui.dart";
 
-class AppTheme {
+class const AppTheme(this.textTheme) {
   final TextTheme textTheme;
-
-  const AppTheme(this.textTheme);
 
   static ColorScheme lightScheme() {
     return const ColorScheme(
@@ -350,7 +348,16 @@ class AppTheme {
   List<ExtendedColor> get extendedColors => [];
 }
 
-class ExtendedColor {
+class const ExtendedColor({
+  required this.seed,
+  required this.value,
+  required this.light,
+  required this.lightHighContrast,
+  required this.lightMediumContrast,
+  required this.dark,
+  required this.darkHighContrast,
+  required this.darkMediumContrast,
+}) {
   final Color seed, value;
   final ColorFamily light;
   final ColorFamily lightHighContrast;
@@ -358,27 +365,14 @@ class ExtendedColor {
   final ColorFamily dark;
   final ColorFamily darkHighContrast;
   final ColorFamily darkMediumContrast;
-
-  const ExtendedColor({
-    required this.seed,
-    required this.value,
-    required this.light,
-    required this.lightHighContrast,
-    required this.lightMediumContrast,
-    required this.dark,
-    required this.darkHighContrast,
-    required this.darkMediumContrast,
-  });
 }
 
-class ColorFamily {
-  const ColorFamily({
-    required this.color,
-    required this.onColor,
-    required this.colorContainer,
-    required this.onColorContainer,
-  });
-
+class const ColorFamily({
+  required this.color,
+  required this.onColor,
+  required this.colorContainer,
+  required this.onColorContainer,
+}) {
   final Color color;
   final Color onColor;
   final Color colorContainer;

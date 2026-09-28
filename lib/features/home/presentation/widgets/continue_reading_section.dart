@@ -1,14 +1,12 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
-class ContinueReadingSection extends StatelessWidget {
-  const ContinueReadingSection({
-    required this.history,
-    required this.onArticleTap,
-    super.key,
-  });
-
+class const ContinueReadingSection({
+  required this.history,
+  required this.onArticleTap,
+  super.key,
+}) extends StatelessWidget {
   final List<ReadingHistory> history;
   final ValueChanged<ReadingHistory> onArticleTap;
 
@@ -22,31 +20,56 @@ class ContinueReadingSection extends StatelessWidget {
         )
         .take(3)
         .toList(growable: false);
-    if (articles.isEmpty) return const SizedBox.shrink();
+    final finished = history
+        .where((item) => item.isFinished)
+        .take(3)
+        .toList(growable: false);
+    if (articles.isEmpty && finished.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return SizedBox(
       width: double.infinity,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Text(
-              'Continue Reading',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          if (articles.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Continue Reading',
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          const SizedBox(height: 4),
-          for (final article in articles)
-            ArticleCard(
-              title: article.title,
-              subtitle: '${(article.progress * 100).round()}% read',
-              url: article.url,
-              progress: article.progress,
-              onTap: () => onArticleTap(article),
+            const SizedBox(height: 4),
+            for (final article in articles)
+              ArticleCard(
+                title: article.title,
+                subtitle: '${(article.progress * 100).round()}% read',
+                url: article.url,
+                progress: article.progress,
+                onTap: () => onArticleTap(article),
+              ),
+          ],
+          if (finished.isNotEmpty) ...[
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Text(
+                'Finished stories',
+                style: Theme.of(context).textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
+              ),
             ),
+            const SizedBox(height: 4),
+            for (final article in finished)
+              ArticleCard(
+                title: article.title,
+                subtitle: 'Finished • tap to read again',
+                url: article.url,
+                onTap: () => onArticleTap(article),
+              ),
+          ],
         ],
       ),
     );
