@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -11,8 +13,11 @@ part 'history_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class History() extends _$History {
+  final _writes = SerialTaskQueue();
   Future<HistoryService?> _service() async {
     try {
+      await future;
+      if (!ref.mounted) return null;
       final prefs = await ref.read(sharedPreferencesProvider.future);
       return HistoryService(prefs);
     } catch (e) {
@@ -42,7 +47,10 @@ class History() extends _$History {
     return ref.read(historyLimitProvider).value ?? HistoryService.defaultLimit;
   }
 
-  Future<void> addHistory(String url, String title) async {
+  Future<void> addHistory(String url, String title) =>
+      _writes.run(() => _addHistory(url, title));
+
+  Future<void> _addHistory(String url, String title) async {
     final service = await _service();
     if (service == null) return;
     final normalizedUrl = normalizeHttpUrl(url);
@@ -94,7 +102,10 @@ class History() extends _$History {
     return index < 0 ? 0 : current[index].progress;
   }
 
-  Future<void> updateReadingProgress(String url, double progress) async {
+  Future<void> updateReadingProgress(String url, double progress) =>
+      _writes.run(() => _updateReadingProgress(url, progress));
+
+  Future<void> _updateReadingProgress(String url, double progress) async {
     final service = await _service();
     if (service == null) return;
     final normalizedUrl = normalizeHttpUrl(url);
@@ -118,7 +129,10 @@ class History() extends _$History {
     }
   }
 
-  Future<bool> removeHistory(ReadingHistory item) async {
+  Future<bool> removeHistory(ReadingHistory item) =>
+      _writes.run(() => _removeHistory(item));
+
+  Future<bool> _removeHistory(ReadingHistory item) async {
     final service = await _service();
     if (service == null) return false;
     final current = state.value ?? const <ReadingHistory>[];
@@ -136,7 +150,9 @@ class History() extends _$History {
     }
   }
 
-  Future<bool> clearHistory() async {
+  Future<bool> clearHistory() => _writes.run(_clearHistory);
+
+  Future<bool> _clearHistory() async {
     final service = await _service();
     if (service == null) return false;
     try {
@@ -151,7 +167,9 @@ class History() extends _$History {
 
   /// Trims the list to [limit] newest entries and persists. Used when the
   /// retention setting changes.
-  Future<bool> applyLimit(int limit) async {
+  Future<bool> applyLimit(int limit) => _writes.run(() => _applyLimit(limit));
+
+  Future<bool> _applyLimit(int limit) async {
     final service = await _service();
     if (service == null) return false;
 
@@ -173,7 +191,10 @@ class History() extends _$History {
 
   /// Removes entries older than [maxAge] and persists.
   /// Returns the number of entries removed, or -1 on failure.
-  Future<int> clearOlderThan(Duration maxAge) async {
+  Future<int> clearOlderThan(Duration maxAge) =>
+      _writes.run(() => _clearOlderThan(maxAge));
+
+  Future<int> _clearOlderThan(Duration maxAge) async {
     final service = await _service();
     if (service == null) return -1;
 
@@ -200,8 +221,11 @@ class History() extends _$History {
 /// SharedPreferences.
 @Riverpod(keepAlive: true)
 class HistoryLimit() extends _$HistoryLimit {
+  final _writes = SerialTaskQueue();
   Future<HistoryService?> _service() async {
     try {
+      await future;
+      if (!ref.mounted) return null;
       final prefs = await ref.read(sharedPreferencesProvider.future);
       return HistoryService(prefs);
     } catch (e) {
@@ -218,7 +242,9 @@ class HistoryLimit() extends _$HistoryLimit {
 
   /// Persists [limit] and trims history to match. Returns false when the
   /// value is unsupported or persistence fails.
-  Future<bool> setLimit(int limit) async {
+  Future<bool> setLimit(int limit) => _writes.run(() => _setLimit(limit));
+
+  Future<bool> _setLimit(int limit) async {
     final service = await _service();
     if (service == null) return false;
     if (!HistoryService.allowedLimits.contains(limit)) return false;

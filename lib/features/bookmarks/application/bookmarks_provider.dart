@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
+
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -15,10 +17,13 @@ part 'bookmarks_provider.g.dart';
 
 @Riverpod(keepAlive: true)
 class Bookmarks() extends _$Bookmarks {
+  final _writes = SerialTaskQueue();
   static const int maxBookmarks = 100;
 
   Future<BookmarksService?> _service() async {
     try {
+      await future;
+      if (!ref.mounted) return null;
       final prefs = await ref.read(sharedPreferencesProvider.future);
       return BookmarksService(prefs);
     } catch (e) {
@@ -42,6 +47,19 @@ class Bookmarks() extends _$Bookmarks {
   }
 
   Future<bool> addBookmark(String url, String title, {String? folder}) async {
+    final result = await _writes.run(
+      () => _addBookmark(url, title, folder: folder),
+    );
+    final normalizedFolder = normalizeBookmarkFolderName(folder);
+    if (result && normalizedFolder != null) {
+      await ref
+          .read(bookmarkFoldersProvider.notifier)
+          .ensureFolder(normalizedFolder);
+    }
+    return result;
+  }
+
+  Future<bool> _addBookmark(String url, String title, {String? folder}) async {
     final service = await _service();
     if (service == null) return false;
     final normalizedUrl = normalizeHttpUrl(url);
@@ -71,11 +89,6 @@ class Bookmarks() extends _$Bookmarks {
     try {
       await service.saveBookmarks(newList);
       state = AsyncData(newList);
-      if (normalizedFolder != null) {
-        await ref
-            .read(bookmarkFoldersProvider.notifier)
-            .ensureFolder(normalizedFolder);
-      }
       return true;
     } catch (e) {
       debugPrint('Failed to save bookmark: $e');
@@ -83,7 +96,10 @@ class Bookmarks() extends _$Bookmarks {
     }
   }
 
-  Future<bool> removeBookmark(BookmarkedArticle item) async {
+  Future<bool> removeBookmark(BookmarkedArticle item) =>
+      _writes.run(() => _removeBookmark(item));
+
+  Future<bool> _removeBookmark(BookmarkedArticle item) async {
     final service = await _service();
     if (service == null) return false;
 
@@ -101,19 +117,25 @@ class Bookmarks() extends _$Bookmarks {
   }
 
   /// Toggles the bookmark state for [url]. Adds if absent, removes if present.
-  Future<bool> toggleBookmark(String url, String title) async {
+  Future<bool> toggleBookmark(String url, String title) =>
+      _writes.run(() => _toggleBookmark(url, title));
+
+  Future<bool> _toggleBookmark(String url, String title) async {
+    if (await _service() == null) return false;
     final normalizedUrl = normalizeHttpUrl(url);
     if (normalizedUrl == null) return false;
 
     if (isBookmarked(normalizedUrl)) {
       final current = state.value ?? const <BookmarkedArticle>[];
       final item = current.firstWhere((b) => b.url == normalizedUrl);
-      return removeBookmark(item);
+      return _removeBookmark(item);
     }
-    return addBookmark(normalizedUrl, title);
+    return _addBookmark(normalizedUrl, title);
   }
 
-  Future<bool> clearBookmarks() async {
+  Future<bool> clearBookmarks() => _writes.run(_clearBookmarks);
+
+  Future<bool> _clearBookmarks() async {
     final service = await _service();
     if (service == null) return false;
 
@@ -132,6 +154,17 @@ class Bookmarks() extends _$Bookmarks {
   /// the article keeps the folder regardless (derived union always includes
   /// referenced folders).
   Future<bool> setArticleFolder(String url, String? folder) async {
+    final result = await _writes.run(() => _setArticleFolder(url, folder));
+    final normalizedFolder = normalizeBookmarkFolderName(folder);
+    if (result && normalizedFolder != null) {
+      await ref
+          .read(bookmarkFoldersProvider.notifier)
+          .ensureFolder(normalizedFolder);
+    }
+    return result;
+  }
+
+  Future<bool> _setArticleFolder(String url, String? folder) async {
     final service = await _service();
     if (service == null) return false;
     final normalizedUrl = normalizeHttpUrl(url);
@@ -148,11 +181,6 @@ class Bookmarks() extends _$Bookmarks {
     try {
       await service.saveBookmarks(newList);
       state = AsyncData(newList);
-      if (normalizedFolder != null) {
-        await ref
-            .read(bookmarkFoldersProvider.notifier)
-            .ensureFolder(normalizedFolder);
-      }
       return true;
     } catch (e) {
       debugPrint('Failed to move bookmark to folder: $e');
@@ -163,7 +191,10 @@ class Bookmarks() extends _$Bookmarks {
   /// Renames every article folder matching [oldName] (case-insensitive) to
   /// [newName]. Returns true without writing when nothing references it
   /// (stored list is handled by the folders provider).
-  Future<bool> renameFolder(String oldName, String newName) async {
+  Future<bool> renameFolder(String oldName, String newName) =>
+      _writes.run(() => _renameFolder(oldName, newName));
+
+  Future<bool> _renameFolder(String oldName, String newName) async {
     final service = await _service();
     if (service == null) return false;
     final oldNormalized = normalizeBookmarkFolderName(oldName);
@@ -198,6 +229,17 @@ class Bookmarks() extends _$Bookmarks {
   /// their saved data, new entries are inserted newest-first, and the list
   /// is trimmed to [maxBookmarks]. Returns the number of entries added.
   Future<int> importBookmarks(List<BookmarkedArticle> entries) async {
+    final result = await _writes.run(() => _importBookmarks(entries));
+    if (result > 0) {
+      final folders = ref.read(bookmarkFoldersProvider.notifier);
+      for (final entry in state.requireValue) {
+        if (entry.folder case final folder?) await folders.ensureFolder(folder);
+      }
+    }
+    return result;
+  }
+
+  Future<int> _importBookmarks(List<BookmarkedArticle> entries) async {
     final service = await _service();
     if (service == null) return 0;
     if (entries.isEmpty) return 0;
@@ -221,13 +263,6 @@ class Bookmarks() extends _$Bookmarks {
     try {
       await service.saveBookmarks(newList);
       state = AsyncData(newList);
-      final folders = ref.read(bookmarkFoldersProvider.notifier);
-      for (final entry in newList) {
-        final folder = entry.folder;
-        if (folder != null) {
-          await folders.ensureFolder(folder);
-        }
-      }
       return fresh.length;
     } catch (e) {
       debugPrint('Failed to import bookmarks: $e');
@@ -237,7 +272,10 @@ class Bookmarks() extends _$Bookmarks {
 
   /// Clears the folder (back to Unsorted) on every article matching [name]
   /// (case-insensitive).
-  Future<bool> clearFolder(String name) async {
+  Future<bool> clearFolder(String name) =>
+      _writes.run(() => _clearFolder(name));
+
+  Future<bool> _clearFolder(String name) async {
     final service = await _service();
     if (service == null) return false;
     final normalized = normalizeBookmarkFolderName(name);
@@ -269,8 +307,11 @@ class Bookmarks() extends _$Bookmarks {
 /// folders and folders referenced by articles.
 @Riverpod(keepAlive: true)
 class BookmarkFolders() extends _$BookmarkFolders {
+  final _writes = SerialTaskQueue();
   Future<BookmarksService?> _service() async {
     try {
+      await future;
+      if (!ref.mounted) return null;
       final prefs = await ref.read(sharedPreferencesProvider.future);
       return BookmarksService(prefs);
     } catch (e) {
@@ -288,7 +329,10 @@ class BookmarkFolders() extends _$BookmarkFolders {
   /// Adds [name] to the stored list unless present. Idempotent: duplicates
   /// (case-insensitive) report success. Returns false for blank names, a
   /// full list, or persistence failures.
-  Future<bool> ensureFolder(String name) async {
+  Future<bool> ensureFolder(String name) =>
+      _writes.run(() => _ensureFolder(name));
+
+  Future<bool> _ensureFolder(String name) async {
     final service = await _service();
     if (service == null) return false;
     final normalized = normalizeBookmarkFolderName(name);
@@ -314,7 +358,10 @@ class BookmarkFolders() extends _$BookmarkFolders {
 
   /// Renames the stored folder [oldName] to [newName] and rewrites matching
   /// article folders. Articles keep their content; nothing is deleted.
-  Future<bool> renameFolder(String oldName, String newName) async {
+  Future<bool> renameFolder(String oldName, String newName) =>
+      _writes.run(() => _renameFolder(oldName, newName));
+
+  Future<bool> _renameFolder(String oldName, String newName) async {
     final service = await _service();
     if (service == null) return false;
     final oldNormalized = normalizeBookmarkFolderName(oldName);
@@ -358,7 +405,10 @@ class BookmarkFolders() extends _$BookmarkFolders {
   }
 
   /// Deletes the stored folder [name] and moves its articles to Unsorted.
-  Future<bool> deleteFolder(String name) async {
+  Future<bool> deleteFolder(String name) =>
+      _writes.run(() => _deleteFolder(name));
+
+  Future<bool> _deleteFolder(String name) async {
     final service = await _service();
     if (service == null) return false;
     final normalized = normalizeBookmarkFolderName(name);
