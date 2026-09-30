@@ -49,6 +49,7 @@ class Webview() extends _$Webview {
   int _retryCount = 0;
   bool _hasSwitchedMirror = false;
   final Set<String> _articleRequestUrls = <String>{};
+  final Set<String> _failedPageUrls = <String>{};
   int _historyRecordToken = 0;
   bool _hasRecordedHistoryForCurrentPage = false;
   double _latestReadingProgress = 0;
@@ -187,6 +188,7 @@ class Webview() extends _$Webview {
           },
           onPageStarted: (String url) {
             _themeAckTimer?.cancel();
+            _failedPageUrls.remove(_normalizeUrl(url));
             _historyRecordToken++;
             _hasRecordedHistoryForCurrentPage = false;
             _latestReadingProgress = 0;
@@ -213,22 +215,48 @@ class Webview() extends _$Webview {
             }
           },
           onPageFinished: (String url) async {
+            if (!ref.mounted || _failedPageUrls.contains(_normalizeUrl(url))) {
+              return;
+            }
+            final token = _historyRecordToken;
             state = state.copyWith(isPageLoaded: true, currentUrl: url);
             if (_freediumUrlService.isFreediumUrl(url)) {
               _retryCount = 0;
               await _injectTheme();
+              if (!ref.mounted || token != _historyRecordToken) return;
               await _restoreReadingProgress(url);
               await _recordHistoryWhenReady(url);
             } else {
               state = state.copyWith(isThemeApplied: false);
             }
-            _updateInitialLoadState();
+            if (ref.mounted && token == _historyRecordToken) {
+              _updateInitialLoadState();
+            }
+          },
+          onHttpError: (HttpResponseError error) {
+            final failedUrl = error.request?.uri ?? error.response?.uri;
+            final currentUrl = state.currentUrl;
+            final status = error.response?.statusCode;
+            // Android reports subresource errors too. Match the document URL;
+            // unidentified responses cannot safely be treated as page failures.
+            if (failedUrl == null ||
+                currentUrl == null ||
+                _normalizeUrl(failedUrl.toString()) !=
+                    _normalizeUrl(currentUrl) ||
+                status == null ||
+                status < 400) {
+              return;
+            }
+            _handleLoadError(
+              'The article server returned HTTP $status.',
+              retryable: status == 408 || status == 429 || status >= 500,
+            );
           },
           onWebResourceError: (WebResourceError error) {
             final isMainFrame = error.isForMainFrame ?? true;
             if (isMainFrame) {
               debugPrint('Error loading page: ${error.description}');
-              _handleLoadError(error);
+              _handleLoadError(_getUserFriendlyErrorMessage(error));
             } else {
               debugPrint('Resource error ignored: ${error.description}');
             }
@@ -303,10 +331,23 @@ class Webview() extends _$Webview {
     return _articleRequestUrls.contains(_normalizeUrl(currentUrl));
   }
 
-  Future<void> _handleLoadError(WebResourceError error) async {
+  void _handleLoadError(String message, {bool retryable = true}) {
+    _themeAckTimer?.cancel();
+    if (state.currentUrl case final currentUrl?) {
+      _failedPageUrls.add(_normalizeUrl(currentUrl));
+    }
+    _historyRecordToken++;
+    state = state.copyWith(
+      isPageLoaded: true,
+      isThemeApplied: false,
+      progress: 1,
+      hasError: true,
+      errorMessage: message,
+    );
     final settings = ref.read(settingsProvider).value ?? const SettingsState();
 
-    if (settings.autoSwitchMirror &&
+    if (retryable &&
+        settings.autoSwitchMirror &&
         _retryCount < _maxRetries &&
         settings.mirrors.isNotEmpty) {
       _retryCount++;
@@ -330,20 +371,16 @@ class Webview() extends _$Webview {
       state = state.copyWith(activeBaseUrl: nextMirror.url);
       _controller?.loadRequest(newUrl);
     } else {
-      state = state.copyWith(
-        isPageLoaded: true,
-        isThemeApplied: false,
-        progress: 1.0,
-        hasError: true,
-        errorMessage: _getUserFriendlyErrorMessage(error),
-      );
       _updateInitialLoadState();
     }
   }
 
   Future<void> _recordHistoryWhenReady(String currentUrl) async {
     final controller = _controller;
-    if (controller == null || !_freediumUrlService.isFreediumUrl(currentUrl)) {
+    if (controller == null ||
+        state.hasError ||
+        !state.isPageLoaded ||
+        !_freediumUrlService.isFreediumUrl(currentUrl)) {
       return;
     }
 
@@ -355,6 +392,7 @@ class Webview() extends _$Webview {
     if (initialMetaTitle.isEmpty) {
       await Future<void>.delayed(_articleMetaWaitDuration);
       if (!ref.mounted ||
+          state.hasError ||
           token != _historyRecordToken ||
           _hasRecordedHistoryForCurrentPage) {
         return;
@@ -367,6 +405,7 @@ class Webview() extends _$Webview {
         : ((await controller.getTitle()) ?? '').trim();
 
     if (!ref.mounted ||
+        state.hasError ||
         token != _historyRecordToken ||
         _hasRecordedHistoryForCurrentPage ||
         title.isEmpty) {
@@ -376,7 +415,9 @@ class Webview() extends _$Webview {
     _hasRecordedHistoryForCurrentPage = true;
     try {
       await ref.read(historyProvider.notifier).addHistory(originalUrl, title);
-      if (_latestReadingProgress > 0) {
+      if (ref.mounted &&
+          token == _historyRecordToken &&
+          _latestReadingProgress > 0) {
         await ref
             .read(historyProvider.notifier)
             .updateReadingProgress(originalUrl, _latestReadingProgress);
