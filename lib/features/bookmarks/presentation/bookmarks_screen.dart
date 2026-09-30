@@ -125,19 +125,33 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
       );
       return;
     }
-    final added = await ref
-        .read(bookmarksProvider.notifier)
-        .importBookmarks(parsed.bookmarks);
+    final bookmarks = ref.read(bookmarksProvider.notifier);
+    final folders = ref.read(bookmarkFoldersProvider.notifier);
+    final added = await bookmarks.importBookmarks(parsed.bookmarks);
+    var restoredFolders = 0;
+    var failedFolders = 0;
+    for (final name in parsed.folders) {
+      if (await folders.ensureFolder(name)) {
+        restoredFolders++;
+      } else {
+        failedFolders++;
+      }
+    }
     if (!mounted) return;
     final skippedNote = parsed.skipped > 0
         ? ' (${parsed.skipped} skipped)'
+        : '';
+    final folderNote = failedFolders > 0
+        ? ' ($failedFolders folders could not be restored)'
+        : restoredFolders > 0
+        ? ' (folders restored)'
         : '';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(
           added > 0
-              ? 'Imported $added bookmark${added == 1 ? '' : 's'}$skippedNote'
-              : 'Nothing new to import$skippedNote',
+              ? 'Imported $added bookmark${added == 1 ? '' : 's'}$skippedNote$folderNote'
+              : 'No new bookmarks$skippedNote$folderNote',
         ),
       ),
     );

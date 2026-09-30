@@ -43,8 +43,13 @@ String exportBookmarksJson(
 }
 
 /// Result of parsing a bookmark backup.
-class const BookmarkImport({required this.bookmarks, required this.skipped}) {
+class const BookmarkImport({
+  required this.bookmarks,
+  required this.folders,
+  required this.skipped,
+}) {
   final List<BookmarkedArticle> bookmarks;
+  final List<String> folders;
 
   /// Entries dropped for missing/invalid URLs.
   final int skipped;
@@ -67,6 +72,15 @@ BookmarkImport parseBookmarksJson(String raw) {
   if (entries is! List) {
     throw const FormatException('Bookmark backup is missing "bookmarks"');
   }
+  final rawFolders = decoded['folders'];
+  if (rawFolders != null &&
+      (rawFolders is! List || rawFolders.any((name) => name is! String))) {
+    throw const FormatException('Bookmark folders must be a list of names');
+  }
+  final folders = mergeBookmarkFolders(
+    rawFolders is List ? rawFolders.cast<String>() : const [],
+    const [],
+  );
 
   final bookmarks = <BookmarkedArticle>[];
   var skipped = 0;
@@ -106,5 +120,9 @@ BookmarkImport parseBookmarksJson(String raw) {
       ),
     );
   }
-  return BookmarkImport(bookmarks: bookmarks, skipped: skipped);
+  return BookmarkImport(
+    bookmarks: bookmarks,
+    folders: folders,
+    skipped: skipped,
+  );
 }

@@ -15,6 +15,29 @@ BookmarkedArticle _entry(String url, {String? folder}) => BookmarkedArticle(
 
 void main() {
   group('bookmark backup', () {
+    test('preserves empty folders and validates folder lists', () {
+      final parsed = parseBookmarksJson(
+        exportBookmarksJson([], ['Empty', ' Tech ', 'tech']),
+      );
+      expect(parsed.bookmarks, isEmpty);
+      expect(parsed.folders, ['Empty', 'Tech']);
+      for (final folders in [
+        'wrong',
+        [42],
+      ]) {
+        expect(
+          () => parseBookmarksJson(
+            jsonEncode({
+              'version': 1,
+              'bookmarks': <Object?>[],
+              'folders': folders,
+            }),
+          ),
+          throwsFormatException,
+        );
+      }
+    });
+
     test(
       'rejects unsupported versions and skips incorrectly typed entries',
       () {

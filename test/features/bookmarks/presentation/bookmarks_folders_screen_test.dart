@@ -20,6 +20,30 @@ Map<String, Object> _seed(List<BookmarkedArticle> bookmarks) => {
 
 void main() {
   group('BookmarksScreen folders', () {
+    testWidgets('restores folders from backups with no articles', (
+      tester,
+    ) async {
+      final prefs = await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: {
+          'bookmark_folders': ['Existing'],
+        },
+      );
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Import bookmarks'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField),
+        exportBookmarksJson([], ['Empty']),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.pumpAndSettle();
+      expect(prefs.getStringList('bookmark_folders'), ['Empty', 'Existing']);
+      expect(find.textContaining('folders restored'), findsOneWidget);
+    });
+
     testWidgets('empty libraries can manage folders and restore a backup', (
       tester,
     ) async {
