@@ -158,7 +158,7 @@ class const ArticleCard({
               ),
               if (trailingIcon != null) ...[
                 const SizedBox(width: 8),
-                ExcludeSemantics(child: trailingIcon!),
+                trailingIcon!,
               ] else ...[
                 const SizedBox(width: 8),
                 Icon(

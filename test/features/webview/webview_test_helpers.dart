@@ -7,6 +7,11 @@ class FakeWebviewPlatform() extends WebViewPlatform {
   late FakeWebviewController controller;
   late FakeWebviewDelegate delegate;
   @override
+  PlatformWebViewWidget createPlatformWebViewWidget(
+    PlatformWebViewWidgetCreationParams params,
+  ) => FakeWebviewWidget(params);
+
+  @override
   PlatformWebViewController createPlatformWebViewController(
     PlatformWebViewControllerCreationParams params,
   ) => controller = FakeWebviewController(params);
@@ -96,4 +101,11 @@ class FakeThemeInjector() extends ThemeInjectorService {
     double fontSize = 18,
     bool showSitePopups = true,
   }) async => 'theme-script';
+}
+
+class FakeWebviewWidget(super.params) extends PlatformWebViewWidget {
+  this : super.implementation();
+
+  @override
+  Widget build(BuildContext context) => const SizedBox();
 }

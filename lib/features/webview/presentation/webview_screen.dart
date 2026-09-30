@@ -336,52 +336,30 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Font size button
-          Material(
-            color: theme.colorScheme.primaryContainer,
-            type: MaterialType.circle,
-            child: InkWell(
-              splashColor: theme.colorScheme.onPrimaryContainer.withValues(
-                alpha: 0.1,
-              ),
-              borderRadius: const BorderRadius.horizontal(
-                left: Radius.circular(30),
-              ),
-              onTap: () {
-                showModalBottomSheet<void>(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => FontSettingsSheet(
-                    initialFontSize: webviewState.fontSize,
-                    onFontSizeChanged: webviewNotifier.updateFontSize,
-                  ),
-                );
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
+          IconButton(
+            tooltip: 'Font size',
+            color: theme.colorScheme.onPrimaryContainer,
+            icon: const Icon(Icons.text_fields),
+            onPressed: () {
+              showModalBottomSheet<void>(
+                context: context,
+                isScrollControlled: true,
+                backgroundColor: Colors.transparent,
+                builder: (context) => FontSettingsSheet(
+                  initialFontSize: webviewState.fontSize,
+                  onFontSizeChanged: webviewNotifier.updateFontSize,
                 ),
-                child: Icon(
-                  Icons.text_fields,
-                  color: theme.colorScheme.onPrimaryContainer,
-                  size: 24,
-                ),
-              ),
-            ),
+              );
+            },
           ),
           divider,
-          // Bookmark toggle button
-          Material(
-            color: theme.colorScheme.primaryContainer,
-            type: MaterialType.button,
-            child: InkWell(
-              splashColor: theme.colorScheme.onPrimaryContainer.withValues(
-                alpha: 0.1,
-              ),
-              borderRadius: BorderRadius.zero,
-              onTap: () {
+          Semantics(
+            onLongPressHint: 'Move to folder',
+            child: IconButton(
+              tooltip: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
+              color: theme.colorScheme.onPrimaryContainer,
+              icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
+              onPressed: () {
                 HapticFeedback.lightImpact();
                 unawaited(_toggleBookmark(bookmarksNotifier, webviewState));
               },
@@ -391,46 +369,14 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
                   _moveBookmarkToFolder(bookmarksNotifier, webviewState),
                 );
               },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                child: Icon(
-                  isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-                  color: theme.colorScheme.onPrimaryContainer,
-                  size: 24,
-                ),
-              ),
             ),
           ),
           divider,
-          // Share button
-          Material(
-            color: theme.colorScheme.primaryContainer,
-            type: MaterialType.circle,
-            child: InkWell(
-              splashColor: theme.colorScheme.onPrimaryContainer.withValues(
-                alpha: 0.1,
-              ),
-              borderRadius: const BorderRadius.horizontal(
-                right: Radius.circular(30),
-              ),
-              onTap: () {
-                unawaited(webviewNotifier.shareArticle());
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 12,
-                ),
-                child: Icon(
-                  Icons.share,
-                  color: theme.colorScheme.onPrimaryContainer,
-                  size: 24,
-                ),
-              ),
-            ),
+          IconButton(
+            tooltip: 'Share article',
+            color: theme.colorScheme.onPrimaryContainer,
+            icon: const Icon(Icons.share),
+            onPressed: () => unawaited(webviewNotifier.shareArticle()),
           ),
         ],
       ),

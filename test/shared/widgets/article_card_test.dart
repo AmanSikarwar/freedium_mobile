@@ -4,6 +4,48 @@ import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
 void main() {
   group('ArticleCard', () {
+    testWidgets(
+      'trailing actions remain accessible and separate from opening',
+      (tester) async {
+        final semantics = tester.ensureSemantics();
+        var opened = false;
+        var moved = false;
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: ArticleCard(
+                title: 'Story',
+                subtitle: 'Saved',
+                url: 'https://medium.com/story',
+                onTap: () => opened = true,
+                trailingIcon: IconButton(
+                  tooltip: 'Move to folder',
+                  icon: const Icon(Icons.folder),
+                  onPressed: () => moved = true,
+                ),
+              ),
+            ),
+          ),
+        );
+        expect(
+          tester.getSemantics(find.byTooltip('Move to folder')),
+          matchesSemantics(
+            tooltip: 'Move to folder',
+            isButton: true,
+            hasTapAction: true,
+            hasFocusAction: true,
+            isFocusable: true,
+            hasEnabledState: true,
+            isEnabled: true,
+          ),
+        );
+        await tester.tap(find.byTooltip('Move to folder'));
+        expect(moved, isTrue);
+        expect(opened, isFalse);
+        semantics.dispose();
+      },
+    );
+
     testWidgets('exposes reading progress', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
