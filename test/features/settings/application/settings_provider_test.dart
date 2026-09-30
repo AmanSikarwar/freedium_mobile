@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:material_ui/material_ui.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -78,6 +79,51 @@ void main() {
   });
 
   group('SettingsNotifier', () {
+    test(
+      'overlapping setting and mirror changes preserve every saved value',
+      () async {
+        final prefs = await mockPrefs();
+        final container = prefsContainer(prefs);
+        addTearDown(container.dispose);
+        final notifier = container.read(settingsProvider.notifier);
+        const first = FreediumMirror(
+          name: 'First',
+          url: 'https://first.example',
+        );
+        const second = FreediumMirror(
+          name: 'Second',
+          url: 'https://second.example',
+        );
+        final results = await Future.wait([
+          notifier.setThemeMode(ThemeMode.dark),
+          notifier.setDefaultFontSize(24),
+          notifier.setShowSitePopups(false),
+          notifier.setAutoSwitchMirror(false),
+          notifier.setMirrorTimeout(12),
+          notifier.addMirror(first),
+          notifier.addMirror(second),
+        ]);
+        expect(results, everyElement(isTrue));
+        final state = container.read(settingsProvider).requireValue;
+        expect(state.themeMode, ThemeMode.dark);
+        expect(state.defaultFontSize, 24);
+        expect(state.showSitePopups, isFalse);
+        expect(state.autoSwitchMirror, isFalse);
+        expect(state.mirrorTimeout, 12);
+        expect(state.mirrors, containsAll([first, second]));
+        expect(prefs.getDouble('webview_font_size'), 24);
+        await Future.wait([
+          notifier.resetToDefaults(),
+          notifier.setDefaultFontSize(22),
+        ]);
+        expect(
+          container.read(settingsProvider).requireValue.defaultFontSize,
+          22,
+        );
+        expect(prefs.getDouble('webview_font_size'), 22);
+      },
+    );
+
     test('invalidates active URL cache when mirror list changes', () async {
       await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();

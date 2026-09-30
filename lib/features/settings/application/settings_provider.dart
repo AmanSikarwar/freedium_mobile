@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -58,8 +60,11 @@ bool _hasMirrorPathPrefix(String path, String mirrorPath) {
 
 @Riverpod(keepAlive: true)
 class Settings() extends _$Settings {
+  final _writes = SerialTaskQueue();
   Future<SettingsService?> _service() async {
     try {
+      await future;
+      if (!ref.mounted) return null;
       final prefs = await ref.read(sharedPreferencesProvider.future);
       return SettingsService(prefs);
     } catch (e) {
@@ -77,7 +82,10 @@ class Settings() extends _$Settings {
     return SettingsService(prefs).loadAllSettings();
   }
 
-  Future<bool> setThemeMode(ThemeMode themeMode) async {
+  Future<bool> setThemeMode(ThemeMode themeMode) =>
+      _writes.run(() => _setThemeMode(themeMode));
+
+  Future<bool> _setThemeMode(ThemeMode themeMode) async {
     final service = await _service();
     if (service == null) return false;
     return _saveAndApply(
@@ -87,7 +95,10 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> setDefaultFontSize(double fontSize) async {
+  Future<bool> setDefaultFontSize(double fontSize) =>
+      _writes.run(() => _setDefaultFontSize(fontSize));
+
+  Future<bool> _setDefaultFontSize(double fontSize) async {
     final service = await _service();
     if (service == null) return false;
     final normalizedFontSize = SettingsState.normalizeDefaultFontSize(fontSize);
@@ -98,7 +109,10 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> setShowSitePopups(bool show) async {
+  Future<bool> setShowSitePopups(bool show) =>
+      _writes.run(() => _setShowSitePopups(show));
+
+  Future<bool> _setShowSitePopups(bool show) async {
     final service = await _service();
     if (service == null) return false;
     return _saveAndApply(
@@ -108,7 +122,10 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> addMirror(FreediumMirror mirror) async {
+  Future<bool> addMirror(FreediumMirror mirror) =>
+      _writes.run(() => _addMirror(mirror));
+
+  Future<bool> _addMirror(FreediumMirror mirror) async {
     final service = await _service();
     if (service == null) return false;
     final normalizedMirror = _normalizeMirror(mirror);
@@ -125,7 +142,10 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> removeMirror(FreediumMirror mirror) async {
+  Future<bool> removeMirror(FreediumMirror mirror) =>
+      _writes.run(() => _removeMirror(mirror));
+
+  Future<bool> _removeMirror(FreediumMirror mirror) async {
     if (mirror.isDefault) return false;
     final service = await _service();
     if (service == null) return false;
@@ -158,6 +178,11 @@ class Settings() extends _$Settings {
   }
 
   Future<bool> updateMirror(
+    FreediumMirror oldMirror,
+    FreediumMirror newMirror,
+  ) => _writes.run(() => _updateMirror(oldMirror, newMirror));
+
+  Future<bool> _updateMirror(
     FreediumMirror oldMirror,
     FreediumMirror newMirror,
   ) async {
@@ -196,7 +221,10 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> setSelectedMirror(String url) async {
+  Future<bool> setSelectedMirror(String url) =>
+      _writes.run(() => _setSelectedMirror(url));
+
+  Future<bool> _setSelectedMirror(String url) async {
     final service = await _service();
     if (service == null) return false;
     final normalizedUrl = normalizeMirrorUrl(url);
@@ -212,7 +240,10 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> setAutoSwitchMirror(bool autoSwitch) async {
+  Future<bool> setAutoSwitchMirror(bool autoSwitch) =>
+      _writes.run(() => _setAutoSwitchMirror(autoSwitch));
+
+  Future<bool> _setAutoSwitchMirror(bool autoSwitch) async {
     final service = await _service();
     if (service == null) return false;
     return _saveAndApply(
@@ -223,7 +254,10 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> setMirrorTimeout(int timeout) async {
+  Future<bool> setMirrorTimeout(int timeout) =>
+      _writes.run(() => _setMirrorTimeout(timeout));
+
+  Future<bool> _setMirrorTimeout(int timeout) async {
     final service = await _service();
     if (service == null) return false;
     final normalizedTimeout = SettingsState.normalizeMirrorTimeout(timeout);
@@ -235,7 +269,9 @@ class Settings() extends _$Settings {
     );
   }
 
-  Future<bool> resetToDefaults() async {
+  Future<bool> resetToDefaults() => _writes.run(_resetToDefaults);
+
+  Future<bool> _resetToDefaults() async {
     final service = await _service();
     if (service == null) return false;
     final defaultState = SettingsState(
@@ -266,6 +302,7 @@ class Settings() extends _$Settings {
   }) async {
     try {
       await save();
+      if (!ref.mounted) return false;
       state = AsyncData(nextState);
       if (invalidateCache) {
         ref.read(freediumUrlServiceProvider).invalidateCache();
