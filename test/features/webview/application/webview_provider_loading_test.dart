@@ -1,3 +1,5 @@
+import 'package:freedium_mobile/core/services/cache_service.dart';
+import 'package:webview_flutter/webview_flutter.dart' show WebViewController;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
@@ -28,6 +30,20 @@ void main() {
     notifier.createController();
   });
   tearDown(() => container.dispose());
+
+  test('closing readers retains cache until an explicit clear', () async {
+    final controller = WebViewController.fromPlatform(platform.controller);
+    container.invalidate(provider);
+    await container.pump();
+    expect(platform.controller.cacheClears, 0);
+    expect(platform.controller.channels, isEmpty);
+    expect(
+      await CacheService().clearWebViewCache(controller: controller),
+      isTrue,
+    );
+    expect(platform.controller.cacheClears, 1);
+    expect(platform.controller.storageClears, 1);
+  });
 
   testWidgets('styling failures and missing acknowledgements expose recovery', (
     tester,

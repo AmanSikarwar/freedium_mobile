@@ -84,7 +84,6 @@ class Webview() extends _$Webview {
         controller.removeJavaScriptChannel('Toaster');
         controller.removeJavaScriptChannel('ArticleMeta');
         controller.removeJavaScriptChannel('ReadingProgress');
-        controller.clearCache();
       }
     });
 

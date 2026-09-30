@@ -26,6 +26,7 @@ class FakeWebviewController(super.params) extends PlatformWebViewController {
   final requests = <Uri>[];
   bool rejectJavaScript = false;
   int cacheClears = 0;
+  int storageClears = 0;
   final channels = <String, JavaScriptChannelParams>{};
   @override
   Future<void> setJavaScriptMode(JavaScriptMode mode) async {}
@@ -37,7 +38,10 @@ class FakeWebviewController(super.params) extends PlatformWebViewController {
   }
 
   @override
-  Future<void> removeJavaScriptChannel(String name) async {}
+  Future<void> removeJavaScriptChannel(String name) async {
+    channels.remove(name);
+  }
+
   @override
   Future<void> setPlatformNavigationDelegate(
     PlatformNavigationDelegate delegate,
@@ -50,6 +54,11 @@ class FakeWebviewController(super.params) extends PlatformWebViewController {
   @override
   Future<void> clearCache() async {
     cacheClears++;
+  }
+
+  @override
+  Future<void> clearLocalStorage() async {
+    storageClears++;
   }
 
   @override
