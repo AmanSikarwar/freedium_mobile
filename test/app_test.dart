@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -132,6 +134,47 @@ void main() {
   });
 
   group('app onboarding routing', () {
+    testWidgets('retains launch intent while the dynamic theme is loading', (
+      tester,
+    ) async {
+      final prefs = await mockPrefs({'has_seen_onboarding': true});
+      final theme = Completer<AppThemeProvider>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            dynamicThemeProvider.overrideWith((ref) => theme.future),
+            intentServiceProvider.overrideWith(
+              (ref) => FakeIntentService(
+                const Stream<platform.Intent?>.empty(),
+                const platform.Intent(
+                  isNull: false,
+                  action: 'android.intent.action.VIEW',
+                  data: TestFixtures.storyUrl,
+                ),
+              ),
+            ),
+            intentStreamProvider.overrideWith(
+              (ref) => const Stream<String>.empty(),
+            ),
+          ],
+          child: const App(),
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(App)),
+      );
+      expect(container.read(pendingIntentUrlProvider), TestFixtures.storyUrl);
+      expect(navigatorKey.currentState, isNull);
+      final fallbackTheme = container.read(themeProvider);
+      await tester.pumpWidget(const SizedBox.shrink());
+      theme.complete(fallbackTheme);
+      await tester.pump();
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('shows home after completing onboarding without a shared URL', (
       tester,
     ) async {

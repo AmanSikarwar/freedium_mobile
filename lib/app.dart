@@ -14,7 +14,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/routing/app_navigation.dart'
-    show currentRouteNameObserver, navigateToWebview, navigatorKey;
+    show
+        currentRouteNameObserver,
+        navigateToWebview,
+        navigatorKey,
+        shouldSkipIncomingWebviewNavigation;
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
@@ -49,21 +53,10 @@ class PendingIntentUrl() extends _$PendingIntentUrl {
 }
 
 class const App({super.key}) extends ConsumerWidget {
-  void _navigateToWebview(String url) {
-    navigateToWebview(url);
-  }
-
   void _handleIncomingIntent(WidgetRef ref, String value) {
     final url = extractArticleUrl(value);
     if (url == null) return;
-
-    final onboarding = ref.read(onboardingProvider);
-    if (onboarding.isLoading || !onboarding.hasSeenOnboarding) {
-      ref.read(pendingIntentUrlProvider.notifier).stash(url);
-      return;
-    }
-
-    _navigateToWebview(url);
+    ref.read(pendingIntentUrlProvider.notifier).stash(url);
   }
 
   Future<void> _processInitialIntent(
@@ -94,16 +87,26 @@ class const App({super.key}) extends ConsumerWidget {
     final hasHandledInitialIntent = ref.watch(initialIntentHandledProvider);
     final onboarding = ref.watch(onboardingProvider);
     final hasSeenOnboarding = onboarding.hasSeenOnboarding;
+    final pendingUrl = ref.watch(pendingIntentUrlProvider);
 
-    ref.listen<OnboardingState>(onboardingProvider, (previous, next) {
-      if (next.isLoading || !next.hasSeenOnboarding) return;
-
-      final pendingUrl = ref.read(pendingIntentUrlProvider);
-      if (pendingUrl == null || pendingUrl.isEmpty) return;
-
-      ref.read(pendingIntentUrlProvider.notifier).clear();
-      _navigateToWebview(pendingUrl);
-    });
+    if (pendingUrl != null &&
+        themeAsync.hasValue &&
+        !onboarding.isLoading &&
+        hasSeenOnboarding) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted ||
+            ref.read(pendingIntentUrlProvider) != pendingUrl) {
+          return;
+        }
+        final alreadyOpen = shouldSkipIncomingWebviewNavigation(
+          currentRouteName: currentRouteNameObserver.currentRouteName,
+          targetUrl: pendingUrl,
+        );
+        if (alreadyOpen || navigateToWebview(pendingUrl)) {
+          ref.read(pendingIntentUrlProvider.notifier).clear();
+        }
+      });
+    }
 
     ref.listen<AsyncValue<String>>(intentStreamProvider, (previous, next) {
       next.whenData((url) {
@@ -113,6 +116,7 @@ class const App({super.key}) extends ConsumerWidget {
 
     if (!hasHandledInitialIntent) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
         ref.read(initialIntentHandledProvider.notifier).setHandled();
         unawaited(_processInitialIntent(context, ref));
       });

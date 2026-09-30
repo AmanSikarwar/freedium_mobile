@@ -59,7 +59,6 @@ final currentRouteNameObserver = CurrentRouteNameObserver();
 @visibleForTesting
 String incomingWebviewRouteName(String url) => '/webview/$url';
 
-@visibleForTesting
 bool shouldSkipIncomingWebviewNavigation({
   required String? currentRouteName,
   required String targetUrl,
