@@ -15,6 +15,34 @@ BookmarkedArticle _entry(String url, {String? folder}) => BookmarkedArticle(
 
 void main() {
   group('bookmark backup', () {
+    test(
+      'rejects unsupported versions and skips incorrectly typed entries',
+      () {
+        for (final version in [null, 999, '1', 1.0]) {
+          expect(
+            () => parseBookmarksJson(
+              jsonEncode({'version': version, 'bookmarks': <Object?>[]}),
+            ),
+            throwsFormatException,
+          );
+        }
+        final parsed = parseBookmarksJson(
+          jsonEncode({
+            'version': bookmarkBackupVersion,
+            'bookmarks': [
+              {'url': 42},
+              {'url': TestFixtures.storyUrl, 'title': false},
+              {'url': TestFixtures.storyUrl, 'folder': <Object?>[]},
+              {'url': TestFixtures.storyUrl, 'savedAt': <String, Object?>{}},
+              {'url': TestFixtures.storyUrl, 'title': 'Valid'},
+            ],
+          }),
+        );
+        expect(parsed.skipped, 4);
+        expect(parsed.bookmarks.single.title, 'Valid');
+      },
+    );
+
     test('round-trips bookmarks and folders', () {
       final raw = exportBookmarksJson(
         [_entry(TestFixtures.storyUrl, folder: 'Tech')],

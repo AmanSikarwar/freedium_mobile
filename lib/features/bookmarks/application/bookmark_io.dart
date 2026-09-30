@@ -59,6 +59,10 @@ BookmarkImport parseBookmarksJson(String raw) {
   if (decoded is! Map<String, dynamic>) {
     throw const FormatException('Bookmark backup must be a JSON object');
   }
+  if (decoded['version'] is! int ||
+      decoded['version'] != bookmarkBackupVersion) {
+    throw const FormatException('Unsupported bookmark backup version');
+  }
   final entries = decoded['bookmarks'];
   if (entries is! List) {
     throw const FormatException('Bookmark backup is missing "bookmarks"');
@@ -71,24 +75,34 @@ BookmarkImport parseBookmarksJson(String raw) {
       skipped++;
       continue;
     }
-    final url = normalizeHttpUrl(entry['url'] as String? ?? '');
+    final rawUrl = entry['url'];
+    final rawTitle = entry['title'];
+    final rawFolder = entry['folder'];
+    final rawDate = entry['savedAt'];
+    if (rawUrl is! String ||
+        (rawTitle != null && rawTitle is! String) ||
+        (rawFolder != null && rawFolder is! String) ||
+        (rawDate != null && rawDate is! String)) {
+      skipped++;
+      continue;
+    }
+    final url = normalizeHttpUrl(rawUrl);
     if (url == null) {
       skipped++;
       continue;
     }
-    final title = (entry['title'] as String? ?? '').trim();
-    DateTime savedAt;
-    try {
-      savedAt = DateTime.parse(entry['savedAt'] as String? ?? '');
-    } catch (_) {
-      savedAt = DateTime.now().toUtc();
-    }
+    final title = rawTitle is String ? rawTitle.trim() : '';
+    final savedAt =
+        (rawDate is String ? DateTime.tryParse(rawDate) : null) ??
+        DateTime.now().toUtc();
     bookmarks.add(
       BookmarkedArticle(
         url: url,
         title: title.isNotEmpty ? title : url,
         savedAt: savedAt,
-        folder: normalizeBookmarkFolderName(entry['folder'] as String?),
+        folder: rawFolder is String
+            ? normalizeBookmarkFolderName(rawFolder)
+            : null,
       ),
     );
   }
