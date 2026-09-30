@@ -613,6 +613,7 @@ class Webview() extends _$Webview {
     final didSave = await ref
         .read(settingsProvider.notifier)
         .setDefaultFontSize(normalizedFontSize);
+    if (!ref.mounted) return didSave;
     if (!didSave) {
       state = state.copyWith(userMessage: 'Failed to save font size');
       return false;
