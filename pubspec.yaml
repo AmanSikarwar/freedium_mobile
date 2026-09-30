@@ -36,6 +36,7 @@ dev_dependencies:
   flutter_launcher_icons: ^0.14.4
   riverpod_lint: ^3.1.9
   shared_preferences_platform_interface: ^2.4.2
+  webview_flutter_platform_interface: ^2.15.1
   riverpod_generator: ^4.0.9
   build_runner: ^2.16.1
   freezed: ^4.0.2

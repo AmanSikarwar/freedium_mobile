@@ -52,6 +52,7 @@ class Webview() extends _$Webview {
   int _historyRecordToken = 0;
   bool _hasRecordedHistoryForCurrentPage = false;
   double _latestReadingProgress = 0;
+  Timer? _themeAckTimer;
   static const Duration _articleMetaWaitDuration = Duration(milliseconds: 900);
   static const int _maxRetries = 3;
 
@@ -75,6 +76,7 @@ class Webview() extends _$Webview {
     );
 
     ref.onDispose(() {
+      _themeAckTimer?.cancel();
       final controller = _controller;
       if (controller != null) {
         controller.removeJavaScriptChannel('themeApplied');
@@ -138,6 +140,8 @@ class Webview() extends _$Webview {
       ..addJavaScriptChannel(
         'themeApplied',
         onMessageReceived: (JavaScriptMessage message) {
+          if (!ref.mounted) return;
+          _themeAckTimer?.cancel();
           state = state.copyWith(isThemeApplied: true);
           _updateInitialLoadState();
         },
@@ -182,6 +186,7 @@ class Webview() extends _$Webview {
             state = state.copyWith(progress: progress / 100.0);
           },
           onPageStarted: (String url) {
+            _themeAckTimer?.cancel();
             _historyRecordToken++;
             _hasRecordedHistoryForCurrentPage = false;
             _latestReadingProgress = 0;
@@ -501,6 +506,14 @@ class Webview() extends _$Webview {
   }
 
   Future<void> _injectTheme() async {
+    final token = _historyRecordToken;
+    _themeAckTimer?.cancel();
+    if (state.isPageLoaded && !state.isThemeApplied) {
+      _themeAckTimer = Timer(
+        const Duration(seconds: 3),
+        () => _handleThemeFailure(token),
+      );
+    }
     if (_colorScheme == null || _controller == null) return;
     try {
       final script = await _themeInjector.getThemeInjectionScript(
@@ -510,15 +523,25 @@ class Webview() extends _$Webview {
             ref.read(settingsProvider).value?.showSitePopups ?? true,
       );
 
-      if (!ref.mounted) return;
+      if (!ref.mounted || token != _historyRecordToken) return;
 
       await _controller!.runJavaScript(script);
     } catch (e) {
       debugPrint('Failed to inject theme script: $e');
-      if (ref.mounted) {
-        state = state.copyWith(isThemeApplied: false);
-      }
+      _handleThemeFailure(token);
     }
+  }
+
+  void _handleThemeFailure(int token) {
+    if (!ref.mounted || token != _historyRecordToken || state.isThemeApplied) {
+      return;
+    }
+    _themeAckTimer?.cancel();
+    state = state.copyWith(
+      hasError: true,
+      errorMessage: 'Reader styling failed. Please retry the article.',
+    );
+    _updateInitialLoadState();
   }
 
   void _updateInitialLoadState() {
@@ -527,7 +550,7 @@ class Webview() extends _$Webview {
     );
     if (state.isInitialLoad &&
         state.isPageLoaded &&
-        (isThemedPage ? state.isThemeApplied : true)) {
+        (state.hasError || !isThemedPage || state.isThemeApplied)) {
       state = state.copyWith(isInitialLoad: false);
     }
   }
