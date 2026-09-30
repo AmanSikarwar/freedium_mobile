@@ -20,6 +20,50 @@ Map<String, Object> _seed(List<BookmarkedArticle> bookmarks) => {
 
 void main() {
   group('BookmarksScreen folders', () {
+    testWidgets('reports the retained import count when the library fills', (
+      tester,
+    ) async {
+      final existing = [
+        for (var i = 0; i < 99; i++)
+          BookmarkedArticle(
+            url: 'https://medium.com/saved-$i',
+            title: 'Saved $i',
+            savedAt: TestFixtures.seedDate,
+          ),
+      ];
+      final prefs = await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: _seed(existing),
+      );
+      await tester.tap(find.byTooltip('More actions'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Import bookmarks'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
+        exportBookmarksJson([
+          for (var i = 0; i < 2; i++)
+            BookmarkedArticle(
+              url: 'https://medium.com/import-$i',
+              title: 'Imported $i',
+              savedAt: TestFixtures.seedDate,
+            ),
+        ], const []),
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.pumpAndSettle();
+      expect(find.textContaining('Imported 1 bookmark'), findsOneWidget);
+      expect(find.textContaining('existing bookmarks kept'), findsOneWidget);
+      final saved = prefs.getStringList('bookmarked_articles')!;
+      expect(saved, hasLength(100));
+      expect(saved.join(), contains('saved-0'));
+      expect(saved.join(), contains('saved-98'));
+    });
+
     testWidgets('restores folders from backups with no articles', (
       tester,
     ) async {
@@ -35,7 +79,10 @@ void main() {
       await tester.tap(find.text('Import bookmarks'));
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.byType(TextField),
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
         exportBookmarksJson([], ['Empty']),
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Import'));
@@ -59,7 +106,10 @@ void main() {
       await tester.tap(find.text('Import bookmarks'));
       await tester.pumpAndSettle();
       await tester.enterText(
-        find.byType(TextField),
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
         exportBookmarksJson([
           BookmarkedArticle(
             url: TestFixtures.storyUrl,

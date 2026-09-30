@@ -83,6 +83,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     Bookmarks bookmarksNotifier,
     WebviewState webviewState,
   ) async {
+    final wasBookmarked = bookmarksNotifier.isBookmarked(widget.url);
     final didSave = await bookmarksNotifier.toggleBookmark(
       widget.url,
       webviewState.articleMeta?.title ?? '',
@@ -91,8 +92,12 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
 
     HapticFeedback.heavyImpact();
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Failed to update bookmark'),
+      SnackBar(
+        content: Text(
+          !wasBookmarked && bookmarksNotifier.isAtCapacity()
+              ? Bookmarks.limitMessage
+              : 'Failed to update bookmark',
+        ),
         backgroundColor: Colors.red,
       ),
     );
@@ -113,8 +118,12 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
       if (!didSave) {
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Failed to update bookmark'),
+          SnackBar(
+            content: Text(
+              bookmarksNotifier.isAtCapacity()
+                  ? Bookmarks.limitMessage
+                  : 'Failed to update bookmark',
+            ),
             backgroundColor: Colors.red,
           ),
         );

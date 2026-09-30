@@ -19,6 +19,10 @@ part 'bookmarks_provider.g.dart';
 class Bookmarks() extends _$Bookmarks {
   final _writes = SerialTaskQueue();
   static const int maxBookmarks = 100;
+  static const limitMessage =
+      'Bookmark limit reached ($maxBookmarks). Remove a bookmark first.';
+
+  bool isAtCapacity() => (state.value?.length ?? 0) >= maxBookmarks;
 
   Future<BookmarksService?> _service() async {
     try {
@@ -71,6 +75,7 @@ class Bookmarks() extends _$Bookmarks {
     final normalizedFolder = normalizeBookmarkFolderName(folder);
 
     final current = state.value ?? const <BookmarkedArticle>[];
+    if (current.length >= maxBookmarks) return false;
     final newList = List<BookmarkedArticle>.from(current);
     newList.insert(
       0,
@@ -81,10 +86,6 @@ class Bookmarks() extends _$Bookmarks {
         folder: normalizedFolder,
       ),
     );
-
-    if (newList.length > maxBookmarks) {
-      newList.removeLast();
-    }
 
     try {
       await service.saveBookmarks(newList);
@@ -226,8 +227,8 @@ class Bookmarks() extends _$Bookmarks {
   }
 
   /// Merges backup [entries] into the current list: existing URLs keep
-  /// their saved data, new entries are inserted newest-first, and the list
-  /// is trimmed to [maxBookmarks]. Returns the number of entries added.
+  /// their saved data and new entries fill available slots, newest-first.
+  /// Returns the number saved, or -1 when persistence fails.
   Future<int> importBookmarks(List<BookmarkedArticle> entries) async {
     final result = await _writes.run(() => _importBookmarks(entries));
     if (result > 0) {
@@ -241,10 +242,12 @@ class Bookmarks() extends _$Bookmarks {
 
   Future<int> _importBookmarks(List<BookmarkedArticle> entries) async {
     final service = await _service();
-    if (service == null) return 0;
+    if (service == null) return -1;
     if (entries.isEmpty) return 0;
 
     final current = state.value ?? const <BookmarkedArticle>[];
+    final available = maxBookmarks - current.length;
+    if (available <= 0) return 0;
     final knownUrls = {for (final b in current) b.url};
     final fresh = <BookmarkedArticle>[];
     for (final entry in entries) {
@@ -255,18 +258,16 @@ class Bookmarks() extends _$Bookmarks {
     if (fresh.isEmpty) return 0;
 
     fresh.sort((a, b) => b.savedAt.compareTo(a.savedAt));
-    final merged = [...fresh, ...current];
-    final newList = merged.length > maxBookmarks
-        ? merged.sublist(0, maxBookmarks)
-        : merged;
+    final accepted = fresh.take(available).toList();
+    final newList = [...accepted, ...current];
 
     try {
       await service.saveBookmarks(newList);
       state = AsyncData(newList);
-      return fresh.length;
+      return accepted.length;
     } catch (e) {
       debugPrint('Failed to import bookmarks: $e');
-      return 0;
+      return -1;
     }
   }
 

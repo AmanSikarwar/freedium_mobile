@@ -87,26 +87,42 @@ void main() {
       expect(container.read(bookmarksProvider).requireValue, isEmpty);
     });
 
-    test('reports failure and preserves bookmarks when adding fails', () async {
-      container.dispose();
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
-      container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWith((ref) async => prefs),
-        ],
-      );
+    test(
+      'reports failures and preserves bookmarks when saving fails',
+      () async {
+        container.dispose();
+        SharedPreferencesStorePlatform.instance = FailingPrefsStore();
+        SharedPreferences.resetStatic();
+        addTearDown(() => SharedPreferences.setMockInitialValues({}));
+        final prefs = await SharedPreferences.getInstance();
+        container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          ],
+        );
 
-      final notifier = container.read(bookmarksProvider.notifier);
-      await container.read(bookmarksProvider.future);
+        final notifier = container.read(bookmarksProvider.notifier);
+        await container.read(bookmarksProvider.future);
 
-      final didAdd = await notifier.addBookmark(TestFixtures.storyUrl, 'Story');
+        final didAdd = await notifier.addBookmark(
+          TestFixtures.storyUrl,
+          'Story',
+        );
 
-      expect(didAdd, isFalse);
-      expect(container.read(bookmarksProvider).requireValue, isEmpty);
-    });
+        expect(didAdd, isFalse);
+        expect(
+          await notifier.importBookmarks([
+            BookmarkedArticle(
+              url: TestFixtures.storyUrl,
+              title: 'Imported',
+              savedAt: TestFixtures.seedDate,
+            ),
+          ]),
+          -1,
+        );
+        expect(container.read(bookmarksProvider).requireValue, isEmpty);
+      },
+    );
 
     test('reports failure when toggling a bookmark add fails', () async {
       container.dispose();

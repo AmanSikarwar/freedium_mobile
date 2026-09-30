@@ -146,13 +146,17 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
         : restoredFolders > 0
         ? ' (folders restored)'
         : '';
+    final capacityNote = bookmarks.isAtCapacity() && parsed.bookmarks.isNotEmpty
+        ? ' (limit of ${Bookmarks.maxBookmarks} reached; existing bookmarks kept)'
+        : '';
+    final resultMessage = added < 0
+        ? 'Could not import bookmarks'
+        : added > 0
+        ? 'Imported $added bookmark${added == 1 ? '' : 's'}'
+        : 'No new bookmarks';
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          added > 0
-              ? 'Imported $added bookmark${added == 1 ? '' : 's'}$skippedNote$folderNote'
-              : 'No new bookmarks$skippedNote$folderNote',
-        ),
+        content: Text('$resultMessage$skippedNote$folderNote$capacityNote'),
       ),
     );
   }

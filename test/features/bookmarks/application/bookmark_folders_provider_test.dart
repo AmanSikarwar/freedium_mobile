@@ -231,6 +231,46 @@ void main() {
       folder: folder,
     );
 
+    test(
+      'capacity preserves existing entries and reports only persisted imports',
+      () async {
+        final bookmarks = container.read(bookmarksProvider.notifier);
+        expect(
+          await bookmarks.importBookmarks([
+            for (var i = 0; i < 150; i++) entry('https://medium.com/story-$i'),
+          ]),
+          Bookmarks.maxBookmarks,
+        );
+        final before = container.read(bookmarksProvider).requireValue;
+        expect(before, hasLength(Bookmarks.maxBookmarks));
+        expect(
+          await bookmarks.addBookmark(TestFixtures.storyUrl, 'New'),
+          isFalse,
+        );
+        expect(
+          await bookmarks.importBookmarks([entry(TestFixtures.storyUrl)]),
+          0,
+        );
+        expect(container.read(bookmarksProvider).requireValue, before);
+        expect(await bookmarks.removeBookmark(before.first), isTrue);
+        expect(
+          await bookmarks.importBookmarks([
+            entry(TestFixtures.storyUrl),
+            entry('https://medium.com/another-new'),
+          ]),
+          1,
+        );
+        final current = container.read(bookmarksProvider).requireValue;
+        expect(current, hasLength(Bookmarks.maxBookmarks));
+        expect(current, containsAll(before.skip(1)));
+        final prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getStringList('bookmarked_articles'),
+          hasLength(Bookmarks.maxBookmarks),
+        );
+      },
+    );
+
     test('merges entries preserving existing bookmarks', () async {
       final bookmarks = container.read(bookmarksProvider.notifier);
       await bookmarks.addBookmark(TestFixtures.storyUrl, 'Original');
