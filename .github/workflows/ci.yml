@@ -26,6 +26,7 @@ jobs:
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2
         with:
           channel: "stable"
+          flutter-version: "3.47.5"
           cache: true
 
       - uses: actions/setup-java@v6.0.1

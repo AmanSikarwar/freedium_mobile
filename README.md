@@ -9,7 +9,7 @@
     <a href="https://github.com/AmanSikarwar/freedium_mobile/releases/latest"><img src="https://img.shields.io/github/v/release/AmanSikarwar/freedium_mobile?style=flat-square" alt="Latest Release"></a>
     <a href="https://github.com/AmanSikarwar/freedium_mobile/releases/latest"><img src="https://img.shields.io/github/downloads/AmanSikarwar/freedium_mobile/total?style=flat-square" alt="Downloads"></a>
     <a href="https://github.com/AmanSikarwar/freedium_mobile/stargazers"><img src="https://img.shields.io/github/stars/AmanSikarwar/freedium_mobile?style=flat-square" alt="Stars"></a>
-    <img src="https://img.shields.io/badge/Flutter-3.44+-02569B?style=flat-square&logo=flutter" alt="Flutter">
+    <img src="https://img.shields.io/badge/Flutter-3.47.5+-02569B?style=flat-square&logo=flutter" alt="Flutter">
     <img src="https://img.shields.io/badge/Platform-Android-3DDC84?style=flat-square&logo=android" alt="Android">
 </p>
 
@@ -112,8 +112,8 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 
 ### Prerequisites
 
-- **Flutter SDK** 3.44.0 or higher
-- **Dart SDK** 3.12.0 or higher (included with Flutter)
+- **Flutter SDK** 3.47.5 or higher; CI and releases use 3.47.5
+- **Dart SDK** 3.13.0 or higher (included with Flutter; tested with 3.13.4)
 - Android Studio or VS Code with Flutter extensions
 - Git
 
