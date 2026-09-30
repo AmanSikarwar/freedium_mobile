@@ -13,6 +13,9 @@ permissions:
 jobs:
   build-and-release:
     runs-on: macos-latest
+    env:
+      RELEASE_VERSION: ${{ inputs.version_name }}
+      RELEASE_BUILD_NUMBER: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -41,33 +44,32 @@ jobs:
       - name: Install locked dependencies
         run: flutter pub get --enforce-lockfile
 
-      - name: Update Version in pubspec.yaml
-        run: |
-          sed -i.bak -e "s/^version: .*/version: ${{ github.event.inputs.version_name }}+${{ github.run_number }}/" pubspec.yaml
-          rm pubspec.yaml.bak
-
-
+      - name: Validate and update release version
+        run: dart run tool/set_release_version.dart "$RELEASE_VERSION" "$RELEASE_BUILD_NUMBER"
 
       - name: Decode Keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/my-release-key.keystore
+          printf '%s' "$KEYSTORE_BASE64" | base64 --decode > android/app/my-release-key.keystore
 
       - name: Create key.properties
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > android/key.properties
-          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> android/key.properties
-          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> android/key.properties
-          echo "storeFile=my-release-key.keystore" >> android/key.properties
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=my-release-key.keystore\n' \
+            "$KEYSTORE_PASSWORD" "$KEY_PASSWORD" "$KEY_ALIAS" > android/key.properties
 
       - name: Build Android APK (Optimized)
         run: |
           flutter build apk --release --split-per-abi \
             --obfuscate \
             --split-debug-info=build/debug-info \
-            --build-number=${{ github.run_number }} \
+            --build-number="$RELEASE_BUILD_NUMBER" \
             -t lib/main.dart \
-            --dart-define=APP_VERSION=${{ github.event.inputs.version_name }}
-
+            --dart-define="APP_VERSION=$RELEASE_VERSION"
 
       - name: Upload debug symbols
         uses: actions/upload-artifact@v7
