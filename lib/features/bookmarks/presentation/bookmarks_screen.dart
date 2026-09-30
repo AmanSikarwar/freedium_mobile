@@ -188,49 +188,50 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
           ],
         ),
         actions: [
-          if (bookmarks.isNotEmpty) ...[
-            IconButton(
-              icon: const Icon(Icons.create_new_folder_outlined),
-              tooltip: 'Manage folders',
-              onPressed: () => showManageFoldersSheet(context),
-            ),
-            PopupMenuButton<String>(
-              tooltip: 'More actions',
-              onSelected: (value) {
-                switch (value) {
-                  case 'export':
-                    _export();
-                  case 'import':
-                    _import();
-                  case 'clear':
-                    _confirmClear(context);
-                }
-              },
-              itemBuilder: (context) => const [
-                PopupMenuItem(
+          IconButton(
+            icon: const Icon(Icons.create_new_folder_outlined),
+            tooltip: 'Manage folders',
+            onPressed: () => showManageFoldersSheet(context),
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'More actions',
+            enabled: bookmarksAsync.hasValue,
+            onSelected: (value) {
+              switch (value) {
+                case 'export':
+                  _export();
+                case 'import':
+                  _import();
+                case 'clear':
+                  _confirmClear(context);
+              }
+            },
+            itemBuilder: (context) => [
+              if (bookmarks.isNotEmpty || folders.isNotEmpty)
+                const PopupMenuItem(
                   value: 'export',
                   child: _OverflowMenuRow(
                     icon: Icons.upload_outlined,
                     label: 'Export bookmarks',
                   ),
                 ),
-                PopupMenuItem(
-                  value: 'import',
-                  child: _OverflowMenuRow(
-                    icon: Icons.download_outlined,
-                    label: 'Import bookmarks',
-                  ),
+              const PopupMenuItem(
+                value: 'import',
+                child: _OverflowMenuRow(
+                  icon: Icons.download_outlined,
+                  label: 'Import bookmarks',
                 ),
-                PopupMenuItem(
+              ),
+              if (bookmarks.isNotEmpty)
+                const PopupMenuItem(
                   value: 'clear',
                   child: _OverflowMenuRow(
                     icon: Icons.delete_sweep_outlined,
                     label: 'Clear bookmarks',
                   ),
                 ),
-              ],
-            ),
-          ],
+            ],
+          ),
         ],
         bottom: bookmarks.isNotEmpty
             ? LibrarySearchHeader(
