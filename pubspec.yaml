@@ -11,10 +11,10 @@ dependencies:
   dynamic_color: ^2.1.0
   flutter:
     sdk: flutter
-  material_ui: ^1.4.0
+  material_ui: ^1.5.0
   webview_flutter: ^4.14.1
   webview_flutter_android: ^4.14.1
-  webview_flutter_wkwebview: ^3.26.1
+  webview_flutter_wkwebview: ^3.26.2
   flutter_riverpod: ^3.4.3
   flutter_markdown_plus: ^1.0.12
   http: ^1.6.0
