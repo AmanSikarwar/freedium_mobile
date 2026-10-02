@@ -60,6 +60,9 @@ class const BookmarkImport({
 /// Throws [FormatException] when [raw] is not JSON or not a bookmark backup.
 /// Unknown fields are ignored; malformed entries count toward [skipped].
 BookmarkImport parseBookmarksJson(String raw) {
+  if (raw.length > 1024 * 1024) {
+    throw const FormatException('Bookmark backup is too large');
+  }
   final decoded = jsonDecode(raw);
   if (decoded is! Map<String, dynamic>) {
     throw const FormatException('Bookmark backup must be a JSON object');

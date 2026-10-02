@@ -1,19 +1,17 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/features/bookmarks/application/bookmark_io.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/bookmark_backup_actions.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/widgets/manage_folders_sheet.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 import 'package:freedium_mobile/shared/widgets/library_clear_dialog.dart';
 import 'package:freedium_mobile/shared/widgets/library_list_view.dart';
 import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
-import 'package:share_plus/share_plus.dart';
 
 /// Sentinel filter value matching bookmarks without a folder.
 const String unsortedFolderFilter = '';
@@ -29,12 +27,10 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
   /// null = All, '' = Unsorted, otherwise the folder name.
   String? _folderFilter;
   final _searchController = TextEditingController();
-  final _importController = TextEditingController();
 
   @override
   void dispose() {
     _searchController.dispose();
-    _importController.dispose();
     super.dispose();
   }
 
@@ -64,101 +60,6 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
       return item.title.toLowerCase().contains(query) ||
           item.url.toLowerCase().contains(query);
     }).toList();
-  }
-
-  Future<void> _export() async {
-    final bookmarks =
-        ref.read(bookmarksProvider).value ?? const <BookmarkedArticle>[];
-    final folders = ref.read(allBookmarkFoldersProvider);
-    try {
-      await ref.read(shareLauncherProvider)(
-        ShareParams(
-          subject: 'Freedium bookmarks backup',
-          title: 'Share bookmarks backup',
-          text: exportBookmarksJson(bookmarks, folders),
-        ),
-      );
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Could not share backup')));
-    }
-  }
-
-  Future<void> _import() async {
-    _importController.clear();
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Import bookmarks'),
-        content: TextField(
-          controller: _importController,
-          decoration: const InputDecoration(
-            hintText: 'Paste a bookmarks backup (JSON)',
-            border: OutlineInputBorder(),
-          ),
-          maxLines: 6,
-          minLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, true),
-            child: const Text('Import'),
-          ),
-        ],
-      ),
-    );
-    if (confirmed != true || !mounted) return;
-
-    BookmarkImport parsed;
-    try {
-      parsed = parseBookmarksJson(_importController.text);
-    } on FormatException {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Not a valid bookmarks backup')),
-      );
-      return;
-    }
-    final bookmarks = ref.read(bookmarksProvider.notifier);
-    final folders = ref.read(bookmarkFoldersProvider.notifier);
-    final added = await bookmarks.importBookmarks(parsed.bookmarks);
-    var restoredFolders = 0;
-    var failedFolders = 0;
-    for (final name in parsed.folders) {
-      if (await folders.ensureFolder(name)) {
-        restoredFolders++;
-      } else {
-        failedFolders++;
-      }
-    }
-    if (!mounted) return;
-    final skippedNote = parsed.skipped > 0
-        ? ' (${parsed.skipped} skipped)'
-        : '';
-    final folderNote = failedFolders > 0
-        ? ' ($failedFolders folders could not be restored)'
-        : restoredFolders > 0
-        ? ' (folders restored)'
-        : '';
-    final capacityNote = bookmarks.isAtCapacity() && parsed.bookmarks.isNotEmpty
-        ? ' (limit of ${Bookmarks.maxBookmarks} reached; existing bookmarks kept)'
-        : '';
-    final resultMessage = added < 0
-        ? 'Could not import bookmarks'
-        : added > 0
-        ? 'Imported $added bookmark${added == 1 ? '' : 's'}'
-        : 'No new bookmarks';
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('$resultMessage$skippedNote$folderNote$capacityNote'),
-      ),
-    );
   }
 
   @override
@@ -217,9 +118,9 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
             onSelected: (value) {
               switch (value) {
                 case 'export':
-                  _export();
+                  exportBookmarkBackup(context, ref);
                 case 'import':
-                  _import();
+                  importBookmarkBackup(context, ref);
                 case 'clear':
                   _confirmClear(context);
               }

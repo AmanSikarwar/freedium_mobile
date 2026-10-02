@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmark_io.dart';
+import 'package:freedium_mobile/features/bookmarks/application/bookmark_file_picker.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
@@ -22,6 +23,50 @@ Map<String, Object> _seed(List<BookmarkedArticle> bookmarks) => {
 
 void main() {
   group('BookmarksScreen folders', () {
+    testWidgets(
+      'file restore previews duplicates before changing the library',
+      (tester) async {
+        final existing = BookmarkedArticle(
+          url: TestFixtures.storyUrl,
+          title: 'Existing',
+          savedAt: TestFixtures.seedDate,
+        );
+        final prefs = await mockPrefs(_seed([existing]));
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWith((ref) async => prefs),
+              bookmarkFilePickerProvider.overrideWithValue(
+                () async => exportBookmarksJson([
+                  existing,
+                  existing.copyWith(
+                    url: 'https://medium.com/new',
+                    title: 'New',
+                  ),
+                ], const []),
+              ),
+            ],
+            child: const MaterialApp(home: BookmarksScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('More actions'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Import bookmarks'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Choose backup file'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+        await tester.pumpAndSettle();
+        expect(find.text('1 new articles'), findsOneWidget);
+        expect(find.text('1 duplicates'), findsOneWidget);
+        expect(BookmarksService(prefs).getBookmarks(), hasLength(1));
+        await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+        await tester.pumpAndSettle();
+        expect(BookmarksService(prefs).getBookmarks(), hasLength(2));
+      },
+    );
+
     testWidgets('folder counts and filters ignore label casing', (
       tester,
     ) async {
@@ -77,6 +122,8 @@ void main() {
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Import'));
       await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+      await tester.pumpAndSettle();
       expect(find.textContaining('Imported 1 bookmark'), findsOneWidget);
       expect(find.textContaining('existing bookmarks kept'), findsOneWidget);
       final saved = BookmarksService(prefs)
@@ -111,6 +158,8 @@ void main() {
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Import'));
       await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+      await tester.pumpAndSettle();
       expect(BookmarksService(prefs).getFolders(), ['Empty', 'Existing']);
       expect(find.textContaining('folders restored'), findsOneWidget);
     });
@@ -143,6 +192,8 @@ void main() {
         ], const []),
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
       await tester.pumpAndSettle();
       expect(find.text('Restored'), findsOneWidget);
       expect(BookmarksService(prefs).getBookmarks(), hasLength(1));
@@ -269,7 +320,9 @@ void main() {
             sharedPreferencesProvider.overrideWith((ref) async => prefs),
             shareLauncherProvider.overrideWith(
               (ref) => (ShareParams params) async {
-                shared = params.text;
+                expect(params.fileNameOverrides, ['freedium-bookmarks.json']);
+                expect(params.files!.single.mimeType, 'application/json');
+                shared = await params.files!.single.readAsString();
                 return const ShareResult('', ShareResultStatus.success);
               },
             ),
@@ -326,6 +379,8 @@ void main() {
         backup,
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
       await tester.pumpAndSettle();
 
       expect(find.text('Imported story'), findsOneWidget);
