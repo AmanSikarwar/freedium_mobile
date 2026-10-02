@@ -273,6 +273,8 @@ Contributions are welcome! Here's how you can help:
 - Test changes thoroughly on Android devices
 - Keep pull requests focused on a single feature or fix
 
+Android emulator and manual device checks: [Android validation](docs/android-validation.md).
+
 ### Reporting Issues
 
 Found a bug? [Open an issue](https://github.com/AmanSikarwar/freedium_mobile/issues/new) with:

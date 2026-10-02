@@ -4,4 +4,6 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Local integration fixtures are served over loopback HTTP. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
