@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -103,7 +105,7 @@ void main() {
 
       expect(find.text('Example story'), findsNothing);
       expect(find.text('No saved articles yet.'), findsOneWidget);
-      expect(prefs.getStringList('bookmarked_articles'), isEmpty);
+      expect(BookmarksService(prefs).getBookmarks(), isEmpty);
     });
 
     testWidgets('keeps bookmark visible when swipe removal fails', (
@@ -176,7 +178,7 @@ void main() {
 
       expect(find.text('No saved articles yet.'), findsOneWidget);
       expect(find.textContaining('No results for'), findsNothing);
-      expect(prefs.getStringList('bookmarked_articles'), isNull);
+      expect(BookmarksService(prefs).getBookmarks(), isEmpty);
     });
 
     testWidgets('keeps clear dialog open when clearing bookmarks fails', (

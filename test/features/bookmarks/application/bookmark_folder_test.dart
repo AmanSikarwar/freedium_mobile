@@ -108,7 +108,7 @@ void main() {
       await service.saveFolders(['  Work ', 'work', '', 'Tech']);
       expect(service.getFolders(), ['Tech', 'Work']);
 
-      final stored = prefs.getStringList('bookmark_folders');
+      final stored = BookmarksService(prefs).getFolders();
       expect(stored, ['Tech', 'Work']);
     });
 

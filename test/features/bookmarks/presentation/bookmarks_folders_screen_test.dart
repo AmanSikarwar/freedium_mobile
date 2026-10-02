@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -77,7 +79,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('Imported 1 bookmark'), findsOneWidget);
       expect(find.textContaining('existing bookmarks kept'), findsOneWidget);
-      final saved = prefs.getStringList('bookmarked_articles')!;
+      final saved = BookmarksService(prefs)
+          .getBookmarks()
+          .map((b) => jsonEncode(b.toJson()))
+          .toList();
       expect(saved, hasLength(100));
       expect(saved.join(), contains('saved-0'));
       expect(saved.join(), contains('saved-98'));
@@ -106,7 +111,7 @@ void main() {
       );
       await tester.tap(find.widgetWithText(FilledButton, 'Import'));
       await tester.pumpAndSettle();
-      expect(prefs.getStringList('bookmark_folders'), ['Empty', 'Existing']);
+      expect(BookmarksService(prefs).getFolders(), ['Empty', 'Existing']);
       expect(find.textContaining('folders restored'), findsOneWidget);
     });
 
@@ -140,7 +145,7 @@ void main() {
       await tester.tap(find.widgetWithText(FilledButton, 'Import'));
       await tester.pumpAndSettle();
       expect(find.text('Restored'), findsOneWidget);
-      expect(prefs.getStringList('bookmarked_articles'), hasLength(1));
+      expect(BookmarksService(prefs).getBookmarks(), hasLength(1));
     });
 
     testWidgets('filters bookmarks by folder chips', (tester) async {
@@ -211,7 +216,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Tech'), findsOneWidget);
-      final stored = prefs.getStringList('bookmark_folders');
+      final stored = BookmarksService(prefs).getFolders();
       expect(stored, ['Tech']);
     });
 
@@ -325,7 +330,7 @@ void main() {
 
       expect(find.text('Imported story'), findsOneWidget);
       expect(find.widgetWithText(FilterChip, 'All · 2'), findsOneWidget);
-      expect(prefs.getStringList('bookmarked_articles'), hasLength(2));
+      expect(BookmarksService(prefs).getBookmarks(), hasLength(2));
     });
 
     testWidgets('rejects invalid import payloads', (tester) async {

@@ -1,3 +1,10 @@
+import 'dart:convert';
+
+import 'package:material_ui/material_ui.dart' show ThemeMode;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
@@ -7,7 +14,60 @@ import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
 
 import '../test_helpers.dart';
 
+class _FailedWriteStore(super.initialValues) extends FailingPrefsStore {
+  int writes = 0;
+  @override
+  Future<bool> setValue(String valueType, String key, Object value) async {
+    writes++;
+    return false;
+  }
+}
+
 void main() {
+  test(
+    'failed folder rename and settings reset preserve every saved field',
+    () async {
+      final article = BookmarkedArticle(
+        url: TestFixtures.storyUrl,
+        title: 'Story',
+        savedAt: TestFixtures.seedDate,
+        folder: 'Tech',
+      );
+      final store = _FailedWriteStore({
+        'flutter.bookmarked_articles': [jsonEncode(article.toJson())],
+        'flutter.bookmark_folders': ['Tech'],
+        'flutter.theme_mode': 'dark',
+        'flutter.webview_font_size': 26.0,
+      });
+      SharedPreferencesStorePlatform.instance = store;
+      SharedPreferences.resetStatic();
+      addTearDown(() => SharedPreferences.setMockInitialValues({}));
+      final prefs = await SharedPreferences.getInstance();
+      final container = prefsContainer(prefs);
+      addTearDown(container.dispose);
+      await container.read(bookmarksProvider.future);
+      await container.read(bookmarkFoldersProvider.future);
+      final settings = await container.read(settingsProvider.future);
+      expect(
+        await container
+            .read(bookmarkFoldersProvider.notifier)
+            .renameFolder('Tech', 'Work'),
+        isFalse,
+      );
+      expect(container.read(bookmarksProvider).requireValue, [article]);
+      expect(BookmarksService(prefs).getFolders(), ['Tech']);
+      expect(BookmarksService(prefs).getBookmarks(), [article]);
+      expect(
+        await container.read(settingsProvider.notifier).resetToDefaults(),
+        isFalse,
+      );
+      expect(container.read(settingsProvider).requireValue, settings);
+      expect(SettingsService(prefs).loadThemeMode(), ThemeMode.dark);
+      expect(SettingsService(prefs).loadDefaultFontSize(), 26);
+      expect(store.writes, 2); // One attempted snapshot per operation.
+    },
+  );
+
   test(
     'overlapping library mutations preserve stored data and order',
     () async {

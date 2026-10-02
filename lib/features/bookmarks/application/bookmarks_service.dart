@@ -7,12 +7,13 @@ import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
 class BookmarksService(this._prefs) {
+  static const String _snapshotKey = 'bookmark_library';
   static const String _bookmarksKey = 'bookmarked_articles';
   static const String _foldersKey = 'bookmark_folders';
   final SharedPreferences _prefs;
 
   List<BookmarkedArticle> getBookmarks() {
-    final json = _prefs.getStringList(_bookmarksKey);
+    final json = _readList(_bookmarksKey);
     if (json == null) return [];
 
     final List<BookmarkedArticle> bookmarks = [];
@@ -42,50 +43,48 @@ class BookmarksService(this._prefs) {
     return bookmarks;
   }
 
-  Future<void> saveBookmarks(List<BookmarkedArticle> bookmarks) async {
-    try {
-      final json = bookmarks.map((e) => jsonEncode(e.toJson())).toList();
-      final success = await _prefs.setStringList(_bookmarksKey, json);
-      if (!success) {
-        throw Exception(
-          'setStringList returned false for key "$_bookmarksKey"',
-        );
-      }
-    } catch (e) {
-      debugPrint('Failed to save bookmarks to "$_bookmarksKey": $e');
-      rethrow;
-    }
-  }
+  Future<void> saveBookmarks(List<BookmarkedArticle> bookmarks) =>
+      saveLibrary(bookmarks, getFolders());
 
-  Future<void> clearBookmarks() async {
-    try {
-      final success = await _prefs.remove(_bookmarksKey);
-      if (!success) {
-        throw Exception('remove returned false for key "$_bookmarksKey"');
-      }
-    } catch (e) {
-      debugPrint('Failed to clear bookmarks key "$_bookmarksKey": $e');
-      rethrow;
-    }
-  }
+  Future<void> clearBookmarks() => saveLibrary(const [], getFolders());
 
   /// Reads the stored folder list (normalized, deduped, sorted).
   /// Folders referenced only by articles are unioned in by the provider.
   List<String> getFolders() {
-    final raw = _prefs.getStringList(_foldersKey);
+    final raw = _readList(_foldersKey);
     if (raw == null) return [];
     return mergeBookmarkFolders(raw, const []);
   }
 
-  Future<void> saveFolders(List<String> folders) async {
+  Future<void> saveFolders(List<String> folders) =>
+      saveLibrary(getBookmarks(), folders);
+
+  List<String>? _readList(String key) {
+    final raw = _prefs.getString(_snapshotKey);
+    if (raw == null) return _prefs.getStringList(key);
+    final snapshot = jsonDecode(raw) as Map<String, dynamic>;
+    if (snapshot['version'] != 1) {
+      throw const FormatException('Unsupported bookmark library snapshot');
+    }
+    return (snapshot[key] as List<dynamic>).cast<String>();
+  }
+
+  /// Article and folder changes become visible together in one write.
+  Future<void> saveLibrary(
+    List<BookmarkedArticle> bookmarks,
+    List<String> folders,
+  ) async {
+    final snapshot = jsonEncode({
+      'version': 1,
+      _bookmarksKey: bookmarks.map((b) => jsonEncode(b.toJson())).toList(),
+      _foldersKey: mergeBookmarkFolders(folders, const []),
+    });
     try {
-      final normalized = mergeBookmarkFolders(folders, const []);
-      final success = await _prefs.setStringList(_foldersKey, normalized);
-      if (!success) {
-        throw Exception('setStringList returned false for key "$_foldersKey"');
+      if (!await _prefs.setString(_snapshotKey, snapshot)) {
+        throw StateError('Failed to save bookmark library');
       }
-    } catch (e) {
-      debugPrint('Failed to save folders to "$_foldersKey": $e');
+    } catch (_) {
+      await _prefs.reload();
       rethrow;
     }
   }

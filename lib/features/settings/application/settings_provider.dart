@@ -89,7 +89,7 @@ class Settings() extends _$Settings {
     final service = await _service();
     if (service == null) return false;
     return _saveAndApply(
-      save: () => service.saveThemeMode(themeMode),
+      service: service,
       nextState: _current.copyWith(themeMode: themeMode),
       failureMessage: 'Failed to save theme mode',
     );
@@ -103,7 +103,7 @@ class Settings() extends _$Settings {
     if (service == null) return false;
     final normalizedFontSize = SettingsState.normalizeDefaultFontSize(fontSize);
     return _saveAndApply(
-      save: () => service.saveDefaultFontSize(normalizedFontSize),
+      service: service,
       nextState: _current.copyWith(defaultFontSize: normalizedFontSize),
       failureMessage: 'Failed to save default font size',
     );
@@ -116,7 +116,7 @@ class Settings() extends _$Settings {
     final service = await _service();
     if (service == null) return false;
     return _saveAndApply(
-      save: () => service.saveShowSitePopups(show),
+      service: service,
       nextState: _current.copyWith(showSitePopups: show),
       failureMessage: 'Failed to save site popup setting',
     );
@@ -135,7 +135,7 @@ class Settings() extends _$Settings {
     }
     final updatedMirrors = [..._current.mirrors, normalizedMirror];
     return _saveAndApply(
-      save: () => service.saveMirrors(updatedMirrors),
+      service: service,
       nextState: _current.copyWith(mirrors: updatedMirrors),
       failureMessage: 'Failed to add mirror',
       invalidateCache: true,
@@ -162,12 +162,7 @@ class Settings() extends _$Settings {
         : selectedMirrorUrl;
 
     return _saveAndApply(
-      save: () async {
-        await service.saveMirrors(updatedMirrors);
-        if (updatedSelectedMirrorUrl != selectedMirrorUrl) {
-          await service.saveSelectedMirrorUrl(updatedSelectedMirrorUrl);
-        }
-      },
+      service: service,
       nextState: _current.copyWith(
         mirrors: updatedMirrors,
         selectedMirrorUrl: updatedSelectedMirrorUrl,
@@ -206,12 +201,7 @@ class Settings() extends _$Settings {
         : selectedMirrorUrl;
 
     return _saveAndApply(
-      save: () async {
-        await service.saveMirrors(updatedMirrors);
-        if (updatedSelectedMirrorUrl != selectedMirrorUrl) {
-          await service.saveSelectedMirrorUrl(updatedSelectedMirrorUrl);
-        }
-      },
+      service: service,
       nextState: _current.copyWith(
         mirrors: updatedMirrors,
         selectedMirrorUrl: updatedSelectedMirrorUrl,
@@ -233,7 +223,7 @@ class Settings() extends _$Settings {
       return false;
     }
     return _saveAndApply(
-      save: () => service.saveSelectedMirrorUrl(normalizedUrl),
+      service: service,
       nextState: _current.copyWith(selectedMirrorUrl: normalizedUrl),
       failureMessage: 'Failed to save selected mirror',
       invalidateCache: true,
@@ -247,7 +237,7 @@ class Settings() extends _$Settings {
     final service = await _service();
     if (service == null) return false;
     return _saveAndApply(
-      save: () => service.saveAutoSwitchMirror(autoSwitch),
+      service: service,
       nextState: _current.copyWith(autoSwitchMirror: autoSwitch),
       failureMessage: 'Failed to save auto-switch mirror',
       invalidateCache: true,
@@ -262,7 +252,7 @@ class Settings() extends _$Settings {
     if (service == null) return false;
     final normalizedTimeout = SettingsState.normalizeMirrorTimeout(timeout);
     return _saveAndApply(
-      save: () => service.saveMirrorTimeout(normalizedTimeout),
+      service: service,
       nextState: _current.copyWith(mirrorTimeout: normalizedTimeout),
       failureMessage: 'Failed to save mirror timeout',
       invalidateCache: true,
@@ -279,15 +269,7 @@ class Settings() extends _$Settings {
       selectedMirrorUrl: SettingsState.defaultMirrors.first.url,
     );
     return _saveAndApply(
-      save: () async {
-        await service.saveThemeMode(defaultState.themeMode);
-        await service.saveDefaultFontSize(defaultState.defaultFontSize);
-        await service.saveMirrors(defaultState.mirrors);
-        await service.saveSelectedMirrorUrl(defaultState.selectedMirrorUrl);
-        await service.saveAutoSwitchMirror(defaultState.autoSwitchMirror);
-        await service.saveMirrorTimeout(defaultState.mirrorTimeout);
-        await service.saveShowSitePopups(defaultState.showSitePopups);
-      },
+      service: service,
       nextState: defaultState,
       failureMessage: 'Failed to reset settings',
       invalidateCache: true,
@@ -295,13 +277,13 @@ class Settings() extends _$Settings {
   }
 
   Future<bool> _saveAndApply({
-    required Future<void> Function() save,
+    required SettingsService service,
     required SettingsState nextState,
     required String failureMessage,
     bool invalidateCache = false,
   }) async {
     try {
-      await save();
+      await service.saveAllSettings(nextState);
       if (!ref.mounted) return false;
       state = AsyncData(nextState);
       if (invalidateCache) {

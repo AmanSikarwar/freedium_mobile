@@ -1,3 +1,4 @@
+import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
@@ -265,7 +266,7 @@ void main() {
         expect(current, containsAll(before.skip(1)));
         final prefs = await SharedPreferences.getInstance();
         expect(
-          prefs.getStringList('bookmarked_articles'),
+          BookmarksService(prefs).getBookmarks(),
           hasLength(Bookmarks.maxBookmarks),
         );
       },

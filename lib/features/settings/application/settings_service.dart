@@ -7,6 +7,8 @@ import 'package:freedium_mobile/core/utils/url.dart' show normalizeMirrorUrl;
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class SettingsService(this._prefs) {
+  static const String _snapshotKey = 'settings_snapshot';
+  static const String _fontSizeKey = 'webview_font_size';
   static const String _themeModeKey = 'theme_mode';
   static const String _mirrorsKey = 'freedium_mirrors';
   static const String _selectedMirrorUrlKey = 'selected_mirror_url';
@@ -16,16 +18,11 @@ class SettingsService(this._prefs) {
 
   final SharedPreferences _prefs;
 
-  Future<void> saveThemeMode(ThemeMode themeMode) async {
-    await _savePreference(
-      () => _prefs.setString(_themeModeKey, themeMode.name),
-      methodName: 'setString',
-      key: _themeModeKey,
-    );
-  }
+  Future<void> saveThemeMode(ThemeMode themeMode) =>
+      saveAllSettings(loadAllSettings().copyWith(themeMode: themeMode));
 
   ThemeMode loadThemeMode() {
-    final themeModeString = _prefs.getString(_themeModeKey);
+    final themeModeString = _get<String>(_themeModeKey);
     if (themeModeString == null) {
       return .system;
     }
@@ -35,25 +32,24 @@ class SettingsService(this._prefs) {
     );
   }
 
-  Future<void> saveDefaultFontSize(double fontSize) async {
-    await FontSizeService(_prefs).saveFontSize(fontSize);
-  }
+  Future<void> saveDefaultFontSize(double fontSize) => saveAllSettings(
+    loadAllSettings().copyWith(
+      defaultFontSize: SettingsState.normalizeDefaultFontSize(fontSize),
+    ),
+  );
 
   double loadDefaultFontSize() {
-    return FontSizeService(_prefs).loadFontSize();
-  }
-
-  Future<void> saveMirrors(List<FreediumMirror> mirrors) async {
-    final mirrorsJson = mirrors.map((m) => jsonEncode(m.toJson())).toList();
-    await _savePreference(
-      () => _prefs.setStringList(_mirrorsKey, mirrorsJson),
-      methodName: 'setStringList',
-      key: _mirrorsKey,
+    final saved = _get<num>(_fontSizeKey);
+    return SettingsState.normalizeDefaultFontSize(
+      saved?.toDouble() ?? FontSizeService(_prefs).loadFontSize(),
     );
   }
 
+  Future<void> saveMirrors(List<FreediumMirror> mirrors) =>
+      saveAllSettings(loadAllSettings().copyWith(mirrors: mirrors));
+
   List<FreediumMirror> loadMirrors() {
-    final mirrorsJson = _prefs.getStringList(_mirrorsKey);
+    final mirrorsJson = _get<List<dynamic>>(_mirrorsKey)?.cast<String>();
     if (mirrorsJson == null || mirrorsJson.isEmpty) {
       return SettingsState.defaultMirrors;
     }
@@ -79,61 +75,78 @@ class SettingsService(this._prefs) {
     return mirrors.isEmpty ? SettingsState.defaultMirrors : mirrors;
   }
 
-  Future<void> saveSelectedMirrorUrl(String url) async {
-    await _savePreference(
-      () => _prefs.setString(_selectedMirrorUrlKey, url),
-      methodName: 'setString',
-      key: _selectedMirrorUrlKey,
-    );
-  }
+  Future<void> saveSelectedMirrorUrl(String url) =>
+      saveAllSettings(loadAllSettings().copyWith(selectedMirrorUrl: url));
 
   String loadSelectedMirrorUrl() {
-    final selectedMirrorUrl = _prefs.getString(_selectedMirrorUrlKey);
+    final selectedMirrorUrl = _get<String>(_selectedMirrorUrlKey);
     return selectedMirrorUrl == null
         ? SettingsState.defaultMirrors.first.url
         : normalizeMirrorUrl(selectedMirrorUrl) ??
               SettingsState.defaultMirrors.first.url;
   }
 
-  Future<void> saveAutoSwitchMirror(bool autoSwitch) async {
-    await _savePreference(
-      () => _prefs.setBool(_autoSwitchMirrorKey, autoSwitch),
-      methodName: 'setBool',
-      key: _autoSwitchMirrorKey,
-    );
-  }
+  Future<void> saveAutoSwitchMirror(bool autoSwitch) =>
+      saveAllSettings(loadAllSettings().copyWith(autoSwitchMirror: autoSwitch));
 
   bool loadAutoSwitchMirror() {
-    return _prefs.getBool(_autoSwitchMirrorKey) ?? true;
+    return _get<bool>(_autoSwitchMirrorKey) ?? true;
   }
 
-  Future<void> saveMirrorTimeout(int timeout) async {
-    await _savePreference(
-      () => _prefs.setInt(
-        _mirrorTimeoutKey,
-        SettingsState.normalizeMirrorTimeout(timeout),
-      ),
-      methodName: 'setInt',
-      key: _mirrorTimeoutKey,
-    );
-  }
+  Future<void> saveMirrorTimeout(int timeout) => saveAllSettings(
+    loadAllSettings().copyWith(
+      mirrorTimeout: SettingsState.normalizeMirrorTimeout(timeout),
+    ),
+  );
 
   int loadMirrorTimeout() {
     return SettingsState.normalizeMirrorTimeout(
-      _prefs.getInt(_mirrorTimeoutKey) ?? SettingsState.defaultMirrorTimeout,
+      _get<int>(_mirrorTimeoutKey) ?? SettingsState.defaultMirrorTimeout,
     );
   }
 
-  Future<void> saveShowSitePopups(bool show) async {
-    await _savePreference(
-      () => _prefs.setBool(_showSitePopupsKey, show),
-      methodName: 'setBool',
-      key: _showSitePopupsKey,
-    );
-  }
+  Future<void> saveShowSitePopups(bool show) =>
+      saveAllSettings(loadAllSettings().copyWith(showSitePopups: show));
 
   bool loadShowSitePopups() {
-    return _prefs.getBool(_showSitePopupsKey) ?? true;
+    return _get<bool>(_showSitePopupsKey) ?? true;
+  }
+
+  T? _get<T>(String key) {
+    final raw = _prefs.getString(_snapshotKey);
+    if (raw == null) return _prefs.get(key) as T?;
+    final snapshot = jsonDecode(raw) as Map<String, dynamic>;
+    if (snapshot['version'] != 1) {
+      throw const FormatException('Unsupported settings snapshot');
+    }
+    return (snapshot['values'] as Map<String, dynamic>)[key] as T?;
+  }
+
+  /// Commits the complete settings state in one platform write.
+  Future<void> saveAllSettings(SettingsState settings) async {
+    final values = {
+      _themeModeKey: settings.themeMode.name,
+      _fontSizeKey: settings.defaultFontSize,
+      _mirrorsKey: settings.mirrors.map((m) => jsonEncode(m.toJson())).toList(),
+      _selectedMirrorUrlKey: settings.selectedMirrorUrl,
+      _autoSwitchMirrorKey: settings.autoSwitchMirror,
+      _mirrorTimeoutKey: settings.mirrorTimeout,
+      _showSitePopupsKey: settings.showSitePopups,
+    };
+    try {
+      await _savePreference(
+        () => _prefs.setString(
+          _snapshotKey,
+          jsonEncode({'version': 1, 'values': values}),
+        ),
+        methodName: 'setString',
+        key: _snapshotKey,
+      );
+    } catch (_) {
+      // A failed legacy SharedPreferences write still changes its cache.
+      await _prefs.reload();
+      rethrow;
+    }
   }
 
   SettingsState loadAllSettings() {

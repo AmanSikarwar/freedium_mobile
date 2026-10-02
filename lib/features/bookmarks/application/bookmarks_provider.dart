@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
@@ -15,9 +16,11 @@ export 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dar
 
 part 'bookmarks_provider.g.dart';
 
+final bookmarkWritesProvider = Provider((ref) => SerialTaskQueue());
+
 @Riverpod(keepAlive: true)
 class Bookmarks() extends _$Bookmarks {
-  final _writes = SerialTaskQueue();
+  SerialTaskQueue get _writes => ref.read(bookmarkWritesProvider);
   static const int maxBookmarks = 100;
   static const limitMessage =
       'Bookmark limit reached ($maxBookmarks). Remove a bookmark first.';
@@ -40,6 +43,10 @@ class Bookmarks() extends _$Bookmarks {
   FutureOr<List<BookmarkedArticle>> build() async {
     final prefs = await ref.watch(sharedPreferencesProvider.future);
     return BookmarksService(prefs).getBookmarks();
+  }
+
+  void _applySavedBookmarks(List<BookmarkedArticle> bookmarks) {
+    if (ref.mounted) state = AsyncData(bookmarks);
   }
 
   /// Returns true if the given [url] is already bookmarked.
@@ -308,7 +315,7 @@ class Bookmarks() extends _$Bookmarks {
 /// folders and folders referenced by articles.
 @Riverpod(keepAlive: true)
 class BookmarkFolders() extends _$BookmarkFolders {
-  final _writes = SerialTaskQueue();
+  SerialTaskQueue get _writes => ref.read(bookmarkWritesProvider);
   Future<BookmarksService?> _service() async {
     try {
       await future;
@@ -382,11 +389,14 @@ class BookmarkFolders() extends _$BookmarkFolders {
     }
 
     final bookmarks = ref.read(bookmarksProvider.notifier);
-    final articlesRenamed = await bookmarks.renameFolder(
-      oldNormalized,
-      newNormalized,
-    );
-    if (!articlesRenamed) return false;
+    final articles = await ref.read(bookmarksProvider.future);
+    final updatedArticles = [
+      for (final article in articles)
+        if (article.folder?.toLowerCase() == oldNormalized.toLowerCase())
+          article.copyWith(folder: newNormalized)
+        else
+          article,
+    ];
 
     final next = [
       for (final f in current)
@@ -396,7 +406,9 @@ class BookmarkFolders() extends _$BookmarkFolders {
           f,
     ];
     try {
-      await service.saveFolders(next);
+      await service.saveLibrary(updatedArticles, next);
+      if (!ref.mounted) return false;
+      bookmarks._applySavedBookmarks(updatedArticles);
       state = AsyncData(next);
       return true;
     } catch (e) {
@@ -421,15 +433,23 @@ class BookmarkFolders() extends _$BookmarkFolders {
     }
 
     final bookmarks = ref.read(bookmarksProvider.notifier);
-    final articlesCleared = await bookmarks.clearFolder(normalized);
-    if (!articlesCleared) return false;
+    final articles = await ref.read(bookmarksProvider.future);
+    final updatedArticles = [
+      for (final article in articles)
+        if (article.folder?.toLowerCase() == normalized.toLowerCase())
+          article.copyWith(folder: null)
+        else
+          article,
+    ];
 
     final next = [
       for (final f in current)
         if (f.toLowerCase() != normalized.toLowerCase()) f,
     ];
     try {
-      await service.saveFolders(next);
+      await service.saveLibrary(updatedArticles, next);
+      if (!ref.mounted) return false;
+      bookmarks._applySavedBookmarks(updatedArticles);
       state = AsyncData(next);
       return true;
     } catch (e) {

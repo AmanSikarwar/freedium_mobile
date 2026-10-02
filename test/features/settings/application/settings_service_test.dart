@@ -173,7 +173,7 @@ void main() {
 
       await service.saveShowSitePopups(false);
 
-      expect(prefs.getBool('show_site_popups'), isFalse);
+      expect(SettingsService(prefs).loadShowSitePopups(), isFalse);
       expect(service.loadAllSettings().showSitePopups, isFalse);
     });
 
@@ -186,10 +186,13 @@ void main() {
       await service.saveMirrorTimeout(100);
 
       expect(
-        prefs.getDouble('webview_font_size'),
+        SettingsService(prefs).loadDefaultFontSize(),
         SettingsState.minDefaultFontSize,
       );
-      expect(prefs.getInt('mirror_timeout'), SettingsState.maxMirrorTimeout);
+      expect(
+        SettingsService(prefs).loadMirrorTimeout(),
+        SettingsState.maxMirrorTimeout,
+      );
     });
   });
 }

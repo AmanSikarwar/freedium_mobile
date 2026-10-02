@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:freedium_mobile/features/settings/application/settings_service.dart';
+
 import 'package:material_ui/material_ui.dart' show ThemeMode;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -131,7 +133,7 @@ void main() {
         expect(state.autoSwitchMirror, isFalse);
         expect(state.mirrorTimeout, 12);
         expect(state.mirrors, containsAll([first, second]));
-        expect(prefs.getDouble('webview_font_size'), 24);
+        expect(SettingsService(prefs).loadDefaultFontSize(), 24);
         await Future.wait([
           notifier.resetToDefaults(),
           notifier.setDefaultFontSize(22),
@@ -140,7 +142,7 @@ void main() {
           container.read(settingsProvider).requireValue.defaultFontSize,
           22,
         );
-        expect(prefs.getDouble('webview_font_size'), 22);
+        expect(SettingsService(prefs).loadDefaultFontSize(), 22);
       },
     );
 
@@ -227,10 +229,13 @@ void main() {
       expect(settings.defaultFontSize, SettingsState.maxDefaultFontSize);
       expect(settings.mirrorTimeout, SettingsState.minMirrorTimeout);
       expect(
-        prefs.getDouble('webview_font_size'),
+        SettingsService(prefs).loadDefaultFontSize(),
         SettingsState.maxDefaultFontSize,
       );
-      expect(prefs.getInt('mirror_timeout'), SettingsState.minMirrorTimeout);
+      expect(
+        SettingsService(prefs).loadMirrorTimeout(),
+        SettingsState.minMirrorTimeout,
+      );
     });
 
     test('keeps state and mirror cache unchanged when saving fails', () async {
@@ -304,7 +309,10 @@ void main() {
       expect(mirror.url, 'https://custom.example');
       expect(freediumUrlService.invalidateCount, 1);
 
-      final savedMirrors = prefs.getStringList('freedium_mirrors')!;
+      final savedMirrors = SettingsService(prefs)
+          .loadMirrors()
+          .map((m) => jsonEncode(m.toJson()))
+          .toList();
       final savedMirror = jsonDecode(savedMirrors.last) as Map<String, dynamic>;
       expect(savedMirror['name'], 'Custom');
       expect(savedMirror['url'], 'https://custom.example');

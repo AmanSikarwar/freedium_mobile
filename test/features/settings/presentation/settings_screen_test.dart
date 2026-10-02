@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:freedium_mobile/features/settings/application/settings_service.dart';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,7 +39,7 @@ void main() {
       await tester.tap(tile);
       await tester.pumpAndSettle();
 
-      expect(prefs.getBool('show_site_popups'), isFalse);
+      expect(SettingsService(prefs).loadShowSitePopups(), isFalse);
       expect(tester.widget<SwitchListTile>(tile).value, isFalse);
     });
 
