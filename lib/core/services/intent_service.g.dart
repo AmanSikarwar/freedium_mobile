@@ -81,4 +81,4 @@ final class IntentStreamProvider
   }
 }
 
-String _$intentStreamHash() => r'b00a835b4d80a1c308e03518f65afea37fd3bd01';
+String _$intentStreamHash() => r'd1baab044a8990a753324aff3e4e367b4550faf4';

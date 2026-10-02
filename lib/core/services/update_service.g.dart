@@ -48,7 +48,7 @@ final class UpdateServiceProvider
   }
 }
 
-String _$updateServiceHash() => r'ec9c4aee2fa91bc09d6c220cf3b3c745a263d6c5';
+String _$updateServiceHash() => r'6b39bbb2f2ccd5487d6b01b7b94a0cdce3a3aed4';
 
 @ProviderFor(updateCheck)
 final updateCheckProvider = UpdateCheckProvider._();

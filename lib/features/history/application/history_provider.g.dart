@@ -33,7 +33,7 @@ final class HistoryProvider
   History create() => History();
 }
 
-String _$historyHash() => r'3ce7d20093afd207b0ad7566d5898eae1d61b779';
+String _$historyHash() => r'2a6a5f0b335cdf312cad0fde91669d660248e541';
 
 abstract class _$History extends $AsyncNotifier<List<ReadingHistory>> {
   FutureOr<List<ReadingHistory>> build();
@@ -89,7 +89,7 @@ final class HistoryLimitProvider
   HistoryLimit create() => HistoryLimit();
 }
 
-String _$historyLimitHash() => r'a2fcafd52aedf0c7ddbff271bab6fca86ab82901';
+String _$historyLimitHash() => r'8f7f69580702251c989d749b3199d7c35322917f';
 
 /// Retention size (newest history entries kept) persisted to
 /// SharedPreferences.
