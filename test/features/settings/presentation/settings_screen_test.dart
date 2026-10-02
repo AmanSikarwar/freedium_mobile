@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
@@ -261,7 +261,17 @@ void main() {
     testWidgets('shows selected mirror failure when saving fails', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
+      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+        'flutter.freedium_mirrors': [
+          jsonEncode(SettingsState.defaultMirrors.single.toJson()),
+          jsonEncode(
+            const FreediumMirror(
+              name: 'Custom',
+              url: 'https://custom.example',
+            ).toJson(),
+          ),
+        ],
+      });
       SharedPreferences.resetStatic();
       addTearDown(() => SharedPreferences.setMockInitialValues({}));
       final prefs = await SharedPreferences.getInstance();
@@ -278,7 +288,7 @@ void main() {
 
       final mirrorRadio = find.byWidgetPredicate(
         (widget) =>
-            widget is Radio<String> && widget.value == AppConstants.freediumUrl,
+            widget is Radio<String> && widget.value == 'https://custom.example',
       );
       await tester.scrollUntilVisible(mirrorRadio, 300);
       await tester.pumpAndSettle();

@@ -25,7 +25,7 @@ void main() {
     test('matches URLs on configured mirror hosts', () {
       expect(
         isFreediumMirrorUrl(
-          'https://freedium.cfd/https://medium.com/example/story',
+          'https://freedium-mirror.cfd/https://medium.com/example/story',
           SettingsState.defaultMirrors,
         ),
         isTrue,
@@ -35,7 +35,7 @@ void main() {
     test('rejects hosts that only share a mirror URL prefix', () {
       expect(
         isFreediumMirrorUrl(
-          'https://freedium.cfd.evil.example/https://medium.com/story',
+          'https://freedium-mirror.cfd.evil.example/https://medium.com/story',
           SettingsState.defaultMirrors,
         ),
         isFalse,
@@ -45,14 +45,14 @@ void main() {
     test('rejects URLs that do not match the mirror origin', () {
       expect(
         isFreediumMirrorUrl(
-          'http://freedium.cfd/https://medium.com/story',
+          'http://freedium-mirror.cfd/https://medium.com/story',
           SettingsState.defaultMirrors,
         ),
         isFalse,
       );
       expect(
         isFreediumMirrorUrl(
-          'https://freedium.cfd:8443/https://medium.com/story',
+          'https://freedium-mirror.cfd:8443/https://medium.com/story',
           SettingsState.defaultMirrors,
         ),
         isFalse,
@@ -79,6 +79,26 @@ void main() {
   });
 
   group('SettingsNotifier', () {
+    test('rejects re-adding the retired mirror', () async {
+      final container = prefsContainer(await mockPrefs());
+      addTearDown(container.dispose);
+      expect(
+        await container
+            .read(settingsProvider.notifier)
+            .addMirror(
+              const FreediumMirror(
+                name: 'Retired',
+                url: 'https://freedium.cfd',
+              ),
+            ),
+        isFalse,
+      );
+      expect(
+        container.read(settingsProvider).requireValue.mirrors,
+        SettingsState.defaultMirrors,
+      );
+    });
+
     test(
       'overlapping setting and mirror changes preserve every saved value',
       () async {

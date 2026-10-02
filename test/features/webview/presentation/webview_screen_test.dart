@@ -13,7 +13,7 @@ import '../webview_test_helpers.dart';
 
 class _ScreenFreediumUrlService(super.ref) extends FreediumUrlService {
   @override
-  Future<String> getActiveUrl() async => 'https://freedium.cfd';
+  Future<String> getActiveUrl() async => 'https://freedium-mirror.cfd';
 }
 
 class _LoadedWebview() extends Webview {
@@ -24,7 +24,7 @@ class _LoadedWebview() extends Webview {
         isPageLoaded: true,
         isThemeApplied: true,
         isInitialLoad: false,
-        currentUrl: 'https://freedium.cfd/$url',
+        currentUrl: 'https://freedium-mirror.cfd/$url',
       );
 }
 

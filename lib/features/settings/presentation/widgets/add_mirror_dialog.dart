@@ -90,7 +90,7 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
             ),
             const SizedBox(height: 16),
             Text(
-              'Tip: Make sure the mirror uses the same API as freedium.cfd',
+              'Tip: Make sure the mirror uses the same API as freedium-mirror.cfd',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),

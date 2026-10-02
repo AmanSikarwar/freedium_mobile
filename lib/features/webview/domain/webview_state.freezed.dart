@@ -507,7 +507,7 @@ return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.isI
 
 
 class _WebviewState extends WebviewState {
-  const _WebviewState({this.progress = 0.0, this.isPageLoaded = false, this.isThemeApplied = false, this.isInitialLoad = true, this.fontSize = 18.0, this.currentUrl, this.activeBaseUrl = AppConstants.freediumUrl, this.hasError = false, this.errorMessage, this.userMessage, this.articleMeta}): super._();
+  const _WebviewState({this.progress = 0.0, this.isPageLoaded = false, this.isThemeApplied = false, this.isInitialLoad = true, this.fontSize = 18.0, this.currentUrl, this.activeBaseUrl = AppConstants.freediumMirrorUrl, this.hasError = false, this.errorMessage, this.userMessage, this.articleMeta}): super._();
   
 
 @override@JsonKey() final  double progress;

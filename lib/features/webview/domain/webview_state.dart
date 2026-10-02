@@ -33,7 +33,7 @@ abstract class const WebviewState._() with _$WebviewState {
     @Default(true) bool isInitialLoad,
     @Default(18.0) double fontSize,
     String? currentUrl,
-    @Default(AppConstants.freediumUrl) String activeBaseUrl,
+    @Default(AppConstants.freediumMirrorUrl) String activeBaseUrl,
     @Default(false) bool hasError,
     String? errorMessage,
     // One-shot message for the UI layer to display as a SnackBar.

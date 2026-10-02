@@ -41,7 +41,7 @@ String? normalizeHttpUrl(String value) {
 /// Normalizes a Freedium mirror base URL, dropping query and fragment.
 String? normalizeMirrorUrl(String value) {
   final uri = tryParseHttpUri(value);
-  if (uri == null) return null;
+  if (uri == null || isRetiredFreediumMirrorUrl(value)) return null;
 
   return Uri(
     scheme: uri.scheme.toLowerCase(),
@@ -57,3 +57,7 @@ bool hasSameOrigin(Uri a, Uri b) {
       a.host.toLowerCase() == b.host.toLowerCase() &&
       a.port == b.port;
 }
+
+/// The retired service must never be selected or re-added as a mirror.
+bool isRetiredFreediumMirrorUrl(String value) =>
+    Uri.tryParse(value.trim())?.host.toLowerCase() == 'freedium.cfd';

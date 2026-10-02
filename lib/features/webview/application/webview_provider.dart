@@ -122,7 +122,7 @@ class Webview() extends _$Webview {
   }
 
   WebViewController createController({String? baseUrl}) {
-    final activeBaseUrl = baseUrl ?? AppConstants.freediumUrl;
+    final activeBaseUrl = baseUrl ?? AppConstants.freediumMirrorUrl;
     final initialUrl = buildFreediumArticleUri(
       mirrorUrl: activeBaseUrl,
       articleUrl: url,

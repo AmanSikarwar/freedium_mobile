@@ -1,6 +1,6 @@
 # Freedium Mobile - Copilot Instructions
 
-Flutter Android app bypassing Medium paywalls via Freedium.cfd with Material You theming.
+Flutter Android app bypassing Medium paywalls via Freedium Mirror with Material You theming.
 
 ## Architecture
 
@@ -13,7 +13,7 @@ features/<feature>/
 core/
   services/      # Shared services (clipboard, intent, font_size, update)
   theme/         # AppTheme, theme_provider, util
-  constants/     # AppConstants (freediumUrl, urlRegExp, appVersion)
+  constants/     # AppConstants (freediumMirrorUrl, appVersion)
 ```
 
 **Features** (`lib/features/`, each with `application/` + `domain/` + `presentation/`):
@@ -73,7 +73,6 @@ state = state.copyWith(progress: progress / 100.0, isPageLoaded: true);
 ```dart
 // Default mirrors from AppConstants
 static List<FreediumMirror> get defaultMirrors => [
-  FreediumMirror(name: 'Freedium (Primary)', url: freediumUrl, isDefault: true),
   FreediumMirror(name: 'Freedium Mirror', url: freediumMirrorUrl, isDefault: true),
 ];
 
@@ -151,7 +150,7 @@ dart format .                # Format code
 | File | Purpose |
 |------|---------|
 | `lib/app.dart` | App widget, intent handling, global navigator key |
-| `lib/core/constants/app_constants.dart` | `freediumUrl`, `urlRegExp`, `appVersion` |
+| `lib/core/constants/app_constants.dart` | `freediumMirrorUrl`, `appVersion` |
 | `lib/features/webview/application/webview_provider.dart` | WebView lifecycle, theme injection trigger |
 | `lib/features/webview/application/theme_injector_service.dart` | ColorScheme→CSS generation |
 | `lib/features/settings/application/settings_provider.dart` | Settings state, FreediumUrlService |

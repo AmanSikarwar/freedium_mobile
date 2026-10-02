@@ -60,10 +60,5 @@ abstract class const SettingsState._() with _$SettingsState {
       url: AppConstants.freediumMirrorUrl,
       isDefault: true,
     ),
-    const FreediumMirror(
-      name: 'Freedium',
-      url: AppConstants.freediumUrl,
-      isDefault: true,
-    ),
   ];
 }

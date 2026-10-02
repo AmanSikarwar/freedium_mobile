@@ -87,13 +87,13 @@ void main() {
     await tester.enterText(find.byType(TextFormField).at(0), 'Duplicate');
     await tester.enterText(
       find.byType(TextFormField).at(1),
-      'https://freedium.cfd',
+      'https://freedium-mirror.cfd',
     );
 
     await tester.tap(find.widgetWithText(FilledButton, 'Add'));
     await tester.pumpAndSettle();
 
-    expect(submittedMirror?.url, 'https://freedium.cfd');
+    expect(submittedMirror?.url, 'https://freedium-mirror.cfd');
     expect(
       find.text('Mirror already exists or could not be saved.'),
       findsOneWidget,

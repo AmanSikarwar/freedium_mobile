@@ -36,7 +36,7 @@ void main() {
       expect(
         capturedParams.single.uri,
         buildFreediumArticleUri(
-          mirrorUrl: AppConstants.freediumUrl,
+          mirrorUrl: AppConstants.freediumMirrorUrl,
           articleUrl: articleUrl,
         ),
       );

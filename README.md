@@ -25,7 +25,7 @@
 
 ## Overview
 
-Freedium Mobile is an Android reader for paywalled articles from Medium, The New York Times, The Washington Post, Bloomberg, Reuters, The Economist, and Financial Times. It sends supported article links through [Freedium.cfd](https://freedium.cfd) and presents the result in a native reading experience.
+Freedium Mobile is an Android reader for paywalled articles from Medium, The New York Times, The Washington Post, Bloomberg, Reuters, The Economist, and Financial Times. It sends supported article links through [Freedium Mirror](https://freedium-mirror.cfd) and presents the result in a native reading experience.
 
 Built with **Flutter** and featuring **Material You** design, Freedium Mobile offers a native reading experience with dynamic theming and dark mode support.
 

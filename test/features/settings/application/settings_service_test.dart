@@ -9,6 +9,22 @@ import '../../../test_helpers.dart';
 
 void main() {
   group('SettingsService', () {
+    test('drops the retired mirror and repairs the selected URL', () async {
+      final prefs = await mockPrefs({
+        'freedium_mirrors': [
+          jsonEncode({'name': 'Retired', 'url': 'https://freedium.cfd'}),
+          jsonEncode(SettingsState.defaultMirrors.single.toJson()),
+        ],
+        'selected_mirror_url': 'https://freedium.cfd',
+      });
+      final settings = SettingsService(prefs).loadAllSettings();
+      expect(settings.mirrors, SettingsState.defaultMirrors);
+      expect(
+        settings.selectedMirrorUrl,
+        SettingsState.defaultMirrors.single.url,
+      );
+    });
+
     test(
       'loadMirrors keeps valid mirrors when another entry is malformed',
       () async {
