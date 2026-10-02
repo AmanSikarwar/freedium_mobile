@@ -6,11 +6,42 @@ import 'package:freedium_mobile/features/webview/application/freedium_article_ur
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+
+import '../webview_test_helpers.dart';
 
 import '../../../test_helpers.dart';
 
 void main() {
   group('WebviewNotifier shareArticle', () {
+    testWidgets('shares the displayed article after internal navigation', (
+      tester,
+    ) async {
+      ShareParams? shared;
+      final container = await _createContainer((params) async {
+        shared = params;
+        return const ShareResult('', ShareResultStatus.success);
+      });
+      addTearDown(container.dispose);
+      await container.read(settingsProvider.future);
+      final platform = FakeWebviewPlatform();
+      WebViewPlatform.instance = platform;
+      final provider = webviewProvider(TestFixtures.storyUrl);
+      container.listen(provider, (_, _) {});
+      final notifier = container.read(provider.notifier);
+      notifier.setThemeInjector(FakeThemeInjector());
+      notifier.createController();
+      final displayed = buildFreediumArticleUri(
+        mirrorUrl: AppConstants.freediumMirrorUrl,
+        articleUrl: 'https://medium.com/example/second-story',
+      );
+      platform.delegate.start(displayed.toString());
+      expect(notifier.articleUrl(), 'https://medium.com/example/second-story');
+      await notifier.shareArticle();
+      expect(shared!.uri, displayed);
+    });
+
     test('reports a message when sharing is unavailable', () async {
       final capturedParams = <ShareParams>[];
       const articleUrl = TestFixtures.storyUrl;

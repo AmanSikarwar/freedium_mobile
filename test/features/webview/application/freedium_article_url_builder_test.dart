@@ -4,6 +4,20 @@ import 'package:freedium_mobile/features/webview/application/freedium_article_ur
 import '../../../test_helpers.dart';
 
 void main() {
+  test('reopening shared and nested legacy links wraps the article once', () {
+    const mirror = 'https://freedium-mirror.cfd';
+    const article = 'https://medium.com/example/story?sk=abc#intro';
+    final shared = buildFreediumArticleUri(
+      mirrorUrl: mirror,
+      articleUrl: article,
+    );
+    expect(
+      buildFreediumArticleUri(mirrorUrl: mirror, articleUrl: shared.toString()),
+      shared,
+    );
+    expect(canonicalArticleUrl('https://freedium.cfd/$shared'), article);
+  });
+
   group('buildFreediumArticleUri', () {
     test('builds article URL for root mirror', () {
       expect(

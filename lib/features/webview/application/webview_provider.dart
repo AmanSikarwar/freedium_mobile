@@ -306,11 +306,11 @@ class Webview() extends _$Webview {
   }
 
   void _rememberArticleRequestUrl(String baseUrl) {
-    final articleUrl = buildFreediumArticleUri(
+    final requestUrl = buildFreediumArticleUri(
       mirrorUrl: baseUrl,
-      articleUrl: url,
+      articleUrl: articleUrl(),
     ).toString();
-    _articleRequestUrls.add(_normalizeUrl(articleUrl));
+    _articleRequestUrls.add(_normalizeUrl(requestUrl));
   }
 
   String _normalizeUrl(String value) {
@@ -365,7 +365,7 @@ class Webview() extends _$Webview {
 
       final newUrl = buildFreediumArticleUri(
         mirrorUrl: nextMirror.url,
-        articleUrl: url,
+        articleUrl: articleUrl(),
       );
       state = state.copyWith(activeBaseUrl: nextMirror.url);
       _controller?.loadRequest(newUrl);
@@ -472,20 +472,23 @@ class Webview() extends _$Webview {
     }
   }
 
-  String _extractOriginalUrl(String fullUrl) {
-    try {
-      if (!_freediumUrlService.isFreediumUrl(fullUrl)) {
-        return fullUrl;
-      }
+  String articleUrl() => _extractOriginalUrl(state.currentUrl ?? url);
 
-      return extractOriginalArticleUrlFromFreediumUri(
-            mirrorUrl: state.activeBaseUrl,
-            freediumUrl: fullUrl,
-          ) ??
-          url;
-    } catch (e) {
-      return url;
-    }
+  String _extractOriginalUrl(String fullUrl) {
+    final original = canonicalArticleUrl(
+      fullUrl,
+      mirrorUrls: [
+        state.activeBaseUrl,
+        ...?ref
+            .read(settingsProvider)
+            .value
+            ?.mirrors
+            .map((mirror) => mirror.url),
+      ],
+    );
+    return _freediumUrlService.isFreediumUrl(original)
+        ? canonicalArticleUrl(url, mirrorUrls: [state.activeBaseUrl])
+        : original;
   }
 
   String _getUserFriendlyErrorMessage(WebResourceError error) {
@@ -506,6 +509,7 @@ class Webview() extends _$Webview {
     _hasSwitchedMirror = true;
     _rememberArticleRequestUrl(nextMirror.url);
 
+    final currentArticle = articleUrl();
     state = WebviewState(
       fontSize: state.fontSize,
       activeBaseUrl: nextMirror.url,
@@ -513,7 +517,7 @@ class Webview() extends _$Webview {
 
     final newUrl = buildFreediumArticleUri(
       mirrorUrl: nextMirror.url,
-      articleUrl: url,
+      articleUrl: currentArticle,
     );
     _controller?.loadRequest(newUrl);
   }
@@ -521,7 +525,7 @@ class Webview() extends _$Webview {
   Future<void> shareArticle() async {
     final shareUri = buildFreediumArticleUri(
       mirrorUrl: state.activeBaseUrl,
-      articleUrl: url,
+      articleUrl: articleUrl(),
     );
 
     try {

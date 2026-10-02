@@ -1,3 +1,4 @@
+import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/utils/url.dart'
     show hasSameOrigin, trimTrailingSlash;
 
@@ -7,6 +8,7 @@ Uri buildFreediumArticleUri({
 }) {
   final mirrorUri = Uri.parse(mirrorUrl);
   final mirrorPath = trimTrailingSlash(mirrorUri.path);
+  articleUrl = canonicalArticleUrl(articleUrl, mirrorUrls: [mirrorUrl]);
   final articlePath = articleUrl.startsWith('/')
       ? articleUrl.substring(1)
       : articleUrl;
@@ -55,4 +57,37 @@ String? extractOriginalArticleUrlFromFreediumUri({
   final queryStr = freediumUri.hasQuery ? '?${freediumUri.query}' : '';
   final fragmentStr = freediumUri.hasFragment ? '#${freediumUri.fragment}' : '';
   return '$originalUrl$queryStr$fragmentStr';
+}
+
+/// Unwraps known mirror links, including links shared by older app versions.
+String canonicalArticleUrl(
+  String value, {
+  Iterable<String> mirrorUrls = const [],
+}) {
+  final mirrors = {
+    AppConstants.freediumMirrorUrl,
+    'https://freedium.cfd', // Legacy shared links remain readable.
+    ...mirrorUrls,
+  };
+  while (true) {
+    String? original;
+    for (final mirror in mirrors) {
+      try {
+        final candidate = extractOriginalArticleUrlFromFreediumUri(
+          mirrorUrl: mirror,
+          freediumUrl: value,
+        );
+        if (candidate != null &&
+            candidate != value &&
+            Uri.tryParse(candidate)?.host.isNotEmpty == true) {
+          original = candidate;
+          break;
+        }
+      } on FormatException {
+        continue;
+      }
+    }
+    if (original == null) return value;
+    value = original;
+  }
 }

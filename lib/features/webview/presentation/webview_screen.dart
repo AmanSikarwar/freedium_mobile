@@ -34,6 +34,9 @@ class const WebviewScreen({required this.url, super.key})
 }
 
 class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
+  String get _articleUrl =>
+      ref.read(webviewProvider(widget.url).notifier).articleUrl();
+
   bool _isVisible = true;
   WebViewController? _controller;
   ColorScheme? _prevColorScheme;
@@ -83,9 +86,9 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     Bookmarks bookmarksNotifier,
     WebviewState webviewState,
   ) async {
-    final wasBookmarked = bookmarksNotifier.isBookmarked(widget.url);
+    final wasBookmarked = bookmarksNotifier.isBookmarked(_articleUrl);
     final didSave = await bookmarksNotifier.toggleBookmark(
-      widget.url,
+      _articleUrl,
       webviewState.articleMeta?.title ?? '',
     );
     if (!mounted || didSave) return;
@@ -109,9 +112,9 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     Bookmarks bookmarksNotifier,
     WebviewState webviewState,
   ) async {
-    if (!bookmarksNotifier.isBookmarked(widget.url)) {
+    if (!bookmarksNotifier.isBookmarked(_articleUrl)) {
       final didSave = await bookmarksNotifier.addBookmark(
-        widget.url,
+        _articleUrl,
         webviewState.articleMeta?.title ?? '',
       );
       if (!mounted) return;
@@ -131,7 +134,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
       }
     }
     if (!mounted) return;
-    await showMoveToFolderSheet(context, ref, url: widget.url);
+    await showMoveToFolderSheet(context, ref, url: _articleUrl);
   }
 
   @override
@@ -308,10 +311,11 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
     final webviewState = ref.watch(webviewProvider(widget.url));
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final bookmarksNotifier = ref.read(bookmarksProvider.notifier);
+    final articleUrl = webviewNotifier.articleUrl();
     final isBookmarked = ref.watch(
       bookmarksProvider.select(
         (bookmarks) => (bookmarks.value ?? const <BookmarkedArticle>[]).any(
-          (b) => b.url == widget.url,
+          (b) => b.url == articleUrl,
         ),
       ),
     );
