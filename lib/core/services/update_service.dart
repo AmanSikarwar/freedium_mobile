@@ -33,7 +33,11 @@ class const UpdateCheckException(this.message, [this.cause])
   }
 }
 
-class UpdateService({http.Client? client}) {
+class UpdateService({
+  http.Client? client,
+  this.timeout = const Duration(seconds: 10),
+}) {
+  final Duration timeout;
   final http.Client _client;
 
   this : _client = client ?? http.Client();
@@ -43,9 +47,11 @@ class UpdateService({http.Client? client}) {
   static const String _apiUrl =
       'https://api.github.com/repos/$_repoOwner/$_repoName/releases/latest';
 
+  void dispose() => _client.close();
+
   Future<UpdateInfo?> checkForUpdate() async {
     try {
-      final response = await _client.get(.parse(_apiUrl));
+      final response = await _client.get(.parse(_apiUrl)).timeout(timeout);
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body) as Map<String, dynamic>;
@@ -101,7 +107,11 @@ String? _normalizeReleaseUrl(String value) {
 }
 
 @Riverpod(keepAlive: true)
-UpdateService updateService(Ref ref) => UpdateService();
+UpdateService updateService(Ref ref) {
+  final service = UpdateService();
+  ref.onDispose(service.dispose);
+  return service;
+}
 
 @Riverpod(keepAlive: true)
 Future<UpdateInfo?> updateCheck(Ref ref) async {

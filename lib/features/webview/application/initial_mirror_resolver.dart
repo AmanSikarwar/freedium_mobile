@@ -6,13 +6,14 @@ Future<String> resolveInitialMirrorUrl({
   required bool autoSwitchMirror,
   required String selectedMirrorUrl,
   required ActiveFreediumUrlResolver getActiveUrl,
+  Duration timeout = const Duration(seconds: 5),
 }) async {
   if (!autoSwitchMirror) {
     return selectedMirrorUrl;
   }
 
   try {
-    return await getActiveUrl();
+    return await getActiveUrl().timeout(timeout);
   } catch (e) {
     debugPrint('Initial mirror selection failed: $e');
     return selectedMirrorUrl;

@@ -1,8 +1,22 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
 
 void main() {
   group('resolveInitialMirrorUrl', () {
+    test('falls back when mirror selection never finishes', () async {
+      expect(
+        await resolveInitialMirrorUrl(
+          autoSwitchMirror: true,
+          selectedMirrorUrl: 'https://selected.example',
+          getActiveUrl: () => Completer<String>().future,
+          timeout: const Duration(milliseconds: 1),
+        ),
+        'https://selected.example',
+      );
+    });
+
     test('uses selected mirror when auto-switch is disabled', () async {
       var didResolveActiveUrl = false;
 

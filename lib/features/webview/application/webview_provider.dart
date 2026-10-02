@@ -54,6 +54,7 @@ class Webview() extends _$Webview {
   bool _hasRecordedHistoryForCurrentPage = false;
   double _latestReadingProgress = 0;
   Timer? _themeAckTimer;
+  Timer? _pageLoadTimer;
   static const Duration _articleMetaWaitDuration = Duration(milliseconds: 900);
   static const int _maxRetries = 3;
 
@@ -78,6 +79,7 @@ class Webview() extends _$Webview {
 
     ref.onDispose(() {
       _themeAckTimer?.cancel();
+      _pageLoadTimer?.cancel();
       final controller = _controller;
       if (controller != null) {
         controller.removeJavaScriptChannel('themeApplied');
@@ -132,6 +134,7 @@ class Webview() extends _$Webview {
     _rememberArticleRequestUrl(activeBaseUrl);
     _setCurrentMirrorIndex(activeBaseUrl);
 
+    _startPageLoadDeadline();
     final controller = WebViewController();
     _controller = controller;
     controller
@@ -186,6 +189,8 @@ class Webview() extends _$Webview {
             state = state.copyWith(progress: progress / 100.0);
           },
           onPageStarted: (String url) {
+            if (!ref.mounted) return;
+            _startPageLoadDeadline();
             _themeAckTimer?.cancel();
             _failedPageUrls.remove(_normalizeUrl(url));
             _historyRecordToken++;
@@ -217,6 +222,7 @@ class Webview() extends _$Webview {
             if (!ref.mounted || _failedPageUrls.contains(_normalizeUrl(url))) {
               return;
             }
+            _pageLoadTimer?.cancel();
             final token = _historyRecordToken;
             state = state.copyWith(isPageLoaded: true, currentUrl: url);
             if (_freediumUrlService.isFreediumUrl(url)) {
@@ -330,7 +336,17 @@ class Webview() extends _$Webview {
     return _articleRequestUrls.contains(_normalizeUrl(currentUrl));
   }
 
+  void _startPageLoadDeadline() {
+    _pageLoadTimer?.cancel();
+    final settings = ref.read(settingsProvider).value ?? const SettingsState();
+    _pageLoadTimer = Timer(Duration(seconds: settings.mirrorTimeout * 3), () {
+      if (ref.mounted) _handleLoadError('The article took too long to load.');
+    });
+  }
+
   void _handleLoadError(String message, {bool retryable = true}) {
+    if (!ref.mounted) return;
+    _pageLoadTimer?.cancel();
     _themeAckTimer?.cancel();
     if (state.currentUrl case final currentUrl?) {
       _failedPageUrls.add(_normalizeUrl(currentUrl));
@@ -348,6 +364,7 @@ class Webview() extends _$Webview {
     if (retryable &&
         settings.autoSwitchMirror &&
         _retryCount < _maxRetries &&
+        _retryCount < settings.mirrors.length - 1 &&
         settings.mirrors.isNotEmpty) {
       _retryCount++;
       _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
@@ -368,6 +385,7 @@ class Webview() extends _$Webview {
         articleUrl: articleUrl(),
       );
       state = state.copyWith(activeBaseUrl: nextMirror.url);
+      _startPageLoadDeadline();
       _controller?.loadRequest(newUrl);
     } else {
       _updateInitialLoadState();
@@ -519,6 +537,7 @@ class Webview() extends _$Webview {
       mirrorUrl: nextMirror.url,
       articleUrl: currentArticle,
     );
+    _startPageLoadDeadline();
     _controller?.loadRequest(newUrl);
   }
 
@@ -608,6 +627,8 @@ class Webview() extends _$Webview {
   }
 
   void reload() {
+    _retryCount = 0;
+    _startPageLoadDeadline();
     _controller?.reload();
   }
 

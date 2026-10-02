@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
@@ -7,6 +8,18 @@ import 'package:http/testing.dart';
 
 void main() {
   group('UpdateService', () {
+    test('bounds a request that never completes', () async {
+      final service = UpdateService(
+        client: MockClient((request) => Completer<http.Response>().future),
+        timeout: const Duration(milliseconds: 1),
+      );
+      addTearDown(service.dispose);
+      await expectLater(
+        service.checkForUpdate(),
+        throwsA(isA<UpdateCheckException>()),
+      );
+    });
+
     test('returns update details when latest release body is null', () async {
       final client = MockClient((request) async {
         expect(

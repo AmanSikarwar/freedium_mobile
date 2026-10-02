@@ -58,6 +58,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
       autoSwitchMirror: settings.autoSwitchMirror,
       selectedMirrorUrl: settings.selectedMirrorUrl,
       getActiveUrl: freediumUrlService.getActiveUrl,
+      timeout: Duration(seconds: settings.mirrorTimeout),
     );
 
     if (!mounted) return;

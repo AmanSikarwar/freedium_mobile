@@ -325,7 +325,11 @@ class Settings() extends _$Settings {
       client = ref.read(httpClientFactoryProvider)();
       client.connectionTimeout = timeout;
 
-      final probeResult = await probeMirrorUrl(client, uri, timeout);
+      final probeResult = await probeMirrorUrl(
+        client,
+        uri,
+        timeout,
+      ).timeout(timeout);
 
       stopwatch.stop();
 
@@ -343,7 +347,7 @@ class Settings() extends _$Settings {
         error: e.toString(),
       );
     } finally {
-      client?.close();
+      client?.close(force: true);
     }
   }
 
@@ -410,8 +414,12 @@ class FreediumUrlService(this._ref) {
       ...mirrors.where((mirror) => mirror.url != settings.selectedMirrorUrl),
     ];
 
+    final budget = _checkTimeout;
+    final elapsed = Stopwatch()..start();
     for (final mirror in mirrorsToCheck) {
-      if (await _isUrlReachable(mirror.url)) {
+      final remaining = budget - elapsed.elapsed;
+      if (remaining <= Duration.zero) break;
+      if (await _isUrlReachable(mirror.url, remaining)) {
         _cachedWorkingUrl = mirror.url;
         _lastCheckTime = DateTime.now();
         debugPrint('Using Freedium URL: ${mirror.url}');
@@ -427,19 +435,23 @@ class FreediumUrlService(this._ref) {
     return _cachedWorkingUrl!;
   }
 
-  Future<bool> _isUrlReachable(String url) async {
+  Future<bool> _isUrlReachable(String url, Duration timeout) async {
     HttpClient? client;
     try {
       final uri = Uri.parse(url);
       client = _ref.read(httpClientFactoryProvider)();
-      client.connectionTimeout = _checkTimeout;
-      final probeResult = await probeMirrorUrl(client, uri, _checkTimeout);
+      client.connectionTimeout = timeout;
+      final probeResult = await probeMirrorUrl(
+        client,
+        uri,
+        timeout,
+      ).timeout(timeout);
       return probeResult.isReachable;
     } catch (e) {
       debugPrint('URL reachability check failed for $url: $e');
       return false;
     } finally {
-      client?.close();
+      client?.close(force: true);
     }
   }
 

@@ -40,6 +40,8 @@ void main() {
       expect(notifier.articleUrl(), 'https://medium.com/example/second-story');
       await notifier.shareArticle();
       expect(shared!.uri, displayed);
+      container.invalidate(provider);
+      await tester.pump(const Duration(milliseconds: 1));
     });
 
     test('reports a message when sharing is unavailable', () async {

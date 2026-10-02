@@ -1,6 +1,10 @@
 import 'package:freedium_mobile/core/services/cache_service.dart';
 import 'package:webview_flutter/webview_flutter.dart' show WebViewController;
 import 'package:flutter_test/flutter_test.dart';
+
+import 'dart:convert';
+
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
@@ -16,7 +20,20 @@ void main() {
   late FakeWebviewPlatform platform;
   final provider = webviewProvider(TestFixtures.storyUrl);
   setUp(() async {
-    container = prefsContainer(await mockPrefs());
+    container = prefsContainer(
+      await mockPrefs({
+        'freedium_mirrors': [
+          jsonEncode(SettingsState.defaultMirrors.single.toJson()),
+          for (var i = 0; i < 3; i++)
+            jsonEncode(
+              FreediumMirror(
+                name: 'Fallback $i',
+                url: 'https://fallback-$i.example',
+              ).toJson(),
+            ),
+        ],
+      }),
+    );
     await container.read(settingsProvider.future);
     await container.read(historyProvider.future);
     platform = FakeWebviewPlatform();
@@ -31,10 +48,20 @@ void main() {
   });
   tearDown(() => container.dispose());
 
+  testWidgets('an unfinished page triggers bounded mirror failover', (
+    tester,
+  ) async {
+    platform.delegate.start(platform.controller.requests.single.toString());
+    await tester.pump(const Duration(seconds: 16));
+    expect(platform.controller.requests, hasLength(2));
+    expect(container.read(provider).errorMessage, contains('too long'));
+    container.invalidate(provider);
+    await tester.pump(const Duration(milliseconds: 1));
+  });
+
   test('closing readers retains cache until an explicit clear', () async {
     final controller = WebViewController.fromPlatform(platform.controller);
     container.invalidate(provider);
-    await container.pump();
     expect(platform.controller.cacheClears, 0);
     expect(platform.controller.channels, isEmpty);
     expect(
