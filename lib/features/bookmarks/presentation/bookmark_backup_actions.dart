@@ -25,13 +25,15 @@ Future<void> exportBookmarkBackup(BuildContext context, WidgetRef ref) async {
         fileNameOverrides: ['freedium-bookmarks.json'],
       ),
     );
-    if (result.status == ShareResultStatus.unavailable)
+    if (result.status == ShareResultStatus.unavailable) {
       throw StateError('Sharing unavailable');
+    }
   } catch (_) {
-    if (context.mounted)
+    if (context.mounted) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Could not share backup')));
+    }
   }
 }
 

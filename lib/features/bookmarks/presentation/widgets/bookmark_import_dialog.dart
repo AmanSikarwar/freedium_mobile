@@ -8,7 +8,7 @@ class const BookmarkImportDialog({super.key}) extends ConsumerStatefulWidget {
       _BookmarkImportDialogState();
 }
 
-class _BookmarkImportDialogState extends ConsumerState<BookmarkImportDialog> {
+class _BookmarkImportDialogState() extends ConsumerState<BookmarkImportDialog> {
   final _controller = TextEditingController();
   bool _reading = false;
   String? _error;
