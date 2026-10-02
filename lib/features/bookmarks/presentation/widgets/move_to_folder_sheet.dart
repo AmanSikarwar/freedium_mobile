@@ -96,7 +96,7 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
       if (folder == null) {
         unsortedCount++;
       } else {
-        counts[folder] = (counts[folder] ?? 0) + 1;
+        counts[folder.toLowerCase()] = (counts[folder.toLowerCase()] ?? 0) + 1;
       }
     }
 
@@ -128,9 +128,9 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
                   for (final folder in folders)
                     _FolderOption(
                       label: folder,
-                      subtitle: '${counts[folder] ?? 0} here',
+                      subtitle: '${counts[folder.toLowerCase()] ?? 0} here',
                       icon: Icons.folder,
-                      selected: current == folder,
+                      selected: current?.toLowerCase() == folder.toLowerCase(),
                       onTap: () => _move(folder),
                     ),
                 ],

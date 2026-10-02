@@ -20,6 +20,25 @@ Map<String, Object> _seed(List<BookmarkedArticle> bookmarks) => {
 
 void main() {
   group('BookmarksScreen folders', () {
+    testWidgets('folder counts and filters ignore label casing', (
+      tester,
+    ) async {
+      final seed = _seed([
+        BookmarkedArticle(
+          url: TestFixtures.storyUrl,
+          title: 'Tech story',
+          savedAt: TestFixtures.seedDate,
+          folder: 'tech',
+        ),
+      ]);
+      seed['bookmark_folders'] = ['Tech'];
+      await pumpApp(tester, child: const BookmarksScreen(), initialPrefs: seed);
+      expect(find.widgetWithText(FilterChip, 'Tech · 1'), findsOneWidget);
+      await tester.tap(find.widgetWithText(FilterChip, 'Tech · 1'));
+      await tester.pumpAndSettle();
+      expect(find.text('Tech story'), findsOneWidget);
+    });
+
     testWidgets('reports the retained import count when the library fills', (
       tester,
     ) async {

@@ -56,7 +56,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
       if (folder != null) {
         if (folder.isEmpty) {
           if (item.folder != null) return false;
-        } else if (item.folder != folder) {
+        } else if (item.folder?.toLowerCase() != folder.toLowerCase()) {
           return false;
         }
       }
@@ -180,7 +180,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
       if (folder == null) {
         unsortedCount++;
       } else {
-        counts[folder] = (counts[folder] ?? 0) + 1;
+        counts[folder.toLowerCase()] = (counts[folder.toLowerCase()] ?? 0) + 1;
       }
     }
     final showFilters = folders.isNotEmpty || _folderFilter != null;
@@ -442,7 +442,7 @@ class const _FolderFilterBar({
             for (final folder in folders)
               _FilterChip(
                 icon: Icons.folder,
-                label: '$folder · ${counts[folder] ?? 0}',
+                label: '$folder · ${counts[folder.toLowerCase()] ?? 0}',
                 selected: selected == folder,
                 onSelected: () => onSelected(folder),
               ),

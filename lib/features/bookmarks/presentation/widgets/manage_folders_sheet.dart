@@ -130,7 +130,7 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
     for (final article in bookmarks) {
       final folder = article.folder;
       if (folder != null) {
-        counts[folder] = (counts[folder] ?? 0) + 1;
+        counts[folder.toLowerCase()] = (counts[folder.toLowerCase()] ?? 0) + 1;
       }
     }
 
@@ -231,7 +231,7 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                         separatorBuilder: (_, _) => const Divider(height: 1),
                         itemBuilder: (context, index) {
                           final folder = folders[index];
-                          final count = counts[folder] ?? 0;
+                          final count = counts[folder.toLowerCase()] ?? 0;
                           return ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                               horizontal: 4,
