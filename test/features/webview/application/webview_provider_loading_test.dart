@@ -82,6 +82,12 @@ void main() {
     await tester.pump();
     expect(container.read(provider).hasError, isTrue);
     expect(container.read(provider).isInitialLoad, isFalse);
+    final notifier = container.read(provider.notifier);
+    expect(notifier.canContinueWithoutStyling(), isTrue);
+    notifier.continueWithoutStyling();
+    expect(container.read(provider).hasError, isFalse);
+    expect(container.read(provider).useOriginalStyling, isTrue);
+    expect(container.read(provider).isThemeApplied, isFalse);
     await tester.pump(const Duration(seconds: 1));
 
     platform.controller.rejectJavaScript = false;

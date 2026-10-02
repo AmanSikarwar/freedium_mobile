@@ -21,8 +21,11 @@ bool shouldRevealWebView({
   required bool isThemeApplied,
   required bool isThemedPage,
   required bool hasError,
+  bool useOriginalStyling = false,
 }) {
-  return isPageLoaded && !hasError && (!isThemedPage || isThemeApplied);
+  return isPageLoaded &&
+      !hasError &&
+      (!isThemedPage || isThemeApplied || useOriginalStyling);
 }
 
 class const WebviewScreen({required this.url, super.key})
@@ -220,6 +223,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
       isThemeApplied: webviewState.isThemeApplied,
       isThemedPage: isThemedPage,
       hasError: webviewState.hasError,
+      useOriginalStyling: webviewState.useOriginalStyling,
     );
     final hideThemedWebView = isThemedPage && !showWebView;
 
@@ -284,16 +288,24 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
                 color: theme.colorScheme.onSurfaceVariant,
               ),
             ),
+            if (webviewNotifier.canContinueWithoutStyling()) ...[
+              const SizedBox(height: 16),
+              FilledButton(
+                onPressed: webviewNotifier.continueWithoutStyling,
+                child: const Text('Continue with original styling'),
+              ),
+            ],
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: .center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 16,
+              runSpacing: 8,
               children: [
                 OutlinedButton.icon(
                   onPressed: () => webviewNotifier.reload(),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                 ),
-                const SizedBox(width: 16),
                 FilledButton.icon(
                   onPressed: () => webviewNotifier.retryWithNextMirror(),
                   icon: const Icon(Icons.swap_horiz),

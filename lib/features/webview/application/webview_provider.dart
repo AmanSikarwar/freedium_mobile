@@ -53,6 +53,7 @@ class Webview() extends _$Webview {
   int _historyRecordToken = 0;
   bool _hasRecordedHistoryForCurrentPage = false;
   double _latestReadingProgress = 0;
+  bool _themeFailed = false;
   Timer? _themeAckTimer;
   Timer? _pageLoadTimer;
   static const Duration _articleMetaWaitDuration = Duration(milliseconds: 900);
@@ -191,6 +192,7 @@ class Webview() extends _$Webview {
           onPageStarted: (String url) {
             if (!ref.mounted) return;
             _startPageLoadDeadline();
+            _themeFailed = false;
             _themeAckTimer?.cancel();
             _failedPageUrls.remove(_normalizeUrl(url));
             _historyRecordToken++;
@@ -198,6 +200,7 @@ class Webview() extends _$Webview {
             _latestReadingProgress = 0;
             state = state.copyWith(
               isThemeApplied: false,
+              useOriginalStyling: false,
               isPageLoaded: false,
               progress: 0,
               currentUrl: url,
@@ -348,6 +351,7 @@ class Webview() extends _$Webview {
     if (!ref.mounted) return;
     _pageLoadTimer?.cancel();
     _themeAckTimer?.cancel();
+    _themeFailed = false;
     if (state.currentUrl case final currentUrl?) {
       _failedPageUrls.add(_normalizeUrl(currentUrl));
     }
@@ -596,15 +600,33 @@ class Webview() extends _$Webview {
   }
 
   void _handleThemeFailure(int token) {
-    if (!ref.mounted || token != _historyRecordToken || state.isThemeApplied) {
+    if (!ref.mounted ||
+        token != _historyRecordToken ||
+        state.isThemeApplied ||
+        state.useOriginalStyling) {
       return;
     }
     _themeAckTimer?.cancel();
+    _themeFailed = true;
     state = state.copyWith(
       hasError: true,
       errorMessage: 'Reader styling failed. Please retry the article.',
     );
     _updateInitialLoadState();
+  }
+
+  bool canContinueWithoutStyling() => _themeFailed && state.isPageLoaded;
+
+  void continueWithoutStyling() {
+    if (!canContinueWithoutStyling()) return;
+    _themeAckTimer?.cancel();
+    _themeFailed = false;
+    state = state.copyWith(
+      hasError: false,
+      errorMessage: null,
+      useOriginalStyling: true,
+      isInitialLoad: false,
+    );
   }
 
   void _updateInitialLoadState() {

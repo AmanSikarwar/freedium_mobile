@@ -30,6 +30,7 @@ abstract class const WebviewState._() with _$WebviewState {
     @Default(0.0) double progress,
     @Default(false) bool isPageLoaded,
     @Default(false) bool isThemeApplied,
+    @Default(false) bool useOriginalStyling,
     @Default(true) bool isInitialLoad,
     @Default(18.0) double fontSize,
     String? currentUrl,

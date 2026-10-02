@@ -288,7 +288,7 @@ as String,
 /// @nodoc
 mixin _$WebviewState {
 
- double get progress; bool get isPageLoaded; bool get isThemeApplied; bool get isInitialLoad; double get fontSize; String? get currentUrl; String get activeBaseUrl; bool get hasError; String? get errorMessage; String? get userMessage; ArticleMeta? get articleMeta;
+ double get progress; bool get isPageLoaded; bool get isThemeApplied; bool get useOriginalStyling; bool get isInitialLoad; double get fontSize; String? get currentUrl; String get activeBaseUrl; bool get hasError; String? get errorMessage; String? get userMessage; ArticleMeta? get articleMeta;
 /// Create a copy of WebviewState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -300,20 +300,20 @@ $WebviewStateCopyWith<WebviewState> get copyWith => _$WebviewStateCopyWithImpl<W
 @override
 bool operator ==(Object other) {
   final _this = this as WebviewState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is WebviewState&&(identical(other.progress, _this.progress) || other.progress == _this.progress)&&(identical(other.isPageLoaded, _this.isPageLoaded) || other.isPageLoaded == _this.isPageLoaded)&&(identical(other.isThemeApplied, _this.isThemeApplied) || other.isThemeApplied == _this.isThemeApplied)&&(identical(other.isInitialLoad, _this.isInitialLoad) || other.isInitialLoad == _this.isInitialLoad)&&(identical(other.fontSize, _this.fontSize) || other.fontSize == _this.fontSize)&&(identical(other.currentUrl, _this.currentUrl) || other.currentUrl == _this.currentUrl)&&(identical(other.activeBaseUrl, _this.activeBaseUrl) || other.activeBaseUrl == _this.activeBaseUrl)&&(identical(other.hasError, _this.hasError) || other.hasError == _this.hasError)&&(identical(other.errorMessage, _this.errorMessage) || other.errorMessage == _this.errorMessage)&&(identical(other.userMessage, _this.userMessage) || other.userMessage == _this.userMessage)&&(identical(other.articleMeta, _this.articleMeta) || other.articleMeta == _this.articleMeta));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is WebviewState&&(identical(other.progress, _this.progress) || other.progress == _this.progress)&&(identical(other.isPageLoaded, _this.isPageLoaded) || other.isPageLoaded == _this.isPageLoaded)&&(identical(other.isThemeApplied, _this.isThemeApplied) || other.isThemeApplied == _this.isThemeApplied)&&(identical(other.useOriginalStyling, _this.useOriginalStyling) || other.useOriginalStyling == _this.useOriginalStyling)&&(identical(other.isInitialLoad, _this.isInitialLoad) || other.isInitialLoad == _this.isInitialLoad)&&(identical(other.fontSize, _this.fontSize) || other.fontSize == _this.fontSize)&&(identical(other.currentUrl, _this.currentUrl) || other.currentUrl == _this.currentUrl)&&(identical(other.activeBaseUrl, _this.activeBaseUrl) || other.activeBaseUrl == _this.activeBaseUrl)&&(identical(other.hasError, _this.hasError) || other.hasError == _this.hasError)&&(identical(other.errorMessage, _this.errorMessage) || other.errorMessage == _this.errorMessage)&&(identical(other.userMessage, _this.userMessage) || other.userMessage == _this.userMessage)&&(identical(other.articleMeta, _this.articleMeta) || other.articleMeta == _this.articleMeta));
 }
 
 
 @override
 int get hashCode {
   final _this = this as WebviewState;
-  return Object.hash(runtimeType,_this.progress,_this.isPageLoaded,_this.isThemeApplied,_this.isInitialLoad,_this.fontSize,_this.currentUrl,_this.activeBaseUrl,_this.hasError,_this.errorMessage,_this.userMessage,_this.articleMeta);
+  return Object.hash(runtimeType,_this.progress,_this.isPageLoaded,_this.isThemeApplied,_this.useOriginalStyling,_this.isInitialLoad,_this.fontSize,_this.currentUrl,_this.activeBaseUrl,_this.hasError,_this.errorMessage,_this.userMessage,_this.articleMeta);
 }
 
 @override
 String toString() {
   final _this = this as WebviewState;
-  return 'WebviewState(progress: ${_this.progress}, isPageLoaded: ${_this.isPageLoaded}, isThemeApplied: ${_this.isThemeApplied}, isInitialLoad: ${_this.isInitialLoad}, fontSize: ${_this.fontSize}, currentUrl: ${_this.currentUrl}, activeBaseUrl: ${_this.activeBaseUrl}, hasError: ${_this.hasError}, errorMessage: ${_this.errorMessage}, userMessage: ${_this.userMessage}, articleMeta: ${_this.articleMeta})';
+  return 'WebviewState(progress: ${_this.progress}, isPageLoaded: ${_this.isPageLoaded}, isThemeApplied: ${_this.isThemeApplied}, useOriginalStyling: ${_this.useOriginalStyling}, isInitialLoad: ${_this.isInitialLoad}, fontSize: ${_this.fontSize}, currentUrl: ${_this.currentUrl}, activeBaseUrl: ${_this.activeBaseUrl}, hasError: ${_this.hasError}, errorMessage: ${_this.errorMessage}, userMessage: ${_this.userMessage}, articleMeta: ${_this.articleMeta})';
 }
 
 
@@ -324,7 +324,7 @@ abstract mixin class $WebviewStateCopyWith<$Res>  {
   factory $WebviewStateCopyWith(WebviewState value, $Res Function(WebviewState) _then) = _$WebviewStateCopyWithImpl;
 @useResult
 $Res call({
- double progress, bool isPageLoaded, bool isThemeApplied, bool isInitialLoad, double fontSize, String? currentUrl, String activeBaseUrl, bool hasError, String? errorMessage, String? userMessage, ArticleMeta? articleMeta
+ double progress, bool isPageLoaded, bool isThemeApplied, bool useOriginalStyling, bool isInitialLoad, double fontSize, String? currentUrl, String activeBaseUrl, bool hasError, String? errorMessage, String? userMessage, ArticleMeta? articleMeta
 });
 
 
@@ -341,11 +341,12 @@ class _$WebviewStateCopyWithImpl<$Res>
 
 /// Create a copy of WebviewState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? progress = null,Object? isPageLoaded = null,Object? isThemeApplied = null,Object? isInitialLoad = null,Object? fontSize = null,Object? currentUrl = freezed,Object? activeBaseUrl = null,Object? hasError = null,Object? errorMessage = freezed,Object? userMessage = freezed,Object? articleMeta = freezed,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? progress = null,Object? isPageLoaded = null,Object? isThemeApplied = null,Object? useOriginalStyling = null,Object? isInitialLoad = null,Object? fontSize = null,Object? currentUrl = freezed,Object? activeBaseUrl = null,Object? hasError = null,Object? errorMessage = freezed,Object? userMessage = freezed,Object? articleMeta = freezed,}) {
   return _then(WebviewState(
 progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as double,isPageLoaded: null == isPageLoaded ? _self.isPageLoaded : isPageLoaded // ignore: cast_nullable_to_non_nullable
 as bool,isThemeApplied: null == isThemeApplied ? _self.isThemeApplied : isThemeApplied // ignore: cast_nullable_to_non_nullable
+as bool,useOriginalStyling: null == useOriginalStyling ? _self.useOriginalStyling : useOriginalStyling // ignore: cast_nullable_to_non_nullable
 as bool,isInitialLoad: null == isInitialLoad ? _self.isInitialLoad : isInitialLoad // ignore: cast_nullable_to_non_nullable
 as bool,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
 as double,currentUrl: freezed == currentUrl ? _self.currentUrl : currentUrl // ignore: cast_nullable_to_non_nullable
@@ -451,10 +452,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double progress,  bool isPageLoaded,  bool isThemeApplied,  bool isInitialLoad,  double fontSize,  String? currentUrl,  String activeBaseUrl,  bool hasError,  String? errorMessage,  String? userMessage,  ArticleMeta? articleMeta)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( double progress,  bool isPageLoaded,  bool isThemeApplied,  bool useOriginalStyling,  bool isInitialLoad,  double fontSize,  String? currentUrl,  String activeBaseUrl,  bool hasError,  String? errorMessage,  String? userMessage,  ArticleMeta? articleMeta)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _WebviewState() when $default != null:
-return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.isInitialLoad,_that.fontSize,_that.currentUrl,_that.activeBaseUrl,_that.hasError,_that.errorMessage,_that.userMessage,_that.articleMeta);case _:
+return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.useOriginalStyling,_that.isInitialLoad,_that.fontSize,_that.currentUrl,_that.activeBaseUrl,_that.hasError,_that.errorMessage,_that.userMessage,_that.articleMeta);case _:
   return orElse();
 
 }
@@ -472,10 +473,10 @@ return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.isI
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double progress,  bool isPageLoaded,  bool isThemeApplied,  bool isInitialLoad,  double fontSize,  String? currentUrl,  String activeBaseUrl,  bool hasError,  String? errorMessage,  String? userMessage,  ArticleMeta? articleMeta)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( double progress,  bool isPageLoaded,  bool isThemeApplied,  bool useOriginalStyling,  bool isInitialLoad,  double fontSize,  String? currentUrl,  String activeBaseUrl,  bool hasError,  String? errorMessage,  String? userMessage,  ArticleMeta? articleMeta)  $default,) {final _that = this;
 switch (_that) {
 case _WebviewState():
-return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.isInitialLoad,_that.fontSize,_that.currentUrl,_that.activeBaseUrl,_that.hasError,_that.errorMessage,_that.userMessage,_that.articleMeta);case _:
+return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.useOriginalStyling,_that.isInitialLoad,_that.fontSize,_that.currentUrl,_that.activeBaseUrl,_that.hasError,_that.errorMessage,_that.userMessage,_that.articleMeta);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -492,10 +493,10 @@ return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.isI
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double progress,  bool isPageLoaded,  bool isThemeApplied,  bool isInitialLoad,  double fontSize,  String? currentUrl,  String activeBaseUrl,  bool hasError,  String? errorMessage,  String? userMessage,  ArticleMeta? articleMeta)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( double progress,  bool isPageLoaded,  bool isThemeApplied,  bool useOriginalStyling,  bool isInitialLoad,  double fontSize,  String? currentUrl,  String activeBaseUrl,  bool hasError,  String? errorMessage,  String? userMessage,  ArticleMeta? articleMeta)?  $default,) {final _that = this;
 switch (_that) {
 case _WebviewState() when $default != null:
-return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.isInitialLoad,_that.fontSize,_that.currentUrl,_that.activeBaseUrl,_that.hasError,_that.errorMessage,_that.userMessage,_that.articleMeta);case _:
+return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.useOriginalStyling,_that.isInitialLoad,_that.fontSize,_that.currentUrl,_that.activeBaseUrl,_that.hasError,_that.errorMessage,_that.userMessage,_that.articleMeta);case _:
   return null;
 
 }
@@ -507,12 +508,13 @@ return $default(_that.progress,_that.isPageLoaded,_that.isThemeApplied,_that.isI
 
 
 class _WebviewState extends WebviewState {
-  const _WebviewState({this.progress = 0.0, this.isPageLoaded = false, this.isThemeApplied = false, this.isInitialLoad = true, this.fontSize = 18.0, this.currentUrl, this.activeBaseUrl = AppConstants.freediumMirrorUrl, this.hasError = false, this.errorMessage, this.userMessage, this.articleMeta}): super._();
+  const _WebviewState({this.progress = 0.0, this.isPageLoaded = false, this.isThemeApplied = false, this.useOriginalStyling = false, this.isInitialLoad = true, this.fontSize = 18.0, this.currentUrl, this.activeBaseUrl = AppConstants.freediumMirrorUrl, this.hasError = false, this.errorMessage, this.userMessage, this.articleMeta}): super._();
   
 
 @override@JsonKey() final  double progress;
 @override@JsonKey() final  bool isPageLoaded;
 @override@JsonKey() final  bool isThemeApplied;
+@override@JsonKey() final  bool useOriginalStyling;
 @override@JsonKey() final  bool isInitialLoad;
 @override@JsonKey() final  double fontSize;
 @override final  String? currentUrl;
@@ -532,18 +534,18 @@ _$WebviewStateCopyWith<_WebviewState> get copyWith => __$WebviewStateCopyWithImp
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WebviewState&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.isPageLoaded, isPageLoaded) || other.isPageLoaded == isPageLoaded)&&(identical(other.isThemeApplied, isThemeApplied) || other.isThemeApplied == isThemeApplied)&&(identical(other.isInitialLoad, isInitialLoad) || other.isInitialLoad == isInitialLoad)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.currentUrl, currentUrl) || other.currentUrl == currentUrl)&&(identical(other.activeBaseUrl, activeBaseUrl) || other.activeBaseUrl == activeBaseUrl)&&(identical(other.hasError, hasError) || other.hasError == hasError)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.userMessage, userMessage) || other.userMessage == userMessage)&&(identical(other.articleMeta, articleMeta) || other.articleMeta == articleMeta));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _WebviewState&&(identical(other.progress, progress) || other.progress == progress)&&(identical(other.isPageLoaded, isPageLoaded) || other.isPageLoaded == isPageLoaded)&&(identical(other.isThemeApplied, isThemeApplied) || other.isThemeApplied == isThemeApplied)&&(identical(other.useOriginalStyling, useOriginalStyling) || other.useOriginalStyling == useOriginalStyling)&&(identical(other.isInitialLoad, isInitialLoad) || other.isInitialLoad == isInitialLoad)&&(identical(other.fontSize, fontSize) || other.fontSize == fontSize)&&(identical(other.currentUrl, currentUrl) || other.currentUrl == currentUrl)&&(identical(other.activeBaseUrl, activeBaseUrl) || other.activeBaseUrl == activeBaseUrl)&&(identical(other.hasError, hasError) || other.hasError == hasError)&&(identical(other.errorMessage, errorMessage) || other.errorMessage == errorMessage)&&(identical(other.userMessage, userMessage) || other.userMessage == userMessage)&&(identical(other.articleMeta, articleMeta) || other.articleMeta == articleMeta));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,progress,isPageLoaded,isThemeApplied,isInitialLoad,fontSize,currentUrl,activeBaseUrl,hasError,errorMessage,userMessage,articleMeta);
+    return Object.hash(runtimeType,progress,isPageLoaded,isThemeApplied,useOriginalStyling,isInitialLoad,fontSize,currentUrl,activeBaseUrl,hasError,errorMessage,userMessage,articleMeta);
 }
 
 @override
 String toString() {
-    return 'WebviewState(progress: $progress, isPageLoaded: $isPageLoaded, isThemeApplied: $isThemeApplied, isInitialLoad: $isInitialLoad, fontSize: $fontSize, currentUrl: $currentUrl, activeBaseUrl: $activeBaseUrl, hasError: $hasError, errorMessage: $errorMessage, userMessage: $userMessage, articleMeta: $articleMeta)';
+    return 'WebviewState(progress: $progress, isPageLoaded: $isPageLoaded, isThemeApplied: $isThemeApplied, useOriginalStyling: $useOriginalStyling, isInitialLoad: $isInitialLoad, fontSize: $fontSize, currentUrl: $currentUrl, activeBaseUrl: $activeBaseUrl, hasError: $hasError, errorMessage: $errorMessage, userMessage: $userMessage, articleMeta: $articleMeta)';
 }
 
 
@@ -554,7 +556,7 @@ abstract mixin class _$WebviewStateCopyWith<$Res> implements $WebviewStateCopyWi
   factory _$WebviewStateCopyWith(_WebviewState value, $Res Function(_WebviewState) _then) = __$WebviewStateCopyWithImpl;
 @override @useResult
 $Res call({
- double progress, bool isPageLoaded, bool isThemeApplied, bool isInitialLoad, double fontSize, String? currentUrl, String activeBaseUrl, bool hasError, String? errorMessage, String? userMessage, ArticleMeta? articleMeta
+ double progress, bool isPageLoaded, bool isThemeApplied, bool useOriginalStyling, bool isInitialLoad, double fontSize, String? currentUrl, String activeBaseUrl, bool hasError, String? errorMessage, String? userMessage, ArticleMeta? articleMeta
 });
 
 
@@ -571,11 +573,12 @@ class __$WebviewStateCopyWithImpl<$Res>
 
 /// Create a copy of WebviewState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? progress = null,Object? isPageLoaded = null,Object? isThemeApplied = null,Object? isInitialLoad = null,Object? fontSize = null,Object? currentUrl = freezed,Object? activeBaseUrl = null,Object? hasError = null,Object? errorMessage = freezed,Object? userMessage = freezed,Object? articleMeta = freezed,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? progress = null,Object? isPageLoaded = null,Object? isThemeApplied = null,Object? useOriginalStyling = null,Object? isInitialLoad = null,Object? fontSize = null,Object? currentUrl = freezed,Object? activeBaseUrl = null,Object? hasError = null,Object? errorMessage = freezed,Object? userMessage = freezed,Object? articleMeta = freezed,}) {
   return _then(_WebviewState(
 progress: null == progress ? _self.progress : progress // ignore: cast_nullable_to_non_nullable
 as double,isPageLoaded: null == isPageLoaded ? _self.isPageLoaded : isPageLoaded // ignore: cast_nullable_to_non_nullable
 as bool,isThemeApplied: null == isThemeApplied ? _self.isThemeApplied : isThemeApplied // ignore: cast_nullable_to_non_nullable
+as bool,useOriginalStyling: null == useOriginalStyling ? _self.useOriginalStyling : useOriginalStyling // ignore: cast_nullable_to_non_nullable
 as bool,isInitialLoad: null == isInitialLoad ? _self.isInitialLoad : isInitialLoad // ignore: cast_nullable_to_non_nullable
 as bool,fontSize: null == fontSize ? _self.fontSize : fontSize // ignore: cast_nullable_to_non_nullable
 as double,currentUrl: freezed == currentUrl ? _self.currentUrl : currentUrl // ignore: cast_nullable_to_non_nullable
