@@ -54,9 +54,25 @@ void main() {
     platform.delegate.start(platform.controller.requests.single.toString());
     await tester.pump(const Duration(seconds: 16));
     expect(platform.controller.requests, hasLength(2));
-    expect(container.read(provider).errorMessage, contains('too long'));
+    expect(container.read(provider).isPageLoaded, isFalse);
     container.invalidate(provider);
     await tester.pump(const Duration(milliseconds: 1));
+  });
+
+  test('HTTP error before page start still switches mirrors', () async {
+    final failed = platform.controller.requests.single.toString();
+    platform.delegate.httpError!(
+      HttpResponseError(
+        request: WebResourceRequest(uri: Uri.parse(failed)),
+        response: const WebResourceResponse(uri: null, statusCode: 503),
+      ),
+    );
+    expect(platform.controller.requests, hasLength(2));
+    final pending = platform.controller.requests.last.toString();
+    platform.delegate.start(failed);
+    platform.delegate.finish(failed);
+    expect(container.read(provider).currentUrl, pending);
+    expect(container.read(provider).isPageLoaded, isFalse);
   });
 
   test('closing readers retains cache until an explicit clear', () async {

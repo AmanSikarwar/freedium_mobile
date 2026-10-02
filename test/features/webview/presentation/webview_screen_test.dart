@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
-import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
@@ -16,25 +15,14 @@ class _ScreenFreediumUrlService(super.ref) extends FreediumUrlService {
   Future<String> getActiveUrl() async => 'https://freedium-mirror.cfd';
 }
 
-class _LoadedWebview() extends Webview {
-  @override
-  WebviewState build(String url) => super
-      .build(url)
-      .copyWith(
-        isPageLoaded: true,
-        isThemeApplied: true,
-        isInitialLoad: false,
-        currentUrl: 'https://freedium-mirror.cfd/$url',
-      );
-}
-
 void main() {
   testWidgets('reader toolbar exposes labelled buttons and bookmark actions', (
     tester,
   ) async {
     final semantics = tester.ensureSemantics();
     final prefs = await mockPrefs({'auto_switch_mirror': false});
-    WebViewPlatform.instance = FakeWebviewPlatform();
+    final platform = FakeWebviewPlatform();
+    WebViewPlatform.instance = platform;
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -42,14 +30,21 @@ void main() {
           freediumUrlServiceProvider.overrideWith(
             _ScreenFreediumUrlService.new,
           ),
-          webviewProvider(TestFixtures.storyUrl)
-              .overrideWith(_LoadedWebview.new),
           themeInjectorServiceProvider.overrideWithValue(FakeThemeInjector()),
         ],
         child: const MaterialApp(
           home: WebviewScreen(url: TestFixtures.storyUrl),
         ),
       ),
+    );
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final page = platform.controller.requests.single.toString();
+    platform.delegate.start(page);
+    platform.delegate.finish(page);
+    platform.controller.channels['themeApplied']!.onMessageReceived(
+      const JavaScriptMessage(message: 'done'),
     );
     await tester.pumpAndSettle();
     for (final label in ['Font size', 'Save bookmark', 'Share article']) {

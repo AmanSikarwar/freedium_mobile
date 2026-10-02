@@ -30,7 +30,7 @@ extension WebviewActions on Webview {
       mirrorUrl: nextMirror.url,
       articleUrl: currentArticle,
     );
-    _startPageLoadDeadline();
+    _preparePageLoad(newUrl.toString(), baseUrl: nextMirror.url);
     _controller?.loadRequest(newUrl);
   }
 
@@ -76,7 +76,9 @@ extension WebviewActions on Webview {
 
   void reload() {
     _retryCount = 0;
-    _startPageLoadDeadline();
+    if (_readerState.currentUrl case final currentUrl?) {
+      _preparePageLoad(currentUrl);
+    }
     _controller?.reload();
   }
 

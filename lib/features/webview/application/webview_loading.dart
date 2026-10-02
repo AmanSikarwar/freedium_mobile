@@ -1,6 +1,27 @@
 part of 'webview_provider.dart';
 
 extension _WebviewLoading on Webview {
+  void _preparePageLoad(String url, {String? baseUrl}) {
+    _themeFailed = false;
+    _themeAckTimer?.cancel();
+    _failedPageUrls.remove(_normalizeUrl(url));
+    _historyRecordToken++;
+    _hasRecordedHistoryForCurrentPage = false;
+    _latestReadingProgress = 0;
+    _readerState = _readerState.copyWith(
+      activeBaseUrl: baseUrl ?? _readerState.activeBaseUrl,
+      currentUrl: url,
+      isThemeApplied: false,
+      useOriginalStyling: false,
+      isPageLoaded: false,
+      progress: 0,
+      hasError: false,
+      errorMessage: null,
+      articleMeta: null,
+    );
+    _startPageLoadDeadline();
+  }
+
   void _startPageLoadDeadline() {
     _pageLoadTimer?.cancel();
     final settings =
@@ -54,8 +75,7 @@ extension _WebviewLoading on Webview {
         mirrorUrl: nextMirror.url,
         articleUrl: articleUrl(),
       );
-      _readerState = _readerState.copyWith(activeBaseUrl: nextMirror.url);
-      _startPageLoadDeadline();
+      _preparePageLoad(newUrl.toString(), baseUrl: nextMirror.url);
       _controller?.loadRequest(newUrl);
     } else {
       _updateInitialLoadState();

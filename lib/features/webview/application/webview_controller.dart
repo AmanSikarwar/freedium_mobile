@@ -12,7 +12,6 @@ extension _WebviewController on Webview {
     _rememberArticleRequestUrl(activeBaseUrl);
     _setCurrentMirrorIndex(activeBaseUrl);
 
-    _startPageLoadDeadline();
     final controller = WebViewController();
     _controller = controller;
     controller
@@ -67,24 +66,11 @@ extension _WebviewController on Webview {
             _readerState = _readerState.copyWith(progress: progress / 100.0);
           },
           onPageStarted: (String url) {
-            if (!_readerRef.mounted) return;
-            _startPageLoadDeadline();
-            _themeFailed = false;
-            _themeAckTimer?.cancel();
-            _failedPageUrls.remove(_normalizeUrl(url));
-            _historyRecordToken++;
-            _hasRecordedHistoryForCurrentPage = false;
-            _latestReadingProgress = 0;
-            _readerState = _readerState.copyWith(
-              isThemeApplied: false,
-              useOriginalStyling: false,
-              isPageLoaded: false,
-              progress: 0,
-              currentUrl: url,
-              hasError: false,
-              errorMessage: null,
-              articleMeta: null,
-            );
+            if (!_readerRef.mounted ||
+                _failedPageUrls.contains(_normalizeUrl(url))) {
+              return;
+            }
+            _preparePageLoad(url);
             // Inject the pre-theme script as early as possible so the page's
             // own inline scripts read the correct localStorage.theme value and
             // the 'dark' class is already present on <html> on first render.
@@ -158,6 +144,9 @@ extension _WebviewController on Webview {
 
             switch (action) {
               case WebviewNavigationAction.navigate:
+                if (request.isMainFrame && _readerRef.mounted) {
+                  _preparePageLoad(request.url);
+                }
                 return .navigate;
               case WebviewNavigationAction.launchExternal:
                 final launched = await launchExternalHttpUrl(request.url);
@@ -175,8 +164,10 @@ extension _WebviewController on Webview {
             }
           },
         ),
-      )
-      ..loadRequest(initialUrl);
+      );
+    // Android can report an HTTP error before onPageStarted.
+    _preparePageLoad(initialUrl.toString(), baseUrl: activeBaseUrl);
+    unawaited(controller.loadRequest(initialUrl));
 
     if (kDebugMode && Platform.isAndroid) {
       if (controller.platform is AndroidWebViewController) {
@@ -184,7 +175,6 @@ extension _WebviewController on Webview {
       }
     }
 
-    _readerState = _readerState.copyWith(activeBaseUrl: activeBaseUrl);
     return controller;
   }
 }
