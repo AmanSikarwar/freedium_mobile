@@ -8,10 +8,11 @@ import 'package:freedium_mobile/features/webview/application/theme_injector_serv
 class FakeWebviewPlatform() extends WebViewPlatform {
   late FakeWebviewController controller;
   late FakeWebviewDelegate delegate;
+  int webviewWidgetBuildCount = 0;
   @override
   PlatformWebViewWidget createPlatformWebViewWidget(
     PlatformWebViewWidgetCreationParams params,
-  ) => FakeWebviewWidget(params);
+  ) => FakeWebviewWidget(params, onBuild: () => webviewWidgetBuildCount++);
 
   @override
   PlatformWebViewController createPlatformWebViewController(
@@ -89,6 +90,7 @@ class FakeWebviewDelegate(super.params) extends PlatformNavigationDelegate {
   this : super.implementation();
   late PageEventCallback start;
   late PageEventCallback finish;
+  late ProgressCallback progress;
   NavigationRequestCallback? navigationRequest;
   late WebResourceErrorCallback resourceError;
   HttpResponseErrorCallback? httpError;
@@ -100,7 +102,10 @@ class FakeWebviewDelegate(super.params) extends PlatformNavigationDelegate {
   }
 
   @override
-  Future<void> setOnProgress(ProgressCallback callback) async {}
+  Future<void> setOnProgress(ProgressCallback callback) async {
+    progress = callback;
+  }
+
   @override
   Future<void> setOnPageStarted(PageEventCallback callback) async {
     start = callback;
@@ -131,9 +136,15 @@ class FakeThemeInjector() extends ThemeInjectorService {
   }) async => 'theme-script';
 }
 
-class FakeWebviewWidget(super.params) extends PlatformWebViewWidget {
+class FakeWebviewWidget(super.params, {required this.onBuild})
+    extends PlatformWebViewWidget {
   this : super.implementation();
 
+  final void Function() onBuild;
+
   @override
-  Widget build(BuildContext context) => const SizedBox();
+  Widget build(BuildContext context) {
+    onBuild();
+    return const SizedBox();
+  }
 }

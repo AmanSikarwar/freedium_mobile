@@ -7,8 +7,8 @@ import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provide
 import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
-import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
+import 'package:freedium_mobile/features/webview/presentation/widgets/reader_loading_overlays.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
@@ -27,6 +27,16 @@ bool shouldRevealWebView({
       !hasError &&
       (!isThemedPage || isThemeApplied || useOriginalStyling);
 }
+
+typedef _WebviewPresentationState = ({
+  String? currentUrl,
+  bool isPageLoaded,
+  bool isThemeApplied,
+  bool useOriginalStyling,
+  bool hasError,
+  String? errorMessage,
+  String activeBaseUrl,
+});
 
 class const WebviewScreen({required this.url, super.key})
     extends ConsumerStatefulWidget {
@@ -101,15 +111,12 @@ class _WebviewScreenState()
     }
   }
 
-  Future<void> _toggleBookmark(
-    Bookmarks bookmarksNotifier,
-    WebviewState webviewState,
-  ) async {
-    final wasBookmarked = bookmarksNotifier.isBookmarked(_articleUrl);
-    final didSave = await bookmarksNotifier.toggleBookmark(
-      _articleUrl,
-      webviewState.articleMeta?.title ?? '',
-    );
+  Future<void> _toggleBookmark(Bookmarks bookmarksNotifier) async {
+    final articleUrl = _articleUrl;
+    final title =
+        ref.read(webviewProvider(widget.url)).articleMeta?.title ?? '';
+    final wasBookmarked = bookmarksNotifier.isBookmarked(articleUrl);
+    final didSave = await bookmarksNotifier.toggleBookmark(articleUrl, title);
     if (!mounted || didSave) return;
 
     HapticFeedback.heavyImpact();
@@ -127,15 +134,12 @@ class _WebviewScreenState()
 
   /// Long-press action: ensures the article is bookmarked, then opens the
   /// move-to-folder sheet.
-  Future<void> _moveBookmarkToFolder(
-    Bookmarks bookmarksNotifier,
-    WebviewState webviewState,
-  ) async {
-    if (!bookmarksNotifier.isBookmarked(_articleUrl)) {
-      final didSave = await bookmarksNotifier.addBookmark(
-        _articleUrl,
-        webviewState.articleMeta?.title ?? '',
-      );
+  Future<void> _moveBookmarkToFolder(Bookmarks bookmarksNotifier) async {
+    final articleUrl = _articleUrl;
+    final title =
+        ref.read(webviewProvider(widget.url)).articleMeta?.title ?? '';
+    if (!bookmarksNotifier.isBookmarked(articleUrl)) {
+      final didSave = await bookmarksNotifier.addBookmark(articleUrl, title);
       if (!mounted) return;
       if (!didSave) {
         HapticFeedback.heavyImpact();
@@ -153,12 +157,24 @@ class _WebviewScreenState()
       }
     }
     if (!mounted) return;
-    await showMoveToFolderSheet(context, ref, url: _articleUrl);
+    await showMoveToFolderSheet(context, ref, url: articleUrl);
   }
 
   @override
   Widget build(BuildContext context) {
-    final webviewState = ref.watch(webviewProvider(widget.url));
+    final webviewState = ref.watch(
+      webviewProvider(widget.url).select(
+        (state) => (
+          currentUrl: state.currentUrl,
+          isPageLoaded: state.isPageLoaded,
+          isThemeApplied: state.isThemeApplied,
+          useOriginalStyling: state.useOriginalStyling,
+          hasError: state.hasError,
+          errorMessage: state.errorMessage,
+          activeBaseUrl: state.activeBaseUrl,
+        ),
+      ),
+    );
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
 
     // Listen for one-shot user messages and display them as SnackBars.
@@ -226,7 +242,10 @@ class _WebviewScreenState()
     );
   }
 
-  Widget _buildWebView(WebviewState webviewState, Webview webviewNotifier) {
+  Widget _buildWebView(
+    _WebviewPresentationState webviewState,
+    Webview webviewNotifier,
+  ) {
     if (!_isVisible) {
       return Scaffold(backgroundColor: Theme.of(context).colorScheme.surface);
     }
@@ -256,16 +275,11 @@ class _WebviewScreenState()
                 maintainState: true,
                 child: WebViewWidget(controller: _controller!),
               ),
-            if (!webviewState.isPageLoaded &&
-                webviewState.progress < 1.0 &&
-                !webviewState.hasError)
-              LinearProgressIndicator(
-                value: webviewState.progress > 0 ? webviewState.progress : null,
-              ),
-            if ((!webviewState.isPageLoaded && webviewState.progress < 0.7 ||
-                    hideThemedWebView) &&
-                !webviewState.hasError)
-              const ArticleShimmer(),
+            ReaderProgressIndicator(url: widget.url),
+            ReaderArticleShimmer(
+              url: widget.url,
+              hideWebView: hideThemedWebView,
+            ),
             if (webviewState.hasError)
               _buildErrorWidget(webviewState, webviewNotifier),
           ],
@@ -275,7 +289,10 @@ class _WebviewScreenState()
     );
   }
 
-  Widget _buildErrorWidget(WebviewState webviewState, Webview webviewNotifier) {
+  Widget _buildErrorWidget(
+    _WebviewPresentationState webviewState,
+    Webview webviewNotifier,
+  ) {
     final theme = Theme.of(context);
 
     return Center(
@@ -339,7 +356,9 @@ class _WebviewScreenState()
 
   Widget _buildActionButtons() {
     final theme = Theme.of(context);
-    final webviewState = ref.watch(webviewProvider(widget.url));
+    final fontSize = ref.watch(
+      webviewProvider(widget.url).select((state) => state.fontSize),
+    );
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
     final bookmarksNotifier = ref.read(bookmarksProvider.notifier);
     final articleUrl = webviewNotifier.articleUrl();
@@ -381,7 +400,7 @@ class _WebviewScreenState()
                 isScrollControlled: true,
                 backgroundColor: Colors.transparent,
                 builder: (context) => FontSettingsSheet(
-                  initialFontSize: webviewState.fontSize,
+                  initialFontSize: fontSize,
                   onFontSizeChanged: webviewNotifier.updateFontSize,
                 ),
               );
@@ -396,13 +415,11 @@ class _WebviewScreenState()
               icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
               onPressed: () {
                 HapticFeedback.lightImpact();
-                unawaited(_toggleBookmark(bookmarksNotifier, webviewState));
+                unawaited(_toggleBookmark(bookmarksNotifier));
               },
               onLongPress: () {
                 HapticFeedback.mediumImpact();
-                unawaited(
-                  _moveBookmarkToFolder(bookmarksNotifier, webviewState),
-                );
+                unawaited(_moveBookmarkToFolder(bookmarksNotifier));
               },
             ),
           ),
