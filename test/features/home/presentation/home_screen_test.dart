@@ -44,6 +44,35 @@ void main() {
       expect(find.text('Get Article'), findsNothing);
     });
 
+    testWidgets('paste button exposes an accessible label', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final clipboard = FakeClipboardService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getSemantics(find.byTooltip('Paste from clipboard')),
+        matchesSemantics(
+          tooltip: 'Paste from clipboard',
+          isButton: true,
+          hasTapAction: true,
+          hasFocusAction: true,
+          isFocusable: true,
+          hasEnabledState: true,
+          isEnabled: true,
+        ),
+      );
+      semantics.dispose();
+    });
+
     testWidgets('opens the source repository from the GitHub star chip', (
       tester,
     ) async {

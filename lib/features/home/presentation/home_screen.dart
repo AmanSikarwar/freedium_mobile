@@ -228,6 +228,7 @@ class _HomeScreenState()
                                 HapticFeedback.lightImpact();
                                 unawaited(_pasteFromClipboard());
                               },
+                              tooltip: 'Paste from clipboard',
                             ),
                           ),
                           keyboardType: .url,
@@ -255,9 +256,7 @@ class _HomeScreenState()
                               )!;
                               _urlController.text = url;
                               homeNotifier.setUrl(url);
-                              Navigator.of(context).push(
-                                webviewRoute(url),
-                              );
+                              Navigator.of(context).push(webviewRoute(url));
                             }
                           },
                           child: const Text('Read Article'),
@@ -265,9 +264,9 @@ class _HomeScreenState()
                       ),
                       ContinueReadingSection(
                         history: history,
-                        onArticleTap: (article) => Navigator.of(context).push(
-                          webviewRoute(article.url),
-                        ),
+                        onArticleTap: (article) =>
+                            Navigator.of(context)
+                                .push(webviewRoute(article.url)),
                       ),
                       ActionChip(
                         avatar: const Icon(Icons.star_border, size: 18),
