@@ -91,11 +91,14 @@ extension _WebviewController on Webview {
             }
             _pageLoadTimer?.cancel();
             final token = _historyRecordToken;
+            final isFreediumPage = _freediumUrlService.isFreediumUrl(url);
+            _progressDocumentUrl = url;
+            _readingProgressAvailable = isFreediumPage;
             _readerState = _readerState.copyWith(
               isPageLoaded: true,
               currentUrl: url,
             );
-            if (_freediumUrlService.isFreediumUrl(url)) {
+            if (isFreediumPage) {
               _retryCount = 0;
               await _injectTheme();
               if (!_readerRef.mounted || token != _historyRecordToken) return;
@@ -144,9 +147,21 @@ extension _WebviewController on Webview {
 
             switch (action) {
               case WebviewNavigationAction.navigate:
-                if (request.isMainFrame && _readerRef.mounted) {
-                  _preparePageLoad(request.url);
+                if (!request.isMainFrame) return .navigate;
+                if (_isDisposed || !_readerRef.mounted) return .prevent;
+
+                final previousUrl = _progressDocumentUrl;
+                final previousToken = _historyRecordToken;
+                if (_readingProgressAvailable) {
+                  await flushReadingProgress();
                 }
+                if (_isDisposed ||
+                    !_readerRef.mounted ||
+                    previousUrl != _progressDocumentUrl ||
+                    previousToken != _historyRecordToken) {
+                  return .prevent;
+                }
+                _preparePageLoad(request.url);
                 return .navigate;
               case WebviewNavigationAction.launchExternal:
                 final launched = await launchExternalHttpUrl(request.url);

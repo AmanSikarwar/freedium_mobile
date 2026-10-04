@@ -15,21 +15,33 @@ extension WebviewActions on Webview {
       debugPrint('No mirrors available to retry');
       return;
     }
-    _currentMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
-    final nextMirror = settings.mirrors[_currentMirrorIndex];
-    _hasSwitchedMirror = true;
-    _rememberArticleRequestUrl(nextMirror.url);
 
+    final previousUrl = _progressDocumentUrl;
+    final previousToken = _historyRecordToken;
     final currentArticle = articleUrl();
-    _readerState = WebviewState(
-      fontSize: _readerState.fontSize,
-      activeBaseUrl: nextMirror.url,
-    );
-
+    final nextMirrorIndex = (_currentMirrorIndex + 1) % settings.mirrors.length;
+    final nextMirror = settings.mirrors[nextMirrorIndex];
     final newUrl = buildFreediumArticleUri(
       mirrorUrl: nextMirror.url,
       articleUrl: currentArticle,
     );
+
+    if (_readingProgressAvailable) {
+      await flushReadingProgress();
+    }
+    if (_isDisposed ||
+        previousToken != _historyRecordToken ||
+        previousUrl != _progressDocumentUrl) {
+      return;
+    }
+
+    _currentMirrorIndex = nextMirrorIndex;
+    _hasSwitchedMirror = true;
+    _readerState = WebviewState(
+      fontSize: _readerState.fontSize,
+      activeBaseUrl: nextMirror.url,
+    );
+    _articleRequestUrls.add(_normalizeUrl(newUrl.toString()));
     _preparePageLoad(newUrl.toString(), baseUrl: nextMirror.url);
     _controller?.loadRequest(newUrl);
   }
@@ -70,16 +82,33 @@ extension WebviewActions on Webview {
     return await _controller?.canGoBack() ?? false;
   }
 
-  void goBack() {
-    _controller?.goBack();
+  Future<void> goBack() async {
+    final currentUrl = _progressDocumentUrl;
+    final pageToken = _historyRecordToken;
+    await flushReadingProgress();
+    if (_isDisposed ||
+        currentUrl != _progressDocumentUrl ||
+        pageToken != _historyRecordToken) {
+      return;
+    }
+    await _controller?.goBack();
   }
 
-  void reload() {
-    _retryCount = 0;
-    if (_readerState.currentUrl case final currentUrl?) {
-      _preparePageLoad(currentUrl);
+  Future<void> reload() async {
+    final currentUrl = _progressDocumentUrl;
+    final pageToken = _historyRecordToken;
+    if (currentUrl == null) return;
+
+    await flushReadingProgress();
+    if (_isDisposed ||
+        currentUrl != _progressDocumentUrl ||
+        pageToken != _historyRecordToken) {
+      return;
     }
-    _controller?.reload();
+
+    _retryCount = 0;
+    _preparePageLoad(currentUrl);
+    await _controller?.reload();
   }
 
   Future<bool> updateFontSize(double fontSize) async {

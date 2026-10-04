@@ -21,7 +21,9 @@ extension _WebviewStyling on Webview {
 
       if (!_readerRef.mounted || token != _historyRecordToken) return;
 
-      await _controller!.runJavaScript(script);
+      await _controller!.runJavaScript(
+        'window._freediumReadingProgressPageToken = $token;\n$script',
+      );
     } catch (e) {
       debugPrint('Failed to inject theme script: $e');
       _handleThemeFailure(token);

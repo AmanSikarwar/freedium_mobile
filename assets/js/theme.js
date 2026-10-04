@@ -437,32 +437,94 @@
   }
 
   function installReadingProgressTracking() {
-    if (!window.ReadingProgress || !window.ReadingProgress.postMessage) {
-      return;
+    if (
+      window._freediumReadingProgressFlush &&
+      window.ReadingProgress &&
+      window.ReadingProgress.postMessage
+    ) {
+      window._freediumReadingProgressFlush();
     }
-
     if (window._freediumReadingProgressHandler) {
       window.removeEventListener(
         "scroll",
         window._freediumReadingProgressHandler
       );
     }
+    if (window._freediumReadingProgressVisibilityHandler) {
+      document.removeEventListener(
+        "visibilitychange",
+        window._freediumReadingProgressVisibilityHandler
+      );
+    }
+    if (window._freediumReadingProgressPageHideHandler) {
+      window.removeEventListener(
+        "pagehide",
+        window._freediumReadingProgressPageHideHandler
+      );
+    }
     clearTimeout(window._freediumReadingProgressTimer);
+    window._freediumReadingProgressTimer = null;
+    window._freediumReadingProgressFlush = null;
+
+    if (!window.ReadingProgress || !window.ReadingProgress.postMessage) {
+      return;
+    }
+
+    function reportProgress() {
+      const root = document.documentElement;
+      const body = document.body;
+      const height = Math.max(
+        root ? root.scrollHeight : 0,
+        body ? body.scrollHeight : 0
+      );
+      const scrollable = Math.max(1, height - window.innerHeight);
+      const progress = Math.min(1, Math.max(0, window.scrollY / scrollable));
+      const message = JSON.stringify({
+        url: window.location.href,
+        pageToken: window._freediumReadingProgressPageToken,
+        progress: progress.toFixed(3),
+      });
+      if (message === window._freediumLastReadingProgressMessage) return;
+
+      window._freediumLastReadingProgressMessage = message;
+      window.ReadingProgress.postMessage(message);
+    }
+
+    window._freediumReadingProgressFlush = function () {
+      clearTimeout(window._freediumReadingProgressTimer);
+      window._freediumReadingProgressTimer = null;
+      reportProgress();
+    };
 
     window._freediumReadingProgressHandler = function () {
       clearTimeout(window._freediumReadingProgressTimer);
       window._freediumReadingProgressTimer = setTimeout(function () {
-        const root = document.documentElement;
-        const height = Math.max(root.scrollHeight, document.body.scrollHeight);
-        const scrollable = Math.max(1, height - window.innerHeight);
-        const progress = Math.min(1, Math.max(0, window.scrollY / scrollable));
-        window.ReadingProgress.postMessage(progress.toFixed(3));
+        window._freediumReadingProgressTimer = null;
+        reportProgress();
       }, 400);
+    };
+
+    window._freediumReadingProgressVisibilityHandler = function () {
+      if (document.visibilityState === "hidden") {
+        window._freediumReadingProgressFlush();
+      }
+    };
+
+    window._freediumReadingProgressPageHideHandler = function () {
+      window._freediumReadingProgressFlush();
     };
 
     window.addEventListener("scroll", window._freediumReadingProgressHandler, {
       passive: true,
     });
+    document.addEventListener(
+      "visibilitychange",
+      window._freediumReadingProgressVisibilityHandler
+    );
+    window.addEventListener(
+      "pagehide",
+      window._freediumReadingProgressPageHideHandler
+    );
   }
 
   function extractArticleMeta() {

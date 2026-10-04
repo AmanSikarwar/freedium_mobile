@@ -58,6 +58,10 @@ class Webview() extends _$Webview {
   int _historyRecordToken = 0;
   bool _hasRecordedHistoryForCurrentPage = false;
   double _latestReadingProgress = 0;
+  String? _progressDocumentUrl;
+  Future<void>? _readingProgressFlush;
+  bool _isDisposed = false;
+  bool _readingProgressAvailable = false;
   bool _themeFailed = false;
   Timer? _themeAckTimer;
   Timer? _pageLoadTimer;
@@ -88,6 +92,7 @@ class Webview() extends _$Webview {
     );
 
     ref.onDispose(() {
+      _isDisposed = true;
       _themeAckTimer?.cancel();
       _pageLoadTimer?.cancel();
       final controller = _controller;
@@ -132,6 +137,10 @@ class Webview() extends _$Webview {
   void clearUserMessage() {
     state = state.copyWith(userMessage: null);
   }
+
+  /// Persists the current page's scroll position before the reader is hidden
+  /// or navigates away.
+  Future<void> flushReadingProgress() => _flushReadingProgressDebounced();
 
   WebViewController createController({String? baseUrl}) =>
       _createController(baseUrl: baseUrl);

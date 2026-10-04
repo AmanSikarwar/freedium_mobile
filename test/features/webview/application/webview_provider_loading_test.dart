@@ -1,16 +1,17 @@
-import 'package:freedium_mobile/core/services/cache_service.dart';
-import 'package:webview_flutter/webview_flutter.dart' show WebViewController;
-import 'package:flutter_test/flutter_test.dart';
-
+import 'dart:async';
 import 'dart:convert';
 
-import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_ui/material_ui.dart';
-import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:freedium_mobile/core/services/cache_service.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
+import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:webview_flutter/webview_flutter.dart' show WebViewController;
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 import '../webview_test_helpers.dart';
@@ -18,8 +19,10 @@ import '../webview_test_helpers.dart';
 void main() {
   late ProviderContainer container;
   late FakeWebviewPlatform platform;
+  var containerDisposed = false;
   final provider = webviewProvider(TestFixtures.storyUrl);
   setUp(() async {
+    containerDisposed = false;
     container = prefsContainer(
       await mockPrefs({
         'freedium_mirrors': [
@@ -46,7 +49,9 @@ void main() {
     );
     notifier.createController();
   });
-  tearDown(() => container.dispose());
+  tearDown(() {
+    if (!containerDisposed) container.dispose();
+  });
 
   testWidgets('an unfinished page triggers bounded mirror failover', (
     tester,
@@ -74,6 +79,120 @@ void main() {
     expect(container.read(provider).currentUrl, pending);
     expect(container.read(provider).isPageLoaded, isFalse);
   });
+
+  test(
+    'main-frame navigation waits for an immediate progress snapshot',
+    () async {
+      await container
+          .read(historyProvider.notifier)
+          .addHistory(TestFixtures.storyUrl, 'Story');
+      final currentUrl = platform.controller.requests.single.toString();
+      platform.delegate.start(currentUrl);
+      platform.controller.channels['ArticleMeta']!.onMessageReceived(
+        const JavaScriptMessage(message: '{"title":"Story"}'),
+      );
+      platform.delegate.finish(currentUrl);
+      await Future<void>.delayed(Duration.zero);
+
+      final snapshot = Completer<Object>();
+      platform.controller.readingProgressCompleter = snapshot;
+      final nextUrl = buildFreediumArticleUri(
+        mirrorUrl: SettingsState.defaultMirrors.single.url,
+        articleUrl: 'https://medium.com/next/story',
+      ).toString();
+      final navigation = platform.delegate.navigationRequest!(
+        NavigationRequest(url: nextUrl, isMainFrame: true),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(platform.controller.returningJavaScript, isNotEmpty);
+      expect(container.read(provider).currentUrl, currentUrl);
+
+      snapshot.complete(0.73);
+      expect(await navigation, NavigationDecision.navigate);
+      expect(container.read(provider).currentUrl, nextUrl);
+      expect(
+        container
+            .read(historyProvider)
+            .requireValue
+            .singleWhere((item) => item.url == TestFixtures.storyUrl)
+            .progress,
+        0.73,
+      );
+    },
+  );
+
+  testWidgets('main-frame navigation continues if progress snapshot stalls', (
+    tester,
+  ) async {
+    final currentUrl = platform.controller.requests.single.toString();
+    platform.delegate.start(currentUrl);
+    platform.controller.channels['ArticleMeta']!.onMessageReceived(
+      const JavaScriptMessage(message: '{"title":"Story"}'),
+    );
+    platform.delegate.finish(currentUrl);
+    await tester.pump();
+
+    platform.controller.readingProgressCompleter = Completer<Object>();
+    final nextUrl = buildFreediumArticleUri(
+      mirrorUrl: SettingsState.defaultMirrors.single.url,
+      articleUrl: 'https://medium.com/next/story',
+    ).toString();
+    final navigation = platform.delegate.navigationRequest!(
+      NavigationRequest(url: nextUrl, isMainFrame: true),
+    );
+
+    await tester.pump(const Duration(seconds: 1));
+    expect(await navigation, NavigationDecision.navigate);
+    expect(container.read(provider).currentUrl, nextUrl);
+    container.dispose();
+    containerDisposed = true;
+  });
+
+  test(
+    'stale navigation cannot overwrite a page that already replaced it',
+    () async {
+      await container
+          .read(historyProvider.notifier)
+          .addHistory(TestFixtures.storyUrl, 'Story');
+      final currentUrl = platform.controller.requests.single.toString();
+      platform.delegate.start(currentUrl);
+      platform.controller.channels['ArticleMeta']!.onMessageReceived(
+        const JavaScriptMessage(message: '{"title":"Story"}'),
+      );
+      platform.delegate.finish(currentUrl);
+      await Future<void>.delayed(Duration.zero);
+
+      final snapshot = Completer<Object>();
+      platform.controller.readingProgressCompleter = snapshot;
+      final staleNavigationUrl = buildFreediumArticleUri(
+        mirrorUrl: SettingsState.defaultMirrors.single.url,
+        articleUrl: 'https://medium.com/stale/story',
+      ).toString();
+      final navigation = platform.delegate.navigationRequest!(
+        NavigationRequest(url: staleNavigationUrl, isMainFrame: true),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      final nextUrl = buildFreediumArticleUri(
+        mirrorUrl: SettingsState.defaultMirrors.single.url,
+        articleUrl: 'https://medium.com/next/story',
+      ).toString();
+      platform.delegate.start(nextUrl);
+      snapshot.complete(0.73);
+      expect(await navigation, NavigationDecision.prevent);
+
+      expect(
+        container
+            .read(historyProvider)
+            .requireValue
+            .singleWhere((item) => item.url == TestFixtures.storyUrl)
+            .progress,
+        0,
+      );
+      expect(container.read(provider).currentUrl, nextUrl);
+    },
+  );
 
   test('closing readers retains cache until an explicit clear', () async {
     final controller = WebViewController.fromPlatform(platform.controller);

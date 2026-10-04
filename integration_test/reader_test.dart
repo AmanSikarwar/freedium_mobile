@@ -184,6 +184,44 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
       )).toString(),
     );
     expect(restored, closeTo(progress, 0.06));
+
+    // Leave before the debounce can deliver a channel message. The native
+    // flush must capture the final scroll position before disposing the page.
+    await reopened.runJavaScript('''
+window.scrollTo(0, document.documentElement.scrollHeight * 0.75);
+window.dispatchEvent(new Event('scroll'));
+clearTimeout(window._freediumReadingProgressTimer);
+''');
+    await binding.handlePopRoute();
+    await _waitFor(tester, () => find.byType(WebViewWidget).evaluate().isEmpty);
+    final quickExitProgress = await container
+        .read(historyProvider.notifier)
+        .readingProgressFor(_article);
+    expect(quickExitProgress, greaterThan(0.65));
+
+    await _waitFor(
+      tester,
+      () => find.byType(TextFormField).evaluate().isNotEmpty,
+    );
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextFormField), _article);
+    await tester.tap(find.text('Read Article'));
+    await _waitFor(
+      tester,
+      () => container.read(webviewProvider(_article)).isThemeApplied,
+    );
+    await tester.pump(const Duration(seconds: 1));
+    final quickReopened = tester
+        .widget<WebViewWidget>(find.byType(WebViewWidget))
+        .platform
+        .params
+        .controller;
+    final quickRestored = double.parse(
+      (await quickReopened.runJavaScriptReturningResult(
+        'window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)',
+      )).toString(),
+    );
+    expect(quickRestored, closeTo(quickExitProgress, 0.06));
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 250));
   });

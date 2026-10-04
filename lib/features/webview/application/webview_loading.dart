@@ -1,6 +1,25 @@
 part of 'webview_provider.dart';
 
 extension _WebviewLoading on Webview {
+  Future<void> _navigateAfterProgressFlush(
+    Uri targetUrl, {
+    String? baseUrl,
+  }) async {
+    final previousUrl = _progressDocumentUrl;
+    final previousToken = _historyRecordToken;
+    if (_readingProgressAvailable) {
+      await flushReadingProgress();
+    }
+    if (_isDisposed ||
+        previousUrl != _progressDocumentUrl ||
+        previousToken != _historyRecordToken) {
+      return;
+    }
+
+    _preparePageLoad(targetUrl.toString(), baseUrl: baseUrl);
+    await _controller?.loadRequest(targetUrl);
+  }
+
   void _preparePageLoad(String url, {String? baseUrl}) {
     _themeFailed = false;
     _themeAckTimer?.cancel();
@@ -8,6 +27,8 @@ extension _WebviewLoading on Webview {
     _historyRecordToken++;
     _hasRecordedHistoryForCurrentPage = false;
     _latestReadingProgress = 0;
+    _progressDocumentUrl = url;
+    _readingProgressAvailable = false;
     _readerState = _readerState.copyWith(
       activeBaseUrl: baseUrl ?? _readerState.activeBaseUrl,
       currentUrl: url,
@@ -75,8 +96,7 @@ extension _WebviewLoading on Webview {
         mirrorUrl: nextMirror.url,
         articleUrl: articleUrl(),
       );
-      _preparePageLoad(newUrl.toString(), baseUrl: nextMirror.url);
-      _controller?.loadRequest(newUrl);
+      unawaited(_navigateAfterProgressFlush(newUrl, baseUrl: nextMirror.url));
     } else {
       _updateInitialLoadState();
     }

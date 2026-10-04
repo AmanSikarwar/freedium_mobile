@@ -36,7 +36,9 @@ class const WebviewScreen({required this.url, super.key})
   ConsumerState<WebviewScreen> createState() => _WebviewScreenState();
 }
 
-class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
+class _WebviewScreenState()
+    extends ConsumerState<WebviewScreen>
+    with WidgetsBindingObserver {
   String get _articleUrl =>
       ref.read(webviewProvider(widget.url).notifier).articleUrl();
 
@@ -47,6 +49,7 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeWebView();
     });
@@ -83,7 +86,19 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (!mounted) return;
+    if (state == AppLifecycleState.hidden ||
+        state == AppLifecycleState.paused) {
+      unawaited(
+        ref.read(webviewProvider(widget.url).notifier).flushReadingProgress(),
+      );
+    }
   }
 
   Future<void> _toggleBookmark(
@@ -172,9 +187,12 @@ class _WebviewScreenState() extends ConsumerState<WebviewScreen> {
             .shouldUseAppLevelBackNavigation();
 
         if (!shouldUseAppBack && await webviewNotifier.canGoBack()) {
-          webviewNotifier.goBack();
+          await webviewNotifier.goBack();
           return;
         }
+
+        await webviewNotifier.flushReadingProgress();
+        if (!mounted) return;
 
         if (navigator.canPop()) {
           if (mounted) {
