@@ -15,6 +15,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
+import 'package:webview_flutter_android/webview_flutter_android.dart';
 
 const _article = 'https://medium.com/native-reader';
 const _nextArticle = 'https://medium.com/native-next';
@@ -53,6 +54,8 @@ void main() {
 <title>${next ? 'Next article' : 'Native article'}</title></head><body>
 <article><h1>${next ? 'Next article' : 'Native article'}</h1>
 <a id="next" href="$_mirror/$_nextArticle">Next article</a>
+<pre class="shiki"><code><span style="color:#d73a49">const initial = 1;</span></code>
+<button class="code-copy-btn" data-code="const initial = 1;">Copy code</button></pre>
 ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p>').join()}
 </article></body></html>''');
       }
@@ -102,17 +105,54 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
     );
     expect(failedRequests, greaterThan(0));
     expect(container.read(webviewProvider(_article)).activeBaseUrl, _mirror);
-    final controller = tester
-        .widget<WebViewWidget>(find.byType(WebViewWidget))
-        .platform
-        .params
-        .controller;
+    final reader = tester.widget<WebViewWidget>(find.byType(WebViewWidget));
+    expect(
+      (reader.platform.params as AndroidWebViewWidgetCreationParams)
+          .displayWithHybridComposition,
+      isTrue,
+    );
+    final controller = reader.platform.params.controller;
     await _waitFor(
       tester,
       () =>
           container.read(webviewProvider(_article)).articleMeta?.title ==
           'Native article',
     );
+    // Exercise native touch dispatch through the composition mode, as well as
+    // the existing programmatic progress/navigation checks below.
+    await tester.fling(find.byType(WebViewWidget), const Offset(0, -500), 1200);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(
+      double.parse(
+        (await controller.runJavaScriptReturningResult('window.scrollY'))
+            .toString(),
+      ),
+      greaterThan(0),
+    );
+    // Hydrated code blocks must get the same colors and copy actions as the
+    // initial document, without relying on delayed full-document rescans.
+    await controller.runJavaScript(r'''
+document.querySelector('article').insertAdjacentHTML('beforeend',
+  '<pre class="shiki"><code><span style="color:#d73a49">const late = 2;</span></code>' +
+  '<button class="code-copy-btn" data-code="const late = 2;">Copy code</button></pre>');
+''');
+    await tester.pump(const Duration(milliseconds: 500));
+    const codeIsThemed = r'''
+(() => {
+  const probe = document.createElement('span');
+  probe.style.color = 'var(--app-error)';
+  document.body.appendChild(probe);
+  const expected = getComputedStyle(probe).color;
+  probe.remove();
+  const tokens = [...document.querySelectorAll('pre.shiki code span')];
+  const buttons = [...document.querySelectorAll('button.code-copy-btn')];
+  return tokens.length === 2 && tokens.every(el => getComputedStyle(el).color === expected)
+    && buttons.length === 2 && buttons.every(el => el.hasAttribute('data-freedium-copy-bound'));
+})()
+''';
+    expect(await controller.runJavaScriptReturningResult(codeIsThemed), isTrue);
+    await container.read(webviewProvider(_article).notifier).updateFontSize(22);
+    expect(await controller.runJavaScriptReturningResult(codeIsThemed), isTrue);
     await controller.runJavaScript(
       'window.scrollTo(0, document.documentElement.scrollHeight * 0.4)',
     );

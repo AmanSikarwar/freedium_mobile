@@ -2,6 +2,7 @@ package io.github.amansikarwar.freedium_mobile
 
 import android.app.Activity
 import android.content.Intent
+import android.os.Build
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -14,6 +15,14 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "freedium/webview")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "getAndroidSdkVersion") {
+                    result.success(Build.VERSION.SDK_INT)
+                } else {
+                    result.notImplemented()
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "freedium/bookmark_backup")
             .setMethodCallHandler { call, result ->
                 if (call.method != "openBackup") {

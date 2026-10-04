@@ -9,6 +9,7 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/reader_loading_overlays.dart';
+import 'package:freedium_mobile/features/webview/presentation/widgets/reader_webview.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
@@ -53,7 +54,7 @@ class _WebviewScreenState()
       ref.read(webviewProvider(widget.url).notifier).articleUrl();
 
   bool _isVisible = true;
-  WebViewController? _controller;
+  WebViewWidget? _webViewWidget;
   ColorScheme? _prevColorScheme;
 
   @override
@@ -79,8 +80,12 @@ class _WebviewScreenState()
 
     if (!mounted) return;
     webviewNotifier.setThemeInjector(themeInjector);
-    _controller = webviewNotifier.createController(baseUrl: initialMirrorUrl);
-    setState(() {});
+    final controller = webviewNotifier.createController(
+      baseUrl: initialMirrorUrl,
+    );
+    final webViewWidget = await createReaderWebView(controller);
+    if (!mounted) return;
+    setState(() => _webViewWidget = webViewWidget);
   }
 
   @override
@@ -269,11 +274,11 @@ class _WebviewScreenState()
       body: SafeArea(
         child: Stack(
           children: [
-            if (_controller != null && !webviewState.hasError)
+            if (_webViewWidget != null && !webviewState.hasError)
               Visibility(
                 visible: !hideThemedWebView,
                 maintainState: true,
-                child: WebViewWidget(controller: _controller!),
+                child: _webViewWidget!,
               ),
             ReaderProgressIndicator(url: widget.url),
             ReaderArticleShimmer(
