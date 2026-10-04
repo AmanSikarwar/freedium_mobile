@@ -17,7 +17,7 @@ import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.
 import 'package:freedium_mobile/features/home/presentation/widgets/continue_reading_section.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
-import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
+import 'package:freedium_mobile/core/routing/app_navigation.dart';
 
 class const HomeScreen({super.key}) extends ConsumerStatefulWidget {
   @override
@@ -256,9 +256,7 @@ class _HomeScreenState()
                               _urlController.text = url;
                               homeNotifier.setUrl(url);
                               Navigator.of(context).push(
-                                MaterialPageRoute<void>(
-                                  builder: (context) => WebviewScreen(url: url),
-                                ),
+                                webviewRoute(url),
                               );
                             }
                           },
@@ -268,9 +266,7 @@ class _HomeScreenState()
                       ContinueReadingSection(
                         history: history,
                         onArticleTap: (article) => Navigator.of(context).push(
-                          MaterialPageRoute<void>(
-                            builder: (_) => WebviewScreen(url: article.url),
-                          ),
+                          webviewRoute(article.url),
                         ),
                       ),
                       ActionChip(

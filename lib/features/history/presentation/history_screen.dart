@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
+import 'package:freedium_mobile/core/routing/app_navigation.dart';
 import 'package:freedium_mobile/shared/utils/date_utils.dart' as du;
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 import 'package:freedium_mobile/shared/widgets/library_clear_dialog.dart';
@@ -151,9 +151,7 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                     removeFailMessage: 'Failed to remove history entry',
                     onTap: (item) => Navigator.push(
                       context,
-                      MaterialPageRoute<void>(
-                        builder: (_) => WebviewScreen(url: item.url),
-                      ),
+                      webviewRoute(item.url),
                     ),
                   ),
             loading: () => const Center(child: CircularProgressIndicator()),

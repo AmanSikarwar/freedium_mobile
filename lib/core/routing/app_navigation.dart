@@ -10,6 +10,10 @@ class CurrentRouteNameObserver() extends NavigatorObserver {
   String? get currentRouteName =>
       _routeStack.isEmpty ? null : _routeStack.last.settings.name;
 
+  Route<dynamic>? routeNamed(String name) {
+    return _routeStack.where((route) => route.settings.name == name).lastOrNull;
+  }
+
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
     super.didPush(route, previousRoute);
@@ -59,6 +63,12 @@ final currentRouteNameObserver = CurrentRouteNameObserver();
 @visibleForTesting
 String incomingWebviewRouteName(String url) => '/webview/$url';
 
+/// All reader entry points use the same identity for a URL-scoped controller.
+MaterialPageRoute<void> webviewRoute(String url) => MaterialPageRoute<void>(
+  builder: (_) => WebviewScreen(url: url),
+  settings: RouteSettings(name: incomingWebviewRouteName(url)),
+);
+
 bool shouldSkipIncomingWebviewNavigation({
   required String? currentRouteName,
   required String targetUrl,
@@ -66,24 +76,20 @@ bool shouldSkipIncomingWebviewNavigation({
   return currentRouteName == incomingWebviewRouteName(targetUrl);
 }
 
-/// Pushes a [WebviewScreen] for [url] unless it is already the top route.
-/// Returns `true` when a navigation was pushed.
+/// Opens [url], reusing its existing reader route if one is still mounted.
+/// Returns `true` when the request was handled.
 bool navigateToWebview(String url) {
   final navigator = navigatorKey.currentState;
   if (navigator == null || !navigator.context.mounted) return false;
 
-  if (shouldSkipIncomingWebviewNavigation(
-    currentRouteName: currentRouteNameObserver.currentRouteName,
-    targetUrl: url,
-  )) {
-    return false;
+  final existing = currentRouteNameObserver.routeNamed(
+    incomingWebviewRouteName(url),
+  );
+  if (existing != null) {
+    navigator.popUntil((route) => identical(route, existing));
+    return true;
   }
 
-  navigator.push(
-    MaterialPageRoute<void>(
-      builder: (context) => WebviewScreen(url: url),
-      settings: RouteSettings(name: incomingWebviewRouteName(url)),
-    ),
-  );
+  navigator.push(webviewRoute(url));
   return true;
 }
