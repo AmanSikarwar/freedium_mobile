@@ -149,10 +149,8 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                     onRemove: (item) =>
                         ref.read(historyProvider.notifier).removeHistory(item),
                     removeFailMessage: 'Failed to remove history entry',
-                    onTap: (item) => Navigator.push(
-                      context,
-                      webviewRoute(item.url),
-                    ),
+                    onTap: (item) =>
+                        Navigator.push(context, webviewRoute(item.url)),
                   ),
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (error, _) => LibraryEmptyState(
