@@ -33,7 +33,7 @@ final class BookmarksProvider
   Bookmarks create() => Bookmarks();
 }
 
-String _$bookmarksHash() => r'0ba109bfa65d184db3761bd8a2791459c2abda8f';
+String _$bookmarksHash() => r'494224792a9f819d735130c6d48b67ed82644f4f';
 
 abstract class _$Bookmarks extends $AsyncNotifier<List<BookmarkedArticle>> {
   FutureOr<List<BookmarkedArticle>> build();
@@ -98,7 +98,7 @@ final class BookmarkFoldersProvider
   BookmarkFolders create() => BookmarkFolders();
 }
 
-String _$bookmarkFoldersHash() => r'4fc80aa1307e9ec56a7b2c14d8f7dd18849c82f7';
+String _$bookmarkFoldersHash() => r'9c273e490a4db979cf4df21c4e367946bd14145a';
 
 /// Stored bookmark folder list plus coordination with article folders.
 ///
