@@ -24,6 +24,34 @@ Android back key. Run it after the Flutter test and reinstall the normal debug
 APK as shown above; the integration APK has a test entry point. CI runs both
 checks on an API 35 emulator and gates release verification on them.
 
+## Release APK smoke
+
+`tool/build_release_apks.sh [VERSION [BUILD_NUMBER]]` builds the obfuscated,
+split-ABI release APKs using the release signing configuration in
+`android/key.properties`. On an x86_64 API 35 emulator, install the produced
+APK and run the release smoke check:
+
+```sh
+bash tool/build_release_apks.sh
+adb install -r build/app/outputs/flutter-apk/app-x86_64-release.apk
+python3 tool/android_release_smoke.py
+```
+
+The smoke script runs `pm clear` to cover the cold-launch onboarding path, so
+use a disposable emulator; it removes Freedium's app data from that device. If
+multiple Android devices are connected, select the target with `ANDROID_SERIAL`
+before install and smoke so the `adb` commands target the same emulator. The
+build helper reads the configured signing files without changing them; a
+disposable checkout is only needed if you must create a temporary signing key.
+
+The check opens HTTPS Medium URLs through cold SEND, warm VIEW, and warm SEND
+intents, verifies that Freedium's reader screen is foreground, then checks Back
+returns to Home. It intentionally does not assert live article content or
+mirror availability. CI separately exercises mirror switching with local HTTP
+fixtures. The release workflow builds and signs the APKs once, smoke-tests the
+uploaded x86_64 APK, and publishes those same APK artifacts only after the
+smoke job passes. The smoke job has no production signing secrets.
+
 ## Manual device checks
 
 These checks still require a person with a device:
