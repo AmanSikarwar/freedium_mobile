@@ -8,8 +8,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmark_io.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmark_file_picker.dart';
+import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/widgets/manage_folders_sheet.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -246,6 +248,86 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Restored'), findsOneWidget);
       expect(BookmarksService(prefs).getBookmarks(), hasLength(1));
+    });
+
+    testWidgets('manages article-only folders past the saved-folder limit', (
+      tester,
+    ) async {
+      final article = BookmarkedArticle(
+        url: TestFixtures.storyUrl,
+        title: 'Imported story',
+        savedAt: TestFixtures.seedDate,
+        folder: 'Alpha imported',
+      );
+      final initialPrefs = _seed([article]);
+      initialPrefs['bookmark_folders'] = [
+        for (var i = 0; i < maxBookmarkFolders; i++) 'Saved $i',
+      ];
+      final prefs = await pumpApp(
+        tester,
+        child: const BookmarksScreen(),
+        initialPrefs: initialPrefs,
+      );
+
+      await tester.tap(find.byTooltip('Manage folders'));
+      await tester.pumpAndSettle();
+      expect(
+        find.text(
+          '$maxBookmarkFolders/$maxBookmarkFolders saved · '
+          '${maxBookmarkFolders + 1} total',
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.descendant(
+          of: find.byType(ManageFoldersSheet),
+          matching: find.text('Alpha imported'),
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byTooltip('Rename').first);
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.descendant(
+          of: find.byType(AlertDialog),
+          matching: find.byType(TextField),
+        ),
+        'Renamed imported',
+      );
+      await tester.tap(find.widgetWithText(FilledButton, 'Rename'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(ManageFoldersSheet),
+          matching: find.text('Renamed imported'),
+        ),
+        findsOneWidget,
+      );
+      expect(
+        find.text(
+          '$maxBookmarkFolders/$maxBookmarkFolders saved · '
+          '${maxBookmarkFolders + 1} total',
+        ),
+        findsOneWidget,
+      );
+
+      await tester.tap(find.byTooltip('Delete').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.pumpAndSettle();
+      expect(
+        find.descendant(
+          of: find.byType(ManageFoldersSheet),
+          matching: find.text('Renamed imported'),
+        ),
+        findsNothing,
+      );
+      expect(
+        BookmarksService(prefs).getFolders(),
+        hasLength(maxBookmarkFolders),
+      );
+      expect(BookmarksService(prefs).getBookmarks().single.folder, isNull);
     });
 
     testWidgets('filters bookmarks by folder chips', (tester) async {

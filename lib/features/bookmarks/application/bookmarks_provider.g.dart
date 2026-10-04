@@ -98,7 +98,7 @@ final class BookmarkFoldersProvider
   BookmarkFolders create() => BookmarkFolders();
 }
 
-String _$bookmarkFoldersHash() => r'637f688dea8735688e38e5c902042c3aa4715f8e';
+String _$bookmarkFoldersHash() => r'4fc80aa1307e9ec56a7b2c14d8f7dd18849c82f7';
 
 /// Stored bookmark folder list plus coordination with article folders.
 ///

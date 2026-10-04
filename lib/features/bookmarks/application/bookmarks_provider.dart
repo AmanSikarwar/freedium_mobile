@@ -366,6 +366,17 @@ class Bookmarks() extends _$Bookmarks {
 @Riverpod(keepAlive: true, retry: _neverRetrySnapshotRead)
 class BookmarkFolders() extends _$BookmarkFolders {
   SerialTaskQueue get _writes => ref.read(bookmarkWritesProvider);
+
+  Future<List<BookmarkedArticle>?> _readArticles() async {
+    try {
+      final articles = await ref.read(bookmarksProvider.future);
+      return ref.mounted ? articles : null;
+    } catch (e) {
+      debugPrint('Bookmarks unavailable for folder update: $e');
+      return null;
+    }
+  }
+
   Future<BookmarksService?> _service() async {
     try {
       await future;
@@ -384,9 +395,10 @@ class BookmarkFolders() extends _$BookmarkFolders {
     return BookmarksService(prefs).getFolders();
   }
 
-  /// Adds [name] to the stored list unless present. Idempotent: duplicates
-  /// (case-insensitive) report success. Returns false for blank names, a
-  /// full list, or persistence failures.
+  /// Adds [name] to the stored list unless already stored. Case-insensitive
+  /// stored duplicates report success. At capacity, an article-referenced
+  /// folder is already visible and also reports success without a write.
+  /// Returns false for blank names, other full-list cases, or write failures.
   Future<bool> ensureFolder(String name) =>
       _writes.run(() => _ensureFolder(name));
 
@@ -397,8 +409,15 @@ class BookmarkFolders() extends _$BookmarkFolders {
     if (normalized == null) return false;
 
     final current = state.value ?? const <String>[];
+    final articles = await _readArticles();
+    if (articles == null) return false;
+    final available = mergeBookmarkFolders(current, [
+      for (final article in articles) article.folder,
+    ]);
     if (isBookmarkFolderDuplicate(normalized, current)) return true;
-    if (current.length >= maxBookmarkFolders) return false;
+    if (current.length >= maxBookmarkFolders) {
+      return isBookmarkFolderDuplicate(normalized, available);
+    }
 
     final next = [...current, normalized]
       ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
@@ -414,8 +433,9 @@ class BookmarkFolders() extends _$BookmarkFolders {
 
   Future<bool> createFolder(String name) => ensureFolder(name);
 
-  /// Renames the stored folder [oldName] to [newName] and rewrites matching
-  /// article folders. Articles keep their content; nothing is deleted.
+  /// Renames a visible folder [oldName] and rewrites matching article folders.
+  /// Reference-only folders remain reference-only, so this does not consume a
+  /// slot in the capped stored-folder list. Articles keep their content.
   Future<bool> renameFolder(String oldName, String newName) =>
       _writes.run(() => _renameFolder(oldName, newName));
 
@@ -427,19 +447,23 @@ class BookmarkFolders() extends _$BookmarkFolders {
     if (oldNormalized == null || newNormalized == null) return false;
 
     final current = state.value ?? const <String>[];
-    if (!current.any((f) => f.toLowerCase() == oldNormalized.toLowerCase())) {
+    final articles = await _readArticles();
+    if (articles == null) return false;
+    final available = mergeBookmarkFolders(current, [
+      for (final article in articles) article.folder,
+    ]);
+    if (!available.any((f) => f.toLowerCase() == oldNormalized.toLowerCase())) {
       return false;
     }
     if (isBookmarkFolderDuplicate(
       newNormalized,
-      current,
+      available,
       exclude: oldNormalized,
     )) {
       return false;
     }
 
     final bookmarks = ref.read(bookmarksProvider.notifier);
-    final articles = await ref.read(bookmarksProvider.future);
     final updatedArticles = [
       for (final article in articles)
         if (article.folder?.toLowerCase() == oldNormalized.toLowerCase())
@@ -454,7 +478,7 @@ class BookmarkFolders() extends _$BookmarkFolders {
           newNormalized
         else
           f,
-    ];
+    ]..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
     try {
       await service.saveLibrary(updatedArticles, next);
       if (!ref.mounted) return false;
@@ -467,7 +491,7 @@ class BookmarkFolders() extends _$BookmarkFolders {
     }
   }
 
-  /// Deletes the stored folder [name] and moves its articles to Unsorted.
+  /// Deletes a visible folder [name] and moves its articles to Unsorted.
   Future<bool> deleteFolder(String name) =>
       _writes.run(() => _deleteFolder(name));
 
@@ -478,12 +502,16 @@ class BookmarkFolders() extends _$BookmarkFolders {
     if (normalized == null) return false;
 
     final current = state.value ?? const <String>[];
-    if (!current.any((f) => f.toLowerCase() == normalized.toLowerCase())) {
+    final articles = await _readArticles();
+    if (articles == null) return false;
+    final available = mergeBookmarkFolders(current, [
+      for (final article in articles) article.folder,
+    ]);
+    if (!available.any((f) => f.toLowerCase() == normalized.toLowerCase())) {
       return false;
     }
 
     final bookmarks = ref.read(bookmarksProvider.notifier);
-    final articles = await ref.read(bookmarksProvider.future);
     final updatedArticles = [
       for (final article in articles)
         if (article.folder?.toLowerCase() == normalized.toLowerCase())

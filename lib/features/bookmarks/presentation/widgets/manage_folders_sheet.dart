@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/widgets/rename_bookmark_folder_dialog.dart';
 
 /// Shows the manage-folders bottom sheet (create, rename, delete).
 Future<void> showManageFoldersSheet(BuildContext context) {
@@ -49,33 +50,10 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
   }
 
   Future<void> _rename(String folder) async {
-    final controller = TextEditingController(text: folder);
     final newName = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Rename folder'),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          maxLength: maxBookmarkFolderNameLength,
-          decoration: const InputDecoration(
-            hintText: 'Folder name',
-            border: OutlineInputBorder(),
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(dialogContext, controller.text),
-            child: const Text('Rename'),
-          ),
-        ],
-      ),
+      builder: (_) => RenameBookmarkFolderDialog(folder: folder),
     );
-    controller.dispose();
     if (newName == null || !mounted) return;
     final didRename = await ref
         .read(bookmarkFoldersProvider.notifier)
@@ -124,6 +102,7 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final foldersAsync = ref.watch(bookmarkFoldersProvider);
+    final folders = ref.watch(allBookmarkFoldersProvider);
     final bookmarks =
         ref.watch(bookmarksProvider).value ?? const <BookmarkedArticle>[];
     final counts = <String, int>{};
@@ -157,7 +136,8 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                   ),
                 ),
                 Text(
-                  '${foldersAsync.value?.length ?? 0} of $maxBookmarkFolders',
+                  '${foldersAsync.value?.length ?? 0}/$maxBookmarkFolders '
+                  'saved · ${folders.length} total',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
@@ -203,7 +183,7 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
             const SizedBox(height: 8),
             Flexible(
               child: foldersAsync.when(
-                data: (folders) => folders.isEmpty
+                data: (_) => folders.isEmpty
                     ? Padding(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         child: Column(

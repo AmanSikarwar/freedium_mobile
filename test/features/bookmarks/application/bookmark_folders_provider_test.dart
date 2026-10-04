@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -53,6 +55,96 @@ void main() {
         hasLength(maxBookmarkFolders),
       );
     });
+
+    test(
+      'manages imported article folders beyond the stored-folder cap',
+      () async {
+        final storedFolders = [
+          for (var i = 0; i < maxBookmarkFolders; i++) 'Saved $i',
+        ]..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+        final articles = [
+          BookmarkedArticle(
+            url: TestFixtures.storyUrl,
+            title: 'Imported story',
+            savedAt: TestFixtures.seedDate,
+            folder: 'Alpha imported',
+          ),
+          BookmarkedArticle(
+            url: 'https://medium.com/used-folder',
+            title: 'Another story',
+            savedAt: TestFixtures.seedDate,
+            folder: 'Already used',
+          ),
+        ];
+        container.dispose();
+        final prefs = await mockPrefs({
+          'bookmark_folders': storedFolders,
+          'bookmarked_articles': [
+            for (final article in articles) jsonEncode(article.toJson()),
+          ],
+        });
+        container = prefsContainer(prefs);
+        await container.read(bookmarksProvider.future);
+        await container.read(bookmarkFoldersProvider.future);
+
+        final folders = container.read(bookmarkFoldersProvider.notifier);
+        expect(container.read(allBookmarkFoldersProvider), [
+          'Alpha imported',
+          'Already used',
+          ...storedFolders,
+        ]);
+        expect(await folders.ensureFolder(' alpha imported '), isTrue);
+        expect(
+          await folders.renameFolder('Alpha imported', 'Already used'),
+          isFalse,
+        );
+        expect(
+          await folders.renameFolder('Alpha imported', 'Renamed imported'),
+          isTrue,
+        );
+        expect(
+          container.read(bookmarkFoldersProvider).requireValue,
+          storedFolders,
+        );
+        expect(
+          container.read(allBookmarkFoldersProvider),
+          contains('Renamed imported'),
+        );
+        expect(
+          container
+              .read(bookmarksProvider)
+              .requireValue
+              .firstWhere((article) => article.url == TestFixtures.storyUrl)
+              .folder,
+          'Renamed imported',
+        );
+        expect(
+          BookmarksService(prefs).getFolders(),
+          hasLength(maxBookmarkFolders),
+        );
+
+        expect(await folders.deleteFolder('Renamed imported'), isTrue);
+        expect(
+          container.read(bookmarkFoldersProvider).requireValue,
+          storedFolders,
+        );
+        expect(
+          container.read(allBookmarkFoldersProvider),
+          isNot(contains('Renamed imported')),
+        );
+        expect(
+          BookmarksService(prefs)
+              .getBookmarks()
+              .firstWhere((article) => article.url == TestFixtures.storyUrl)
+              .folder,
+          isNull,
+        );
+        expect(
+          BookmarksService(prefs).getFolders(),
+          hasLength(maxBookmarkFolders),
+        );
+      },
+    );
 
     test('renames stored folders and rewrites article folders', () async {
       final bookmarks = container.read(bookmarksProvider.notifier);
