@@ -50,7 +50,11 @@ returns to Home. It intentionally does not assert live article content or
 mirror availability. CI separately exercises mirror switching with local HTTP
 fixtures. The release workflow builds and signs the APKs once, smoke-tests the
 uploaded x86_64 APK, and publishes those same APK artifacts only after the
-smoke job passes. The smoke job has no production signing secrets.
+smoke job passes. The smoke job has no production signing secrets. It also
+publishes a versioned symbol bundle with the APKs: Flutter/Dart symbols for all
+three ABIs and Android's R8 `mapping.txt`. Keep that bundle with its release;
+use the matching ABI symbol file with `flutter symbolize` and the R8 mapping
+with Android Retrace when decoding crashes.
 
 ## Manual device checks
 
