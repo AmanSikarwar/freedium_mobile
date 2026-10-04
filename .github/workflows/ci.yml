@@ -22,8 +22,8 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: Test reader progress lifecycle script
-        run: node --test test/js/reading_progress_test.mjs
+      - name: Test reader page scripts
+        run: node --test test/js/*.mjs
 
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2

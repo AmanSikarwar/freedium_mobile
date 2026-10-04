@@ -78,7 +78,7 @@ void main() {
         ColorScheme.fromSeed(seedColor: Colors.teal),
       );
 
-      expect(script, contains('recolorShikiTokens'));
+      expect(script, contains('recolorShikiToken'));
       expect(script, contains('SHIKI_ROLE_HEXES'));
       expect(script, contains('pre.shiki code span[style]'));
       // Canonical github-light/github-dark foregrounds are all mapped.

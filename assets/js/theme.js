@@ -2,6 +2,31 @@
   const THEME_MARKER = "data-freedium-theme-applied";
   const COPY_BUTTON_SELECTOR =
     ".hljs-copy, button.code-copy-btn[data-code], button[aria-label='Copy code'][data-code]";
+  const SHIKI_TOKEN_SELECTOR = "pre.shiki code span[style]";
+  const CODE_WORK_SELECTOR =
+    COPY_BUTTON_SELECTOR + ", " + SHIKI_TOKEN_SELECTOR;
+  const SHIKI_ROLE_HEXES = {
+    "on-surface": ["#24292e", "#e1e4e8"],
+    "on-surface-variant": ["#6a737d", "#586069", "#d1d5da"],
+    error: ["#d73a49", "#f97583", "#b31d28", "#fdaeb7"],
+    primary: ["#032f62", "#9ecbff", "#dbedff"],
+    tertiary: ["#6f42c1", "#b392f0", "#22863a", "#85e89d"],
+    secondary: ["#005cc5", "#79b8ff", "#e36209", "#ffab70"],
+  };
+  const SHIKI_ROLE_VARS = {
+    "on-surface": "--app-on-surface",
+    "on-surface-variant": "--app-on-surface-variant",
+    error: "--app-error",
+    primary: "--app-primary",
+    tertiary: "--app-tertiary",
+    secondary: "--app-secondary",
+  };
+  const SHIKI_HEX_TO_VAR = {};
+  Object.keys(SHIKI_ROLE_HEXES).forEach(function (role) {
+    SHIKI_ROLE_HEXES[role].forEach(function (hex) {
+      SHIKI_HEX_TO_VAR[hex] = "var(" + SHIKI_ROLE_VARS[role] + ")";
+    });
+  });
 
   if (document.documentElement.hasAttribute(THEME_MARKER)) {
     console.log("Freedium theme already applied, reapplying");
@@ -14,7 +39,13 @@
       el.remove();
     });
 
-  if (window._freediumCopyObserver) {
+  if (window._freediumCodeDomCleanup) {
+    try {
+      window._freediumCodeDomCleanup();
+    } catch (e) {
+      console.warn("Failed to clean up previous code observers:", e);
+    }
+  } else if (window._freediumCopyObserver) {
     try {
       window._freediumCopyObserver.disconnect();
       window._freediumCopyObserver = null;
@@ -52,7 +83,6 @@
       lockNativeThemeControls(isDark);
       installCopyButtonOverrides();
       installReadingProgressTracking();
-      recolorShikiTokens();
       notifyThemeApplied();
 
       setTimeout(extractArticleMeta, 800);
@@ -196,86 +226,198 @@
 
   function installCopyButtonOverrides() {
     try {
-      function overrideCopyButtons() {
-        document.querySelectorAll(COPY_BUTTON_SELECTOR).forEach(function (
-          button
-        ) {
-          if (button.getAttribute("data-freedium-copy-bound") === "true") {
-            return;
+      const pendingRoots = new Set();
+      let scheduledFrame = null;
+      let scheduledTimer = null;
+      let cleanupTimer = null;
+
+      function processCodeNode(node) {
+        if (node.matches(COPY_BUTTON_SELECTOR)) {
+          overrideCopyButton(node);
+        } else {
+          recolorShikiToken(node);
+        }
+      }
+
+      function processCodeSubtree(root) {
+        if (root.nodeType === 1 && root.matches(CODE_WORK_SELECTOR)) {
+          processCodeNode(root);
+        }
+
+        root.querySelectorAll(CODE_WORK_SELECTOR).forEach(processCodeNode);
+      }
+
+      function flushPendingRoots() {
+        scheduledFrame = null;
+        scheduledTimer = null;
+
+        const roots = Array.from(pendingRoots);
+        pendingRoots.clear();
+        const rootsInBatch = new Set(roots);
+        roots.forEach(function (root) {
+          let ancestor = root.parentNode;
+          while (ancestor && ancestor !== document) {
+            if (rootsInBatch.has(ancestor)) {
+              return;
+            }
+            ancestor = ancestor.parentNode;
           }
-
-          const codeContent = getCopyButtonText(button);
-          if (!codeContent) {
-            return;
+          if (root.isConnected) {
+            processCodeSubtree(root);
           }
-
-          const newButton = button.cloneNode(true);
-          newButton.setAttribute("type", "button");
-          newButton.setAttribute("data-freedium-copy-bound", "true");
-          newButton.setAttribute("aria-label", "Copy code");
-          newButton.contentCopy = codeContent;
-
-          button.parentNode.replaceChild(newButton, button);
-
-          newButton.addEventListener("click", function (event) {
-            event.preventDefault();
-            event.stopImmediatePropagation();
-
-            copyTextToClipboard(newButton.contentCopy || codeContent)
-              .then(function () {
-                setCopyButtonSuccess(newButton);
-                if (window.Toaster && window.Toaster.postMessage) {
-                  window.Toaster.postMessage("Text copied to clipboard");
-                }
-              })
-              .catch(function (err) {
-                console.error("Failed to copy text:", err);
-              });
-          });
         });
       }
 
-      setTimeout(overrideCopyButtons, 250);
-      setTimeout(recolorShikiTokens, 250);
-      setTimeout(overrideCopyButtons, 900);
-      setTimeout(recolorShikiTokens, 900);
-      setTimeout(overrideCopyButtons, 1600);
-      setTimeout(recolorShikiTokens, 1600);
+      function schedulePendingRoots() {
+        if (scheduledFrame !== null || scheduledTimer !== null) {
+          return;
+        }
 
-      window._freediumCopyObserver = new MutationObserver(function (
-        mutations
-      ) {
+        if (typeof window.requestAnimationFrame === "function") {
+          scheduledFrame = window.requestAnimationFrame(flushPendingRoots);
+        } else {
+          scheduledTimer = setTimeout(flushPendingRoots, 16);
+        }
+      }
+
+      function addPendingRoot(node) {
+        pendingRoots.add(node);
+      }
+
+      function onMutations(mutations) {
         for (const mutation of mutations) {
+          if (mutation.type === "attributes") {
+            const target = mutation.target;
+            if (
+              mutation.attributeName === "style" &&
+              hasUnprocessedShikiColor(target)
+            ) {
+              addPendingRoot(target);
+            } else if (
+              mutation.attributeName === "class" &&
+              target.matches("pre.shiki")
+            ) {
+              addPendingRoot(target);
+            } else if (
+              (mutation.attributeName === "class" ||
+                mutation.attributeName === "data-code" ||
+                mutation.attributeName === "aria-label") &&
+              target.matches(COPY_BUTTON_SELECTOR) &&
+              target.getAttribute("data-freedium-copy-bound") !== "true"
+            ) {
+              addPendingRoot(target);
+            }
+            continue;
+          }
+
           for (const node of mutation.addedNodes) {
             if (node.nodeType !== 1) {
               continue;
             }
 
+            // Replacing a source button produces an already-bound clone. It
+            // has no new work to do and skipping it avoids observer churn.
             if (
-              (node.matches && node.matches(COPY_BUTTON_SELECTOR)) ||
-              (node.querySelector && node.querySelector(COPY_BUTTON_SELECTOR))
+              node.matches(COPY_BUTTON_SELECTOR) &&
+              node.getAttribute("data-freedium-copy-bound") === "true"
             ) {
-              setTimeout(overrideCopyButtons, 100);
-              return;
+              continue;
             }
+
+            addPendingRoot(node);
           }
         }
-      });
+        if (pendingRoots.size > 0) {
+          schedulePendingRoots();
+        }
+      }
 
-      window._freediumCopyObserver.observe(document.body, {
+      const observer = new MutationObserver(onMutations);
+      window._freediumCopyObserver = observer;
+
+      observer.observe(document.body, {
         childList: true,
         subtree: true,
+        attributes: true,
+        attributeFilter: ["class", "style", "data-code", "aria-label"],
       });
 
-      setTimeout(function () {
-        if (window._freediumCopyObserver) {
-          window._freediumCopyObserver.disconnect();
+      // One initial scan handles markup that was present at injection time.
+      // All later hydration is handled from the added subtree, avoiding the
+      // repeated whole-document scans previously scheduled at 250/900/1600ms.
+      processCodeSubtree(document);
+
+      function cleanup() {
+        if (cleanupTimer !== null) {
+          clearTimeout(cleanupTimer);
+          cleanupTimer = null;
+        }
+        if (scheduledFrame !== null) {
+          if (typeof window.cancelAnimationFrame === "function") {
+            window.cancelAnimationFrame(scheduledFrame);
+          }
+          scheduledFrame = null;
+        }
+        if (scheduledTimer !== null) {
+          clearTimeout(scheduledTimer);
+          scheduledTimer = null;
+        }
+        pendingRoots.clear();
+        observer.disconnect();
+        if (window._freediumCopyObserver === observer) {
           window._freediumCopyObserver = null;
         }
+        if (window._freediumCodeDomCleanup === cleanup) {
+          window._freediumCodeDomCleanup = null;
+        }
+      }
+
+      window._freediumCodeDomCleanup = cleanup;
+      cleanupTimer = setTimeout(function () {
+        observer.disconnect();
+        if (window._freediumCopyObserver === observer) {
+          window._freediumCopyObserver = null;
+        }
+        cleanupTimer = null;
       }, 10000);
     } catch (e) {
       console.warn("Failed to override copy functionality:", e);
     }
+  }
+
+  function overrideCopyButton(button) {
+    if (button.getAttribute("data-freedium-copy-bound") === "true") {
+      return;
+    }
+
+    const codeContent = getCopyButtonText(button);
+    if (!codeContent) {
+      return;
+    }
+
+    const newButton = button.cloneNode(true);
+    newButton.setAttribute("type", "button");
+    newButton.setAttribute("data-freedium-copy-bound", "true");
+    newButton.setAttribute("aria-label", "Copy code");
+    newButton.contentCopy = codeContent;
+
+    button.parentNode.replaceChild(newButton, button);
+
+    newButton.addEventListener("click", function (event) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+
+      copyTextToClipboard(newButton.contentCopy || codeContent)
+        .then(function () {
+          setCopyButtonSuccess(newButton);
+          if (window.Toaster && window.Toaster.postMessage) {
+            window.Toaster.postMessage("Text copied to clipboard");
+          }
+        })
+        .catch(function (err) {
+          console.error("Failed to copy text:", err);
+        });
+    });
   }
 
   function getCopyButtonText(button) {
@@ -381,59 +523,27 @@
     }
   }
 
-  // Canonical Shiki github-light/github-dark foregrounds
-  // (harvested from @shikijs/themes) mapped to app palette roles.
-  // Material roles self-adapt per brightness, so one map covers both modes.
-  var SHIKI_ROLE_HEXES = {
-    "on-surface": ["#24292e", "#e1e4e8"],
-    "on-surface-variant": ["#6a737d", "#586069", "#d1d5da"],
-    error: ["#d73a49", "#f97583", "#b31d28", "#fdaeb7"],
-    primary: ["#032f62", "#9ecbff", "#dbedff"],
-    tertiary: ["#6f42c1", "#b392f0", "#22863a", "#85e89d"],
-    secondary: ["#005cc5", "#79b8ff", "#e36209", "#ffab70"],
-  };
-
-  var SHIKI_ROLE_VARS = {
-    "on-surface": "--app-on-surface",
-    "on-surface-variant": "--app-on-surface-variant",
-    error: "--app-error",
-    primary: "--app-primary",
-    tertiary: "--app-tertiary",
-    secondary: "--app-secondary",
-  };
-
-  function recolorShikiTokens() {
-    try {
-      var computed = getComputedStyle(document.documentElement);
-      var lookup = {};
-      Object.keys(SHIKI_ROLE_HEXES).forEach(function (role) {
-        var appColor = computed
-          .getPropertyValue(SHIKI_ROLE_VARS[role])
-          .trim();
-        if (!appColor) {
-          return;
-        }
-        SHIKI_ROLE_HEXES[role].forEach(function (hex) {
-          lookup[hex] = appColor;
-        });
-      });
-
-      document
-        .querySelectorAll("pre.shiki code span[style]")
-        .forEach(function (el) {
-          var style = el.getAttribute("style") || "";
-          var match = style.match(/color\s*:\s*(#[0-9a-fA-F]{3,8})/);
-          if (!match) {
-            return;
-          }
-          var replacement = lookup[match[1].toLowerCase()];
-          if (replacement) {
-            el.style.setProperty("color", replacement, "important");
-          }
-        });
-    } catch (e) {
-      console.warn("Failed to recolor Shiki tokens:", e);
+  function recolorShikiToken(el) {
+    var style = el.getAttribute("style") || "";
+    var match = style.match(/(?:^|;)\s*color\s*:\s*(#[0-9a-fA-F]{3,8})/i);
+    if (!match) {
+      return;
     }
+    var replacement = SHIKI_HEX_TO_VAR[match[1].toLowerCase()];
+    if (replacement) {
+      // Keep the app role as a CSS variable so a theme change updates
+      // existing tokens without another document scan.
+      el.style.setProperty("color", replacement, "important");
+    }
+  }
+
+  function hasUnprocessedShikiColor(el) {
+    if (!el.matches(SHIKI_TOKEN_SELECTOR)) {
+      return false;
+    }
+    var style = el.getAttribute("style") || "";
+    var match = style.match(/(?:^|;)\s*color\s*:\s*(#[0-9a-fA-F]{3,8})/i);
+    return !!(match && SHIKI_HEX_TO_VAR[match[1].toLowerCase()]);
   }
 
   function installReadingProgressTracking() {
