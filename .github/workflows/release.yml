@@ -52,6 +52,7 @@ jobs:
         run: flutter pub get --enforce-lockfile
 
       - name: Validate and update release version
+        id: release_version
         run: dart run tool/set_release_version.dart "$RELEASE_VERSION" "$RELEASE_BUILD_NUMBER"
 
       - name: Decode Keystore
@@ -94,7 +95,7 @@ jobs:
           tag: v${{ github.event.inputs.version_name }}
           name: Release v${{ github.event.inputs.version_name }}
           draft: false
-          prerelease: false
+          prerelease: ${{ steps.release_version.outputs.prerelease }}
           artifacts: |
             build/app/outputs/flutter-apk/app-arm64-v8a-release.apk
             build/app/outputs/flutter-apk/app-armeabi-v7a-release.apk

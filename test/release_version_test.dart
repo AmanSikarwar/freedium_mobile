@@ -15,6 +15,8 @@ void main() {
       updateReleaseVersion(source, '1.2.3-rc.1', '14'),
       contains('1.2.3-rc.1+14'),
     );
+    expect(isPrereleaseVersion('1.2.3'), isFalse);
+    expect(isPrereleaseVersion('1.2.3-rc.1'), isTrue);
     for (final input in [
       '',
       'v1.2.3',
@@ -37,6 +39,33 @@ void main() {
       );
     }
   });
+
+  test(
+    'release CLI writes prerelease classification to GITHUB_OUTPUT',
+    () async {
+      final directory = await Directory.systemTemp.createTemp(
+        'freedium-release-output-',
+      );
+      addTearDown(() => directory.delete(recursive: true));
+      final pubspec = File('${directory.path}/pubspec.yaml');
+      const source = 'version: 0.13.0+13\n';
+      await pubspec.writeAsString(source);
+      final output = File('${directory.path}/github-output');
+      final script = File('tool/set_release_version.dart').absolute.path;
+
+      for (final entry in {'1.2.3': 'false', '1.2.3-rc.1': 'true'}.entries) {
+        await output.writeAsString('');
+        final result = await Process.run(
+          'dart',
+          [script, entry.key, '14'],
+          workingDirectory: directory.path,
+          environment: {'GITHUB_OUTPUT': output.path},
+        );
+        expect(result.exitCode, 0);
+        expect(await output.readAsString(), 'prerelease=${entry.value}\n');
+      }
+    },
+  );
 
   test('invalid CLI input leaves the pubspec untouched', () async {
     final directory = await Directory.systemTemp.createTemp(
