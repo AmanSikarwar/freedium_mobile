@@ -24,7 +24,7 @@ void main() {
   test('debug mirror policy permits only local HTTP fixtures', () {
     for (final host in ['localhost', '127.0.0.1', '[::1]']) {
       expect(
-        normalizeMirrorUrl('http://$host:8787/good', allowLocalHttp: true),
+        normalizeMirrorUrl('http://$host:8787/good'),
         isNotNull,
       );
     }
@@ -33,7 +33,7 @@ void main() {
       'localhost.evil.example',
       '127.0.0.1.evil.example',
     ]) {
-      expect(normalizeMirrorUrl('http://$host', allowLocalHttp: true), isNull);
+      expect(normalizeMirrorUrl('http://$host'), isNull);
     }
   });
 
