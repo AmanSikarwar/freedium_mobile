@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart' show kDebugMode;
+
 /// Canonical URL helpers — single source of truth for HTTP URL validation,
 /// normalization, and origin comparison.
 ///
@@ -38,15 +40,21 @@ String? normalizeHttpUrl(String value) {
       .toString();
 }
 
-/// Normalizes a Freedium mirror base URL, dropping query and fragment.
-String? normalizeMirrorUrl(String value) {
+/// Mirrors require HTTPS; debug builds also allow local integration fixtures.
+/// Query and fragment are dropped from the mirror base URL.
+String? normalizeMirrorUrl(String value, {bool allowLocalHttp = kDebugMode}) {
   final uri = tryParseHttpUri(value);
   if (uri == null || isRetiredFreediumMirrorUrl(value)) return null;
+  final host = uri.host.toLowerCase();
+  final isLocal = host == 'localhost' || host == '127.0.0.1' || host == '::1';
+  if (uri.scheme.toLowerCase() != 'https' && !(allowLocalHttp && isLocal)) {
+    return null;
+  }
 
   return Uri(
     scheme: uri.scheme.toLowerCase(),
     userInfo: uri.userInfo,
-    host: uri.host.toLowerCase(),
+    host: host,
     port: uri.hasPort ? uri.port : null,
     path: trimTrailingSlash(uri.path),
   ).toString();

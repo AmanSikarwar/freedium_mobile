@@ -83,7 +83,7 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
                   return 'Please enter a URL';
                 }
                 if (normalizeMirrorUrl(url) == null) {
-                  return 'Please enter a valid URL';
+                  return 'Please enter a valid HTTPS mirror URL';
                 }
                 return null;
               },
