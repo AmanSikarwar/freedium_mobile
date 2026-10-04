@@ -24,6 +24,55 @@ Map<String, Object> _seed(List<BookmarkedArticle> bookmarks) => {
 void main() {
   group('BookmarksScreen folders', () {
     testWidgets(
+      'restores a backup when the saved library snapshot is unreadable',
+      (tester) async {
+        const rawSnapshot = '{"version":999}';
+        final prefs = await mockPrefs({'bookmark_library': rawSnapshot});
+        final backup = exportBookmarksJson(
+          [
+            BookmarkedArticle(
+              url: TestFixtures.storyUrl,
+              title: 'Recovered story',
+              savedAt: TestFixtures.seedDate,
+            ),
+          ],
+          const ['Empty folder'],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWith((ref) async => prefs),
+              bookmarkFilePickerProvider.overrideWithValue(() async => backup),
+            ],
+            child: const MaterialApp(home: BookmarksScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byTooltip('More actions'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Import bookmarks'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.text('Choose backup file'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Restore unreadable bookmarks?'), findsOneWidget);
+        await tester.tap(find.widgetWithText(FilledButton, 'Restore backup'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Recovered story'), findsOneWidget);
+        expect(
+          prefs.getString(BookmarksService.recoverySnapshotKey),
+          rawSnapshot,
+        );
+        expect(BookmarksService(prefs).getFolders(), ['Empty folder']);
+      },
+    );
+
+    testWidgets(
       'file restore previews duplicates before changing the library',
       (tester) async {
         final existing = BookmarkedArticle(

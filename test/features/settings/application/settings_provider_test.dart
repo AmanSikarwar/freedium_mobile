@@ -511,5 +511,38 @@ void main() {
         );
       },
     );
+
+    test(
+      'restores defaults after snapshot failure and retains raw data',
+      () async {
+        const rawSnapshot = '{"version":999,"values":{"theme_mode":"dark"}}';
+        final prefs = await mockPrefs({'settings_snapshot': rawSnapshot});
+        final container = prefsContainer(prefs);
+        addTearDown(container.dispose);
+
+        await expectLater(
+          container.read(settingsProvider.future),
+          throwsFormatException,
+        );
+
+        final restored = await container
+            .read(settingsProvider.notifier)
+            .restoreDefaultsPreservingUnreadableSnapshot();
+
+        expect(restored, isTrue);
+        expect(
+          prefs.getString(SettingsService.recoverySnapshotKey),
+          rawSnapshot,
+        );
+        expect(
+          SettingsService(prefs).loadAllSettings(),
+          container.read(settingsProvider).requireValue,
+        );
+        expect(
+          container.read(settingsProvider).requireValue.mirrors,
+          SettingsState.defaultMirrors,
+        );
+      },
+    );
   });
 }

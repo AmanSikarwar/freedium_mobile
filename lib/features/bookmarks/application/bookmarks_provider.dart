@@ -18,7 +18,9 @@ part 'bookmarks_provider.g.dart';
 
 final bookmarkWritesProvider = Provider((ref) => SerialTaskQueue());
 
-@Riverpod(keepAlive: true)
+Duration? _neverRetrySnapshotRead(int _, Object _) => null;
+
+@Riverpod(keepAlive: true, retry: _neverRetrySnapshotRead)
 class Bookmarks() extends _$Bookmarks {
   SerialTaskQueue get _writes => ref.read(bookmarkWritesProvider);
   static const int maxBookmarks = 100;
@@ -247,6 +249,54 @@ class Bookmarks() extends _$Bookmarks {
     return result;
   }
 
+  /// Replaces an unreadable library from a confirmed backup restore. The raw
+  /// snapshot is retained before the replacement is written.
+  Future<int> restoreUnreadableLibrary(
+    List<BookmarkedArticle> entries,
+    List<String> folders,
+  ) => _writes.run(() => _restoreUnreadableLibrary(entries, folders));
+
+  Future<int> _restoreUnreadableLibrary(
+    List<BookmarkedArticle> entries,
+    List<String> folders,
+  ) async {
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final service = BookmarksService(prefs);
+      await service.preserveSnapshotForRecovery();
+
+      final byUrl = <String, BookmarkedArticle>{};
+      for (final entry in entries) {
+        final url = normalizeHttpUrl(entry.url);
+        if (url == null) continue;
+        final title = entry.title.trim();
+        byUrl.putIfAbsent(
+          url,
+          () => entry.copyWith(
+            url: url,
+            title: title.isNotEmpty ? title : url,
+            folder: normalizeBookmarkFolderName(entry.folder),
+          ),
+        );
+      }
+
+      final restored = byUrl.values.toList()
+        ..sort((a, b) => b.savedAt.compareTo(a.savedAt));
+      final accepted = restored.take(maxBookmarks).toList();
+      final storedFolders = mergeBookmarkFolders(folders, [
+        for (final article in accepted) article.folder,
+      ]).take(maxBookmarkFolders).toList();
+      await service.saveLibrary(accepted, storedFolders);
+      if (!ref.mounted) return -1;
+      state = AsyncData(service.getBookmarks());
+      ref.invalidate(bookmarkFoldersProvider);
+      return accepted.length;
+    } catch (e) {
+      debugPrint('Failed to recover bookmark library: $e');
+      return -1;
+    }
+  }
+
   Future<int> _importBookmarks(List<BookmarkedArticle> entries) async {
     final service = await _service();
     if (service == null) return -1;
@@ -313,7 +363,7 @@ class Bookmarks() extends _$Bookmarks {
 ///
 /// The UI-facing list is [allBookmarkFoldersProvider]: the union of stored
 /// folders and folders referenced by articles.
-@Riverpod(keepAlive: true)
+@Riverpod(keepAlive: true, retry: _neverRetrySnapshotRead)
 class BookmarkFolders() extends _$BookmarkFolders {
   SerialTaskQueue get _writes => ref.read(bookmarkWritesProvider);
   Future<BookmarksService?> _service() async {

@@ -19,6 +19,40 @@ import '../../../test_helpers.dart';
 
 void main() {
   group('SettingsScreen', () {
+    testWidgets(
+      'restores defaults from the error state and keeps the raw snapshot',
+      (tester) async {
+        const rawSnapshot = '{"version":999,"values":{"theme_mode":"dark"}}';
+        final prefs = await mockPrefs({'settings_snapshot': rawSnapshot});
+
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [
+              sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            ],
+            child: const MaterialApp(home: SettingsScreen()),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.text('Could not load settings.'), findsOneWidget);
+        await tester.tap(find.widgetWithText(TextButton, 'Restore defaults'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.widgetWithText(FilledButton, 'Restore defaults'));
+        await tester.pumpAndSettle();
+
+        expect(
+          prefs.getString(SettingsService.recoverySnapshotKey),
+          rawSnapshot,
+        );
+        expect(
+          SettingsService(prefs).loadAllSettings().mirrors,
+          SettingsState.defaultMirrors,
+        );
+        expect(find.text('Could not load settings.'), findsNothing);
+      },
+    );
+
     testWidgets('toggles Freedium site popups', (tester) async {
       await mockPrefs({});
       final prefs = await SharedPreferences.getInstance();

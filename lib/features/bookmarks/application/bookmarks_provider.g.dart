@@ -18,7 +18,7 @@ final class BookmarksProvider
     : super(
         from: null,
         argument: null,
-        retry: null,
+        retry: _neverRetrySnapshotRead,
         name: r'bookmarksProvider',
         isAutoDispose: false,
         dependencies: null,
@@ -33,7 +33,7 @@ final class BookmarksProvider
   Bookmarks create() => Bookmarks();
 }
 
-String _$bookmarksHash() => r'460269ab499e93dfb7a327c63df1aaed1e8d2a12';
+String _$bookmarksHash() => r'0ba109bfa65d184db3761bd8a2791459c2abda8f';
 
 abstract class _$Bookmarks extends $AsyncNotifier<List<BookmarkedArticle>> {
   FutureOr<List<BookmarkedArticle>> build();
@@ -83,7 +83,7 @@ final class BookmarkFoldersProvider
     : super(
         from: null,
         argument: null,
-        retry: null,
+        retry: _neverRetrySnapshotRead,
         name: r'bookmarkFoldersProvider',
         isAutoDispose: false,
         dependencies: null,
@@ -98,7 +98,7 @@ final class BookmarkFoldersProvider
   BookmarkFolders create() => BookmarkFolders();
 }
 
-String _$bookmarkFoldersHash() => r'575cc709d986ab7b4ae771fa874dccf69ee4aeb6';
+String _$bookmarkFoldersHash() => r'637f688dea8735688e38e5c902042c3aa4715f8e';
 
 /// Stored bookmark folder list plus coordination with article folders.
 ///

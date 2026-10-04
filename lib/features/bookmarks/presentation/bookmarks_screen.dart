@@ -114,7 +114,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
           ),
           PopupMenuButton<String>(
             tooltip: 'More actions',
-            enabled: bookmarksAsync.hasValue,
+            enabled: bookmarksAsync.hasValue || bookmarksAsync.hasError,
             onSelected: (value) {
               switch (value) {
                 case 'export':
@@ -245,10 +245,8 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                               .read(bookmarksProvider.notifier)
                               .removeBookmark(item),
                           removeFailMessage: 'Failed to remove bookmark',
-                          onTap: (item) => Navigator.push(
-                            context,
-                            webviewRoute(item.url),
-                          ),
+                          onTap: (item) =>
+                              Navigator.push(context, webviewRoute(item.url)),
                         ),
                       ),
                     ],

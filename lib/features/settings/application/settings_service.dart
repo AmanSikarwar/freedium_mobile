@@ -8,6 +8,7 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 class SettingsService(this._prefs) {
   static const String _snapshotKey = 'settings_snapshot';
+  static const String recoverySnapshotKey = 'settings_recovery_snapshot';
   static const String _fontSizeKey = 'webview_font_size';
   static const String _themeModeKey = 'theme_mode';
   static const String _mirrorsKey = 'freedium_mirrors';
@@ -120,6 +121,35 @@ class SettingsService(this._prefs) {
       throw const FormatException('Unsupported settings snapshot');
     }
     return (snapshot['values'] as Map<String, dynamic>)[key] as T?;
+  }
+
+  /// Keeps the unreadable snapshot before a confirmed reset replaces it.
+  /// Repeated recoveries use numbered keys and never overwrite an earlier
+  /// recovery copy.
+  Future<void> preserveSnapshotForRecovery() async {
+    final raw = _prefs.getString(_snapshotKey);
+    if (raw == null) return;
+
+    var index = 0;
+    while (true) {
+      final key = index == 0
+          ? recoverySnapshotKey
+          : '${recoverySnapshotKey}_$index';
+      final existing = _prefs.get(key);
+      if (existing == raw) return;
+      if (existing == null) {
+        try {
+          if (!await _prefs.setString(key, raw)) {
+            throw StateError('Failed to preserve settings snapshot');
+          }
+        } catch (_) {
+          await _prefs.reload();
+          rethrow;
+        }
+        return;
+      }
+      index++;
+    }
   }
 
   /// Commits the complete settings state in one platform write.

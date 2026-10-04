@@ -8,6 +8,8 @@ import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dar
 
 class BookmarksService(this._prefs) {
   static const String _snapshotKey = 'bookmark_library';
+  static const String recoverySnapshotKey =
+      'bookmark_library_recovery_snapshot';
   static const String _bookmarksKey = 'bookmarked_articles';
   static const String _foldersKey = 'bookmark_folders';
   final SharedPreferences _prefs;
@@ -67,6 +69,35 @@ class BookmarksService(this._prefs) {
       throw const FormatException('Unsupported bookmark library snapshot');
     }
     return (snapshot[key] as List<dynamic>).cast<String>();
+  }
+
+  /// Keeps the unreadable snapshot before a confirmed restore replaces it.
+  /// Repeated recoveries use numbered keys and never overwrite an earlier
+  /// recovery copy.
+  Future<void> preserveSnapshotForRecovery() async {
+    final raw = _prefs.getString(_snapshotKey);
+    if (raw == null) return;
+
+    var index = 0;
+    while (true) {
+      final key = index == 0
+          ? recoverySnapshotKey
+          : '${recoverySnapshotKey}_$index';
+      final existing = _prefs.get(key);
+      if (existing == raw) return;
+      if (existing == null) {
+        try {
+          if (!await _prefs.setString(key, raw)) {
+            throw StateError('Failed to preserve bookmark library snapshot');
+          }
+        } catch (_) {
+          await _prefs.reload();
+          rethrow;
+        }
+        return;
+      }
+      index++;
+    }
   }
 
   /// Article and folder changes become visible together in one write.

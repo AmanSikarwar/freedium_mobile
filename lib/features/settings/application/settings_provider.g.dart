@@ -72,7 +72,7 @@ final class SettingsProvider
     : super(
         from: null,
         argument: null,
-        retry: null,
+        retry: _neverRetrySettingsRead,
         name: r'settingsProvider',
         isAutoDispose: false,
         dependencies: null,
@@ -87,7 +87,7 @@ final class SettingsProvider
   Settings create() => Settings();
 }
 
-String _$settingsHash() => r'518312bad04971817340d13e4e65fe9e28ff9bc0';
+String _$settingsHash() => r'84649bcc604b2d173a36aca4adb156a7b6a1cb25';
 
 abstract class _$Settings extends $AsyncNotifier<SettingsState> {
   FutureOr<SettingsState> build();

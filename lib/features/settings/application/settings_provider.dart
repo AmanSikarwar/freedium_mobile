@@ -58,7 +58,9 @@ bool _hasMirrorPathPrefix(String path, String mirrorPath) {
       path.startsWith('$normalizedMirrorPath/');
 }
 
-@Riverpod(keepAlive: true)
+Duration? _neverRetrySettingsRead(int _, Object _) => null;
+
+@Riverpod(keepAlive: true, retry: _neverRetrySettingsRead)
 class Settings() extends _$Settings {
   final _writes = SerialTaskQueue();
   Future<SettingsService?> _service() async {
@@ -264,17 +266,40 @@ class Settings() extends _$Settings {
   Future<bool> _resetToDefaults() async {
     final service = await _service();
     if (service == null) return false;
-    final defaultState = SettingsState(
-      mirrors: SettingsState.defaultMirrors,
-      selectedMirrorUrl: SettingsState.defaultMirrors.first.url,
-    );
     return _saveAndApply(
       service: service,
-      nextState: defaultState,
+      nextState: _defaultSettings(),
       failureMessage: 'Failed to reset settings',
       invalidateCache: true,
     );
   }
+
+  /// Resets settings when the provider cannot load its snapshot, preserving
+  /// the unreadable raw snapshot before writing defaults.
+  Future<bool> restoreDefaultsPreservingUnreadableSnapshot() =>
+      _writes.run(_restoreDefaultsPreservingUnreadableSnapshot);
+
+  Future<bool> _restoreDefaultsPreservingUnreadableSnapshot() async {
+    try {
+      final prefs = await ref.read(sharedPreferencesProvider.future);
+      final service = SettingsService(prefs);
+      await service.preserveSnapshotForRecovery();
+      final defaultState = _defaultSettings();
+      await service.saveAllSettings(defaultState);
+      if (!ref.mounted) return false;
+      state = AsyncData(defaultState);
+      ref.read(freediumUrlServiceProvider).invalidateCache();
+      return true;
+    } catch (e) {
+      debugPrint('Failed to recover settings snapshot: $e');
+      return false;
+    }
+  }
+
+  SettingsState _defaultSettings() => SettingsState(
+    mirrors: SettingsState.defaultMirrors,
+    selectedMirrorUrl: SettingsState.defaultMirrors.first.url,
+  );
 
   Future<bool> _saveAndApply({
     required SettingsService service,

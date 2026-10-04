@@ -34,17 +34,76 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
       ),
       error: (error, _) => Scaffold(
         appBar: AppBar(title: const Text('Settings')),
-        body: Center(
-          child: Column(
-            mainAxisSize: .min,
-            children: [
-              const Text('Could not load settings.'),
-              const SizedBox(height: 12),
-              FilledButton(
-                onPressed: () => ref.invalidate(settingsProvider),
-                child: const Text('Retry'),
+        body: SafeArea(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(24),
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  mainAxisSize: .min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text(
+                      'Could not load settings.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 8),
+                    const Text(
+                      'You can retry or restore defaults. A recovery copy of '
+                      'the unreadable settings will be kept on this device.',
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 12),
+                    FilledButton(
+                      onPressed: () => ref.invalidate(settingsProvider),
+                      child: const Text('Retry'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (dialogContext) => AlertDialog(
+                            title: const Text('Restore default settings?'),
+                            content: const Text(
+                              'The unreadable settings will be kept in a local '
+                              'recovery copy before defaults are saved.',
+                            ),
+                            actions: [
+                              TextButton(
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, false),
+                                child: const Text('Cancel'),
+                              ),
+                              FilledButton(
+                                onPressed: () =>
+                                    Navigator.pop(dialogContext, true),
+                                child: const Text('Restore defaults'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed != true || !context.mounted) return;
+                        final restored = await ref
+                            .read(settingsProvider.notifier)
+                            .restoreDefaultsPreservingUnreadableSnapshot();
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              restored
+                                  ? 'Settings restored to defaults'
+                                  : 'Could not restore default settings',
+                            ),
+                          ),
+                        );
+                      },
+                      child: const Text('Restore defaults'),
+                    ),
+                  ],
+                ),
               ),
-            ],
+            ),
           ),
         ),
       ),

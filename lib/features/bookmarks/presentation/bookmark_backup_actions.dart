@@ -52,7 +52,51 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
     );
     return;
   }
-  final current = await ref.read(bookmarksProvider.future);
+  final List<BookmarkedArticle> current;
+  try {
+    current = await ref.read(bookmarksProvider.future);
+  } catch (_) {
+    if (!context.mounted) return;
+    final limitNote = parsed.bookmarks.length > Bookmarks.maxBookmarks
+        ? '\nOnly the newest ${Bookmarks.maxBookmarks} articles will be restored.'
+        : '';
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Restore unreadable bookmarks?'),
+        content: Text(
+          'Freedium could not read the saved bookmark library. Restoring this '
+          'backup replaces the unreadable library. A local recovery copy of '
+          'the saved data will be kept first.\n\n'
+          '${parsed.bookmarks.length} valid articles and '
+          '${parsed.folders.length} named folders are in this backup.'
+          '$limitNote',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: const Text('Restore backup'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true || !context.mounted) return;
+    final restored = await ref
+        .read(bookmarksProvider.notifier)
+        .restoreUnreadableLibrary(parsed.bookmarks, parsed.folders);
+    if (!context.mounted) return;
+    final resultMessage = restored < 0
+        ? 'Could not restore bookmarks; saved data was preserved'
+        : 'Restored $restored bookmark${restored == 1 ? '' : 's'}; '
+              'unreadable data was kept on this device';
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(resultMessage)));
+    return;
+  }
   if (!context.mounted) return;
   final known = {for (final article in current) article.url};
   final fresh = {for (final article in parsed.bookmarks) article.url}
