@@ -80,7 +80,7 @@ jobs:
         run: bash tool/build_release_apks.sh "$RELEASE_VERSION" "$RELEASE_BUILD_NUMBER"
 
       - name: Upload debug symbols
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: debug-symbols-${{ inputs.version_name }}
           path: build/debug-info/
@@ -95,7 +95,7 @@ jobs:
         run: python3 tool/package_release_symbols.py
 
       - name: Upload release symbol bundle
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: release-symbols-${{ github.run_id }}-${{ github.run_attempt }}
           path: build/release-symbols/freedium-v${{ inputs.version_name }}-build${{ github.run_number }}-symbols.zip
@@ -103,7 +103,7 @@ jobs:
           retention-days: 7
 
       - name: Upload signed release APKs
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
           name: release-apks-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
