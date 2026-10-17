@@ -55,8 +55,7 @@ class const UpdateCard({
                             fontSize: 14,
                             color: Theme.of(context)
                                 .colorScheme
-                                .onSecondaryContainer
-                                .withValues(alpha: 0.8),
+                                .onSecondaryContainer,
                           ),
                         ),
                       ],
@@ -95,10 +94,6 @@ class const UpdateCard({
                     },
                     icon: const Icon(Icons.download, size: 18),
                     label: const Text('Update'),
-                    style: FilledButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Theme.of(context).colorScheme.onPrimary,
-                    ),
                   ),
                 ],
               ),
@@ -116,11 +111,7 @@ class const UpdateCard({
     if (!context.mounted || launched) return;
 
     HapticFeedback.heavyImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Could not open link'),
-        backgroundColor: Colors.red,
-      ),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Could not open link')));
   }
 }

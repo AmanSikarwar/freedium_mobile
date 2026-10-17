@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
+import 'package:freedium_mobile/core/theme/android_color_schemes.dart';
+import 'package:freedium_mobile/core/theme/dynamic_color_scheme.dart';
 import 'package:freedium_mobile/core/theme/util.dart';
 
 part 'theme_provider.g.dart';
@@ -38,15 +40,28 @@ final dynamicCorePaletteLoaderProvider = Provider(
   (ref) => DynamicColorPlugin.getCorePalette,
 );
 
+final androidColorSchemeLoaderProvider = Provider(
+  (ref) => loadAndroidColorSchemes,
+);
+
 @Riverpod(keepAlive: true)
 Future<AppThemeProvider> dynamicTheme(Ref ref) async {
   final textTheme = createTextTheme("Roboto", "Roboto");
   final appTheme = AppTheme(textTheme);
 
+  final loadAndroidSchemes = ref.watch(androidColorSchemeLoaderProvider);
+  final loadDynamicCorePalette = ref.watch(dynamicCorePaletteLoaderProvider);
+  final androidSchemes = await loadAndroidSchemes();
+  if (androidSchemes != null) {
+    return AppThemeProvider(
+      lightTheme: appTheme.theme(androidSchemes.light),
+      darkTheme: appTheme.theme(androidSchemes.dark),
+    );
+  }
+
   ColorScheme? lightColorScheme;
   ColorScheme? darkColorScheme;
 
-  final loadDynamicCorePalette = ref.watch(dynamicCorePaletteLoaderProvider);
   final lightDynamic = await () async {
     try {
       return await loadDynamicCorePalette();
@@ -56,10 +71,14 @@ Future<AppThemeProvider> dynamicTheme(Ref ref) async {
     }
   }();
   if (lightDynamic != null) {
-    lightColorScheme = lightDynamic.toColorScheme().harmonized();
-    darkColorScheme = lightDynamic
-        .toColorScheme(brightness: .dark)
-        .harmonized();
+    lightColorScheme = colorSchemeFromPlatformPalette(
+      lightDynamic,
+      brightness: .light,
+    );
+    darkColorScheme = colorSchemeFromPlatformPalette(
+      lightDynamic,
+      brightness: .dark,
+    );
   } else {
     lightColorScheme = appTheme.light().colorScheme;
     darkColorScheme = appTheme.dark().colorScheme;

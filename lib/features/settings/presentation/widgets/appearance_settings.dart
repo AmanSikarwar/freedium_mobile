@@ -59,10 +59,7 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
           if (!context.mounted) return;
           if (!didSave) {
             scaffoldMessenger.showSnackBar(
-              const SnackBar(
-                content: Text('Failed to save default font size'),
-                backgroundColor: Colors.red,
-              ),
+              const SnackBar(content: Text('Failed to save default font size')),
             );
           }
         },
@@ -86,10 +83,7 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
         final didSave = await notifier.setShowSitePopups(value);
         if (!context.mounted || didSave) return;
         scaffoldMessenger.showSnackBar(
-          const SnackBar(
-            content: Text('Failed to save site popup setting'),
-            backgroundColor: Colors.red,
-          ),
+          const SnackBar(content: Text('Failed to save site popup setting')),
         );
       },
     );

@@ -42,7 +42,10 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
                   child: Column(
                     crossAxisAlignment: .start,
                     children: [
-                      Row(
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 4,
+                        crossAxisAlignment: .center,
                         children: [
                           Text(
                             widget.mirror.name,
@@ -51,7 +54,6 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
                             ),
                           ),
                           if (widget.mirror.isDefault) ...[
-                            const SizedBox(width: 8),
                             Container(
                               padding: const .symmetric(
                                 horizontal: 6,
@@ -70,7 +72,6 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
                             ),
                           ],
                           if (widget.mirror.isCustom) ...[
-                            const SizedBox(width: 8),
                             Container(
                               padding: const .symmetric(
                                 horizontal: 6,
@@ -109,8 +110,8 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
                           ? Icons.check_circle
                           : Icons.error,
                       color: _testResult!.isReachable
-                          ? Colors.green
-                          : Colors.red,
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.error,
                       size: 20,
                     ),
                   ),
@@ -181,7 +182,9 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
                       ? 'Reachable (${_testResult!.responseTimeMs}ms)'
                       : 'Unreachable: ${_testResult!.error}',
                   style: theme.textTheme.labelSmall?.copyWith(
-                    color: _testResult!.isReachable ? Colors.green : Colors.red,
+                    color: _testResult!.isReachable
+                        ? theme.colorScheme.primary
+                        : theme.colorScheme.error,
                   ),
                 ),
               ),

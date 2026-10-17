@@ -63,10 +63,7 @@ void confirmDeleteMirror(
               navigator.pop();
             } else {
               scaffoldMessenger.showSnackBar(
-                const SnackBar(
-                  content: Text('Failed to remove mirror'),
-                  backgroundColor: Colors.red,
-                ),
+                const SnackBar(content: Text('Failed to remove mirror')),
               );
             }
           },

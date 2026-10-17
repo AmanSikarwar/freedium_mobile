@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:shimmer/shimmer.dart';
 
 class const ArticleShimmer({super.key}) extends StatelessWidget {
+  // Shimmer uses these opaque shapes as alpha masks for its themed gradient.
   static BoxDecoration _roundedBox(double radius) =>
       BoxDecoration(color: Colors.white, borderRadius: .circular(radius));
 
@@ -20,8 +21,8 @@ class const ArticleShimmer({super.key}) extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final baseColor = colorScheme.primaryContainer.withValues(alpha: 0.7);
-    final highlightColor = colorScheme.surface.withValues(alpha: 0.8);
+    final baseColor = colorScheme.surfaceContainerHighest;
+    final highlightColor = colorScheme.surfaceContainerLow;
     final screenWidth = MediaQuery.sizeOf(context).width;
 
     return Shimmer.fromColors(

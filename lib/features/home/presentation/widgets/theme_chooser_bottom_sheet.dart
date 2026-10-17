@@ -26,10 +26,7 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
       navigator.pop();
     } else {
       scaffoldMessenger.showSnackBar(
-        const SnackBar(
-          content: Text('Failed to save theme'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Failed to save theme')),
       );
     }
   }

@@ -23,7 +23,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
       builder: (context, scrollController) {
         return Container(
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface,
+            color: Theme.of(context).colorScheme.surfaceContainerLow,
             borderRadius: const .vertical(top: .circular(20)),
           ),
           child: Column(
@@ -143,6 +143,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
                     code: TextStyle(
                       fontSize: 13,
                       fontFamily: 'monospace',
+                      color: theme.colorScheme.onSurface,
                       backgroundColor:
                           theme.colorScheme.surfaceContainerHighest,
                     ),
@@ -165,7 +166,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
               Container(
                 padding: const .all(24),
                 decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.surface,
+                  color: Theme.of(context).colorScheme.surfaceContainerLow,
                   boxShadow: [
                     BoxShadow(
                       color: Theme.of(context).colorScheme.shadow
@@ -223,10 +224,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
 
     HapticFeedback.heavyImpact();
     scaffoldMessenger.showSnackBar(
-      const SnackBar(
-        content: Text('Could not open link'),
-        backgroundColor: Colors.red,
-      ),
+      const SnackBar(content: Text('Could not open link')),
     );
   }
 }

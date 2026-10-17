@@ -95,7 +95,6 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
                         ? 'Settings reset to defaults'
                         : 'Failed to reset settings',
                   ),
-                  backgroundColor: didReset ? Colors.green : Colors.red,
                 ),
               );
             },
@@ -122,7 +121,6 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
           content: Text(
             success ? 'Cache cleared successfully' : 'Failed to clear cache',
           ),
-          backgroundColor: success ? Colors.green : Colors.red,
         ),
       );
     }

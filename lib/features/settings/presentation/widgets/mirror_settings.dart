@@ -37,7 +37,6 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
                 scaffoldMessenger.showSnackBar(
                   const SnackBar(
                     content: Text('Failed to save selected mirror'),
-                    backgroundColor: Colors.red,
                   ),
                 );
               }
@@ -92,10 +91,7 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
         if (!context.mounted) return;
         if (!didSave) {
           scaffoldMessenger.showSnackBar(
-            const SnackBar(
-              content: Text('Failed to save auto-switch mirror'),
-              backgroundColor: Colors.red,
-            ),
+            const SnackBar(content: Text('Failed to save auto-switch mirror')),
           );
         }
       },
@@ -166,7 +162,6 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
                   scaffoldMessenger.showSnackBar(
                     const SnackBar(
                       content: Text('Failed to save mirror timeout'),
-                      backgroundColor: Colors.red,
                     ),
                   );
                 }

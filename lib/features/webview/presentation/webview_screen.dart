@@ -132,7 +132,6 @@ class _WebviewScreenState()
               ? Bookmarks.limitMessage
               : 'Failed to update bookmark',
         ),
-        backgroundColor: Colors.red,
       ),
     );
   }
@@ -155,7 +154,6 @@ class _WebviewScreenState()
                   ? Bookmarks.limitMessage
                   : 'Failed to update bookmark',
             ),
-            backgroundColor: Colors.red,
           ),
         );
         return;
@@ -377,12 +375,12 @@ class _WebviewScreenState()
     final divider = Container(
       width: 1,
       height: 24,
-      color: theme.colorScheme.outline.withValues(alpha: 0.3),
+      color: theme.colorScheme.outlineVariant,
     );
 
     return Container(
       decoration: BoxDecoration(
-        color: theme.colorScheme.primaryContainer,
+        color: theme.colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(30),
         boxShadow: [
           BoxShadow(
@@ -397,7 +395,7 @@ class _WebviewScreenState()
         children: [
           IconButton(
             tooltip: 'Font size',
-            color: theme.colorScheme.onPrimaryContainer,
+            color: theme.colorScheme.onSurfaceVariant,
             icon: const Icon(Icons.text_fields),
             onPressed: () {
               showModalBottomSheet<void>(
@@ -416,7 +414,7 @@ class _WebviewScreenState()
             onLongPressHint: 'Move to folder',
             child: IconButton(
               tooltip: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
-              color: theme.colorScheme.onPrimaryContainer,
+              color: theme.colorScheme.onSurfaceVariant,
               icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
               onPressed: () {
                 HapticFeedback.lightImpact();
@@ -431,7 +429,7 @@ class _WebviewScreenState()
           divider,
           IconButton(
             tooltip: 'Share article',
-            color: theme.colorScheme.onPrimaryContainer,
+            color: theme.colorScheme.onSurfaceVariant,
             icon: const Icon(Icons.share),
             onPressed: () => unawaited(webviewNotifier.shareArticle()),
           ),

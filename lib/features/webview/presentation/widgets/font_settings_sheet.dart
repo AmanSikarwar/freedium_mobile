@@ -51,7 +51,7 @@ class _FontSettingsSheetState() extends ConsumerState<FontSettingsSheet> {
     return Container(
       padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
       decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
+        color: theme.colorScheme.surfaceContainerLow,
         borderRadius: const .vertical(top: .circular(20)),
       ),
       child: Column(

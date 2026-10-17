@@ -74,10 +74,7 @@ class _HomeScreenState()
     if (text == null) {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not paste from clipboard'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Could not paste from clipboard')),
       );
       return;
     }
@@ -92,12 +89,8 @@ class _HomeScreenState()
     if (!mounted || launched) return;
 
     HapticFeedback.heavyImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Could not open GitHub'),
-        backgroundColor: Colors.red,
-      ),
-    );
+    ScaffoldMessenger.of(context)
+        .showSnackBar(const SnackBar(content: Text('Could not open GitHub')));
   }
 
   @override
@@ -111,18 +104,13 @@ class _HomeScreenState()
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(
+        title: const Text(
           AppConstants.appName,
           style: TextStyle(
             fontFamily: 'PlayfairDisplay',
-            color: Theme.of(context).colorScheme.primary,
+            fontSize: 24,
             fontWeight: .bold,
           ),
-        ),
-        titleTextStyle: const TextStyle(
-          fontFamily: 'PlayfairDisplay',
-          fontSize: 24,
-          fontWeight: .bold,
         ),
         actions: [
           IconButton(
@@ -248,6 +236,15 @@ class _HomeScreenState()
                       SizedBox(
                         width: .infinity,
                         child: FilledButton(
+                          // Use a compose-style action's tonal container treatment.
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Theme.of(context)
+                                .colorScheme
+                                .primaryContainer,
+                            foregroundColor: Theme.of(context)
+                                .colorScheme
+                                .onPrimaryContainer,
+                          ),
                           onPressed: () {
                             HapticFeedback.mediumImpact();
                             if (_formKey.currentState!.validate()) {

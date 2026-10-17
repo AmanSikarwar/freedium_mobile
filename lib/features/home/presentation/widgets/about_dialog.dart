@@ -54,10 +54,6 @@ Future<void> _launchUrl(BuildContext context, WidgetRef ref, String url) async {
   if (!context.mounted || launched) return;
 
   HapticFeedback.heavyImpact();
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Could not open link'),
-      backgroundColor: Colors.red,
-    ),
-  );
+  ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text('Could not open link')));
 }

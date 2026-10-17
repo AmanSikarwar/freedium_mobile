@@ -15,6 +15,18 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "freedium/theme")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "getColorSchemes") {
+                    result.notImplemented()
+                } else {
+                    try {
+                        result.success(systemColorSchemes(this))
+                    } catch (error: Exception) {
+                        result.error("colors_unavailable", "Could not read Android color roles", null)
+                    }
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "freedium/webview")
             .setMethodCallHandler { call, result ->
                 if (call.method == "getAndroidSdkVersion") {

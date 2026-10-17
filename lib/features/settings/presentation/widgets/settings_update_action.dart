@@ -10,19 +10,22 @@ import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bot
 
 Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
   ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
+    SnackBar(
       content: Row(
         children: [
           SizedBox(
             width: 20,
             height: 20,
-            child: CircularProgressIndicator(strokeWidth: 2),
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: Theme.of(context).colorScheme.onInverseSurface,
+            ),
           ),
-          SizedBox(width: 16),
-          Text('Checking for updates...'),
+          const SizedBox(width: 16),
+          const Text('Checking for updates...'),
         ],
       ),
-      duration: Duration(seconds: 10),
+      duration: const Duration(seconds: 10),
     ),
   );
 
@@ -36,10 +39,7 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text('Failed to check for updates'),
-          backgroundColor: Colors.red,
-        ),
+        const SnackBar(content: Text('Failed to check for updates')),
       );
     return;
   }
@@ -94,10 +94,7 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
     );
   } else {
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('You are using the latest version!'),
-        backgroundColor: Colors.green,
-      ),
+      const SnackBar(content: Text('You are using the latest version!')),
     );
   }
 }
@@ -111,10 +108,6 @@ Future<void> launchSettingsUrl(
   if (!context.mounted || launched) return;
 
   HapticFeedback.heavyImpact();
-  ScaffoldMessenger.of(context).showSnackBar(
-    const SnackBar(
-      content: Text('Could not open link'),
-      backgroundColor: Colors.red,
-    ),
-  );
+  ScaffoldMessenger.of(context)
+      .showSnackBar(const SnackBar(content: Text('Could not open link')));
 }

@@ -5,6 +5,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
+import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 
@@ -25,6 +26,69 @@ class _DelayedPasteClipboardService() extends ClipboardService {
 }
 
 void main() {
+  for (final brightness in Brightness.values) {
+    testWidgets('uses surface and inverse colors in ${brightness.name} mode', (
+      tester,
+    ) async {
+      final scheme = ColorScheme.fromSeed(
+        seedColor: const Color(0xff006c4c),
+        brightness: brightness,
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith(
+              (ref) => FakeClipboardService(),
+            ),
+          ],
+          child: MaterialApp(
+            theme: AppTheme(Typography.englishLike2021).theme(scheme),
+            home: const HomeScreen(),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final title = tester.widget<RichText>(
+        find.descendant(
+          of: find.text(AppConstants.appName),
+          matching: find.byType(RichText),
+        ),
+      );
+      expect(title.text.style?.color, scheme.onSurface);
+
+      final readAction = find.widgetWithText(FilledButton, 'Read Article');
+      final actionSurface = tester.widget<Material>(
+        find.descendant(of: readAction, matching: find.byType(Material)).first,
+      );
+      final actionLabel = tester.widget<RichText>(
+        find.descendant(
+          of: find.text('Read Article'),
+          matching: find.byType(RichText),
+        ),
+      );
+      expect(actionSurface.color, scheme.primaryContainer);
+      expect(actionLabel.text.style?.color, scheme.onPrimaryContainer);
+
+      await tester.tap(find.byTooltip('Paste from clipboard'));
+      await tester.pumpAndSettle();
+
+      final snackBar = find.byType(SnackBar);
+      final surface = tester.widget<Material>(
+        find.descendant(of: snackBar, matching: find.byType(Material)).first,
+      );
+      final message = tester.widget<RichText>(
+        find.descendant(
+          of: find.text('Could not paste from clipboard'),
+          matching: find.byType(RichText),
+        ),
+      );
+      expect(surface.color, scheme.inverseSurface);
+      expect(message.text.style?.color, scheme.onInverseSurface);
+    });
+  }
+
   group('HomeScreen clipboard detection', () {
     testWidgets('renders the documented primary action', (tester) async {
       final clipboard = FakeClipboardService();
