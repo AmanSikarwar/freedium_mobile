@@ -20,11 +20,7 @@ class const ContinueReadingSection({
         )
         .take(3)
         .toList(growable: false);
-    final finished = history
-        .where((item) => item.isFinished)
-        .take(3)
-        .toList(growable: false);
-    if (articles.isEmpty && finished.isEmpty) {
+    if (articles.isEmpty) {
       return const SizedBox.shrink();
     }
 
@@ -33,43 +29,23 @@ class const ContinueReadingSection({
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (articles.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Continue Reading',
-                style: Theme.of(context).textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Continue Reading',
+              style: Theme.of(context).textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
-            const SizedBox(height: 4),
-            for (final article in articles)
-              ArticleCard(
-                title: article.title,
-                subtitle: '${(article.progress * 100).round()}% read',
-                url: article.url,
-                progress: article.progress,
-                onTap: () => onArticleTap(article),
-              ),
-          ],
-          if (finished.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Text(
-                'Finished stories',
-                style: Theme.of(context).textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
-              ),
+          ),
+          const SizedBox(height: 4),
+          for (final article in articles)
+            ArticleCard(
+              title: article.title,
+              subtitle: '${(article.progress * 100).round()}% read',
+              url: article.url,
+              progress: article.progress,
+              onTap: () => onArticleTap(article),
             ),
-            const SizedBox(height: 4),
-            for (final article in finished)
-              ArticleCard(
-                title: article.title,
-                subtitle: 'Finished • tap to read again',
-                url: article.url,
-                onTap: () => onArticleTap(article),
-              ),
-          ],
         ],
       ),
     );

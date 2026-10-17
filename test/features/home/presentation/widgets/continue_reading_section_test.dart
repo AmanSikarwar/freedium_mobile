@@ -34,7 +34,8 @@ void main() {
     expect(find.text('Third'), findsOneWidget);
     expect(find.text('Not started'), findsNothing);
     expect(find.text('Fourth'), findsNothing);
-    expect(find.text('Finished stories'), findsOneWidget);
+    expect(find.text('Finished'), findsNothing);
+    expect(find.text('Finished stories'), findsNothing);
     expect(find.byType(LinearProgressIndicator), findsNWidgets(3));
 
     await tester.tap(find.text('Second'));
@@ -56,28 +57,22 @@ void main() {
     expect(find.text('Continue Reading'), findsNothing);
   });
 
-  testWidgets('shows finished stories for re-reading', (tester) async {
-    final tapped = <ReadingHistory>[];
+  testWidgets('stays hidden with only finished stories', (tester) async {
     final history = [_article('Finished one', 1), _article('Finished two', 1)];
 
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(
-          body: ContinueReadingSection(
-            history: history,
-            onArticleTap: tapped.add,
-          ),
+          body: ContinueReadingSection(history: history, onArticleTap: (_) {}),
         ),
       ),
     );
 
     expect(find.text('Continue Reading'), findsNothing);
-    expect(find.text('Finished stories'), findsOneWidget);
-    expect(find.text('Finished one'), findsOneWidget);
-    expect(find.text('Finished • tap to read again'), findsNWidgets(2));
-
-    await tester.tap(find.text('Finished two'));
-    expect(tapped, [history[1]]);
+    expect(find.text('Finished stories'), findsNothing);
+    expect(find.text('Finished one'), findsNothing);
+    expect(find.text('Finished two'), findsNothing);
+    expect(tester.getSize(find.byType(ContinueReadingSection)), Size.zero);
   });
 }
 
