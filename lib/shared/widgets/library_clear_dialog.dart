@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -21,11 +22,11 @@ Future<void> showLibraryClearDialog({
       title: Text(title),
       content: Text(content),
       actions: [
-        TextButton(
+        M3EButton.text(
           onPressed: () => Navigator.pop(dialogContext),
           child: const Text('Cancel'),
         ),
-        FilledButton(
+        M3EButton.filled(
           onPressed: () async {
             HapticFeedback.mediumImpact();
             final didClear = await onClear();

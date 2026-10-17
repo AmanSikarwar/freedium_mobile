@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -46,11 +47,11 @@ void confirmDeleteMirror(
       title: const Text('Delete Mirror'),
       content: Text('Are you sure you want to delete "${mirror.name}"?'),
       actions: [
-        TextButton(
+        M3EButton.text(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton(
+        M3EButton.filled(
           onPressed: () async {
             HapticFeedback.mediumImpact();
             final scaffoldMessenger = ScaffoldMessenger.of(context);

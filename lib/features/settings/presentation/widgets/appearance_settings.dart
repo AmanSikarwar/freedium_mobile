@@ -5,6 +5,7 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
+import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
 
 class const AppearanceSettings({super.key}) extends ConsumerWidget {
   @override
@@ -72,8 +73,8 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return SwitchListTile(
-      secondary: const Icon(Icons.notifications_outlined),
+    return ExpressiveSwitchTile(
+      leading: const Icon(Icons.notifications_outlined),
       title: const Text('Freedium Popups'),
       subtitle: const Text('Show site announcements and notifications'),
       value: settings.showSitePopups,

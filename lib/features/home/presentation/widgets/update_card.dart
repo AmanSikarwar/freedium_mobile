@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -20,7 +22,9 @@ class const UpdateCard({
     return Dismissible(
       key: const Key('update_card'),
       onDismissed: (_) => onDismissed(),
-      child: Card(
+      child: M3ECard(
+        variant: M3ECardVariant.filled,
+        padding: EdgeInsets.zero,
         color: Theme.of(context).colorScheme.secondaryContainer,
         child: Padding(
           padding: const .all(16),
@@ -64,30 +68,33 @@ class const UpdateCard({
                 ],
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: .end,
+              Wrap(
+                alignment: .end,
+                spacing: 8,
+                runSpacing: 8,
                 children: [
-                  OutlinedButton.icon(
+                  M3EButton.outlined(
                     onPressed: () {
                       HapticFeedback.lightImpact();
                       showChangelogBottomSheet(context, updateInfo);
                     },
                     icon: const Icon(Icons.article_outlined, size: 18),
                     label: const Text('View Changelog'),
-                    style: OutlinedButton.styleFrom(
-                      foregroundColor: Theme.of(context)
-                          .colorScheme
-                          .onSecondaryContainer,
-                      side: BorderSide(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSecondaryContainer
-                            .withValues(alpha: 0.5),
+                    decoration: M3EButtonDecoration(
+                      foregroundColor: WidgetStatePropertyAll(
+                        Theme.of(context).colorScheme.onSecondaryContainer,
+                      ),
+                      side: WidgetStatePropertyAll(
+                        BorderSide(
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSecondaryContainer
+                              .withValues(alpha: 0.5),
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  FilledButton.icon(
+                  M3EButton.filled(
                     onPressed: () {
                       HapticFeedback.mediumImpact();
                       unawaited(_launchUpdate(context, ref));

@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
@@ -12,7 +13,7 @@ void main() {
         home: Builder(
           builder: (context) {
             return Scaffold(
-              body: FilledButton(
+              body: M3EButton(
                 onPressed: () {
                   showDialog<void>(
                     context: context,
@@ -41,7 +42,7 @@ void main() {
       ' HTTPS://custom.example/// ',
     );
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
+    await tester.tap(find.widgetWithText(M3EButton, 'Add'));
     await tester.pumpAndSettle();
 
     expect(find.text('Please enter a valid URL'), findsNothing);
@@ -61,7 +62,7 @@ void main() {
         home: Builder(
           builder: (context) {
             return Scaffold(
-              body: FilledButton(
+              body: M3EButton(
                 onPressed: () {
                   showDialog<void>(
                     context: context,
@@ -90,7 +91,7 @@ void main() {
       'https://freedium-mirror.cfd',
     );
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
+    await tester.tap(find.widgetWithText(M3EButton, 'Add'));
     await tester.pumpAndSettle();
 
     expect(submittedMirror?.url, 'https://freedium-mirror.cfd');
@@ -109,7 +110,7 @@ void main() {
         home: Builder(
           builder: (context) {
             return Scaffold(
-              body: FilledButton(
+              body: M3EButton(
                 onPressed: () {
                   showDialog<void>(
                     context: context,
@@ -137,7 +138,7 @@ void main() {
       'https://custom.example',
     );
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Add'));
+    await tester.tap(find.widgetWithText(M3EButton, 'Add'));
     await tester.pumpAndSettle();
 
     expect(

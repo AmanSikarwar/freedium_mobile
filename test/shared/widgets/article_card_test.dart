@@ -1,3 +1,10 @@
+import 'dart:ui' show SemanticsAction, Tristate;
+
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+
+import '../../test_helpers.dart';
+
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
@@ -18,7 +25,7 @@ void main() {
                 subtitle: 'Saved',
                 url: 'https://medium.com/story',
                 onTap: () => opened = true,
-                trailingIcon: IconButton(
+                trailingIcon: ExpressiveIconButton(
                   tooltip: 'Move to folder',
                   icon: const Icon(Icons.folder),
                   onPressed: () => moved = true,
@@ -27,19 +34,14 @@ void main() {
             ),
           ),
         );
-        expect(
-          tester.getSemantics(find.byTooltip('Move to folder')),
-          matchesSemantics(
-            tooltip: 'Move to folder',
-            isButton: true,
-            hasTapAction: true,
-            hasFocusAction: true,
-            isFocusable: true,
-            hasEnabledState: true,
-            isEnabled: true,
-          ),
-        );
-        await tester.tap(find.byTooltip('Move to folder'));
+        final data = tester
+            .getSemantics(findTooltip('Move to folder'))
+            .getSemanticsData();
+        expect(data.label, 'Move to folder');
+        expect(data.flagsCollection.isButton, isTrue);
+        expect(data.flagsCollection.isEnabled, Tristate.isTrue);
+        expect(data.hasAction(SemanticsAction.tap), isTrue);
+        await tester.tap(findTooltip('Move to folder'));
         expect(moved, isTrue);
         expect(opened, isFalse);
         semantics.dispose();
@@ -61,13 +63,13 @@ void main() {
         ),
       );
 
-      final indicator = tester.widget<LinearProgressIndicator>(
-        find.byType(LinearProgressIndicator),
+      final indicator = tester.widget<M3EProgressIndicator>(
+        find.byType(M3EProgressIndicator),
       );
       expect(indicator.value, 0.42);
       expect(indicator.semanticsValue, '42');
       expect(find.text('medium.com'), findsOneWidget);
-      expect(find.byType(Card), findsOneWidget);
+      expect(find.byType(M3ECard), findsOneWidget);
     });
   });
 
@@ -89,7 +91,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Clear search'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear search'));
 
       expect(cleared, isTrue);
     });

@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:convert';
 
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
@@ -52,17 +54,17 @@ void main() {
         );
         await tester.pumpAndSettle();
 
-        await tester.tap(find.byTooltip('More actions'));
+        await tester.tap(findTooltip('More actions'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Import bookmarks'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Choose backup file'));
         await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+        await tester.tap(find.widgetWithText(M3EButton, 'Import'));
         await tester.pumpAndSettle();
 
         expect(find.text('Restore unreadable bookmarks?'), findsOneWidget);
-        await tester.tap(find.widgetWithText(FilledButton, 'Restore backup'));
+        await tester.tap(find.widgetWithText(M3EButton, 'Restore backup'));
         await tester.pumpAndSettle();
 
         expect(find.text('Recovered story'), findsOneWidget);
@@ -101,18 +103,18 @@ void main() {
           ),
         );
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('More actions'));
+        await tester.tap(findTooltip('More actions'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Import bookmarks'));
         await tester.pumpAndSettle();
         await tester.tap(find.text('Choose backup file'));
         await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+        await tester.tap(find.widgetWithText(M3EButton, 'Import'));
         await tester.pumpAndSettle();
         expect(find.text('1 new articles'), findsOneWidget);
         expect(find.text('1 duplicates'), findsOneWidget);
         expect(BookmarksService(prefs).getBookmarks(), hasLength(1));
-        await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+        await tester.tap(find.widgetWithText(M3EButton, 'Restore'));
         await tester.pumpAndSettle();
         expect(BookmarksService(prefs).getBookmarks(), hasLength(2));
       },
@@ -131,8 +133,8 @@ void main() {
       ]);
       seed['bookmark_folders'] = ['Tech'];
       await pumpApp(tester, child: const BookmarksScreen(), initialPrefs: seed);
-      expect(find.widgetWithText(FilterChip, 'Tech · 1'), findsOneWidget);
-      await tester.tap(find.widgetWithText(FilterChip, 'Tech · 1'));
+      expect(find.widgetWithText(M3EChip, 'Tech · 1'), findsOneWidget);
+      await tester.tap(find.widgetWithText(M3EChip, 'Tech · 1'));
       await tester.pumpAndSettle();
       expect(find.text('Tech story'), findsOneWidget);
     });
@@ -153,7 +155,7 @@ void main() {
         child: const BookmarksScreen(),
         initialPrefs: _seed(existing),
       );
-      await tester.tap(find.byTooltip('More actions'));
+      await tester.tap(findTooltip('More actions'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Import bookmarks'));
       await tester.pumpAndSettle();
@@ -171,9 +173,9 @@ void main() {
             ),
         ], const []),
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Import'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Restore'));
       await tester.pumpAndSettle();
       expect(find.textContaining('Imported 1 bookmark'), findsOneWidget);
       expect(find.textContaining('existing bookmarks kept'), findsOneWidget);
@@ -196,7 +198,7 @@ void main() {
           'bookmark_folders': ['Existing'],
         },
       );
-      await tester.tap(find.byTooltip('More actions'));
+      await tester.tap(findTooltip('More actions'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Import bookmarks'));
       await tester.pumpAndSettle();
@@ -207,9 +209,9 @@ void main() {
         ),
         exportBookmarksJson([], ['Empty']),
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Import'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Restore'));
       await tester.pumpAndSettle();
       expect(BookmarksService(prefs).getFolders(), ['Empty', 'Existing']);
       expect(find.textContaining('folders restored'), findsOneWidget);
@@ -219,12 +221,12 @@ void main() {
       tester,
     ) async {
       final prefs = await pumpApp(tester, child: const BookmarksScreen());
-      await tester.tap(find.byTooltip('Manage folders'));
+      await tester.tap(findTooltip('Manage folders'));
       await tester.pumpAndSettle();
       expect(find.text('Manage folders'), findsOneWidget);
       await tester.tapAt(const Offset(10, 10));
       await tester.pumpAndSettle();
-      await tester.tap(find.byTooltip('More actions'));
+      await tester.tap(findTooltip('More actions'));
       await tester.pumpAndSettle();
       expect(find.text('Clear bookmarks'), findsNothing);
       await tester.tap(find.text('Import bookmarks'));
@@ -242,9 +244,9 @@ void main() {
           ),
         ], const []),
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Import'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Restore'));
       await tester.pumpAndSettle();
       expect(find.text('Restored'), findsOneWidget);
       expect(BookmarksService(prefs).getBookmarks(), hasLength(1));
@@ -269,7 +271,7 @@ void main() {
         initialPrefs: initialPrefs,
       );
 
-      await tester.tap(find.byTooltip('Manage folders'));
+      await tester.tap(findTooltip('Manage folders'));
       await tester.pumpAndSettle();
       expect(
         find.text(
@@ -286,7 +288,7 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.tap(find.byTooltip('Rename').first);
+      await tester.tap(findTooltip('Rename').first);
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
@@ -295,7 +297,7 @@ void main() {
         ),
         'Renamed imported',
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Rename'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Rename'));
       await tester.pumpAndSettle();
       expect(
         find.descendant(
@@ -312,9 +314,9 @@ void main() {
         findsOneWidget,
       );
 
-      await tester.tap(find.byTooltip('Delete').first);
+      await tester.tap(findTooltip('Delete').first);
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Delete'));
       await tester.pumpAndSettle();
       expect(
         find.descendant(
@@ -351,16 +353,16 @@ void main() {
 
       expect(find.text('Tech story'), findsOneWidget);
       expect(find.text('Example story'), findsOneWidget);
-      expect(find.widgetWithText(FilterChip, 'All · 2'), findsOneWidget);
-      expect(find.widgetWithText(FilterChip, 'Unsorted · 1'), findsOneWidget);
+      expect(find.widgetWithText(M3EChip, 'All · 2'), findsOneWidget);
+      expect(find.widgetWithText(M3EChip, 'Unsorted · 1'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Tech · 1'));
+      await tester.tap(find.widgetWithText(M3EChip, 'Tech · 1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Tech story'), findsOneWidget);
       expect(find.text('Example story'), findsNothing);
 
-      await tester.tap(find.widgetWithText(FilterChip, 'Unsorted · 1'));
+      await tester.tap(find.widgetWithText(M3EChip, 'Unsorted · 1'));
       await tester.pumpAndSettle();
 
       expect(find.text('Tech story'), findsNothing);
@@ -382,7 +384,7 @@ void main() {
         ]),
       );
 
-      await tester.tap(find.byTooltip('Move to folder'));
+      await tester.tap(findTooltip('Move to folder'));
       await tester.pumpAndSettle();
       expect(find.text('Move to folder'), findsWidgets);
 
@@ -415,7 +417,7 @@ void main() {
         ]),
       );
 
-      await tester.tap(find.byTooltip('Manage folders'));
+      await tester.tap(findTooltip('Manage folders'));
       await tester.pumpAndSettle();
       expect(find.text('Manage folders'), findsOneWidget);
 
@@ -463,7 +465,7 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('More actions'));
+      await tester.tap(findTooltip('More actions'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Export bookmarks').last);
       await tester.pumpAndSettle();
@@ -486,7 +488,7 @@ void main() {
         ]),
       );
 
-      await tester.tap(find.byTooltip('More actions'));
+      await tester.tap(findTooltip('More actions'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Import bookmarks').last);
       await tester.pumpAndSettle();
@@ -509,13 +511,13 @@ void main() {
         ),
         backup,
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Import'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Restore'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Restore'));
       await tester.pumpAndSettle();
 
       expect(find.text('Imported story'), findsOneWidget);
-      expect(find.widgetWithText(FilterChip, 'All · 2'), findsOneWidget);
+      expect(find.widgetWithText(M3EChip, 'All · 2'), findsOneWidget);
       expect(BookmarksService(prefs).getBookmarks(), hasLength(2));
     });
 
@@ -532,7 +534,7 @@ void main() {
         ]),
       );
 
-      await tester.tap(find.byTooltip('More actions'));
+      await tester.tap(findTooltip('More actions'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Import bookmarks').last);
       await tester.pumpAndSettle();
@@ -544,7 +546,7 @@ void main() {
         ),
         'not json',
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Import'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Import'));
       await tester.pumpAndSettle();
 
       expect(find.text('Not a valid bookmarks backup'), findsOneWidget);

@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -30,19 +31,17 @@ class const ArticleCard({
     final theme = Theme.of(context);
     final source = Uri.tryParse(url)?.host.replaceFirst('www.', '') ?? '';
 
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      elevation: 0,
-      color: theme.colorScheme.surfaceContainerLow,
-      clipBehavior: Clip.antiAlias,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: M3ECard(
+        variant: M3ECardVariant.filled,
+        padding: EdgeInsets.zero,
+        color: theme.colorScheme.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(24),
+        border: BorderSide(
           color: theme.colorScheme.outlineVariant.withValues(alpha: 0.55),
         ),
-      ),
-      child: InkWell(
-        onTap: () {
+        onPressed: () {
           HapticFeedback.lightImpact();
           onTap();
         },
@@ -145,10 +144,10 @@ class const ArticleCard({
                     ],
                     if (progress case final progress?) ...[
                       const SizedBox(height: 8),
-                      LinearProgressIndicator(
+                      M3EProgressIndicator.linear(
                         value: progress.clamp(0, 1),
-                        minHeight: 3,
-                        borderRadius: BorderRadius.circular(2),
+                        strokeWidth: 3,
+                        trackStrokeWidth: 3,
                         semanticsLabel: 'Reading progress',
                         semanticsValue: '${(progress * 100).round()}',
                       ),
@@ -258,7 +257,7 @@ class const LibraryEmptyState({
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 20),
-              FilledButton.tonalIcon(
+              M3EButton.tonal(
                 onPressed: onAction,
                 icon: const Icon(Icons.close),
                 label: Text(actionLabel!),

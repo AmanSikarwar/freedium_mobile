@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
@@ -73,11 +75,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
           '$limitNote',
         ),
         actions: [
-          TextButton(
+          M3EButton.text(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          M3EButton.filled(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Restore backup'),
           ),
@@ -126,11 +128,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
         ],
       ),
       actions: [
-        TextButton(
+        M3EButton.text(
           onPressed: () => Navigator.pop(dialogContext, false),
           child: const Text('Cancel'),
         ),
-        FilledButton(
+        M3EButton.filled(
           onPressed: () => Navigator.pop(dialogContext, true),
           child: const Text('Restore'),
         ),

@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 
@@ -41,11 +42,11 @@ class _RenameBookmarkFolderDialogState()
         ),
       ),
       actions: [
-        TextButton(
+        M3EButton.text(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton(
+        M3EButton.filled(
           onPressed: () => Navigator.pop(context, _controller.text),
           child: const Text('Rename'),
         ),

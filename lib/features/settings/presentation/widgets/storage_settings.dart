@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -74,11 +76,11 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
           'This will reset all settings to their default values. Continue?',
         ),
         actions: [
-          TextButton(
+          M3EButton.text(
             onPressed: () => Navigator.pop(context),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          M3EButton.filled(
             onPressed: () async {
               HapticFeedback.mediumImpact();
               final scaffoldMessenger = ScaffoldMessenger.of(context);

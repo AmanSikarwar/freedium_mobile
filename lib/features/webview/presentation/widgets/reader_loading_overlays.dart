@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
@@ -25,7 +26,7 @@ class const ReaderProgressIndicator({super.key, required this.url})
       return const SizedBox.shrink();
     }
 
-    return LinearProgressIndicator(
+    return M3EProgressIndicator.linearWavy(
       value: readerProgress.progress > 0 ? readerProgress.progress : null,
     );
   }

@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
@@ -77,7 +78,7 @@ class _OnboardingScreenState() extends ConsumerState<OnboardingScreen> {
               alignment: Alignment.topRight,
               child: Padding(
                 padding: const EdgeInsets.only(top: 8, right: 8),
-                child: TextButton(
+                child: M3EButton.text(
                   onPressed: _finish,
                   child: const Text('Skip'),
                 ),
@@ -118,7 +119,7 @@ class _OnboardingScreenState() extends ConsumerState<OnboardingScreen> {
                       ),
                     ),
                   ),
-                  FilledButton(
+                  M3EButton.filled(
                     onPressed: _next,
                     child: Text(isLast ? 'Get Started' : 'Next'),
                   ),

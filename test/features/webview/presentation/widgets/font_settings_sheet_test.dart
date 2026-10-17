@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,7 +25,7 @@ void main() {
         ),
       );
 
-      final slider = tester.widget<Slider>(find.byType(Slider));
+      final slider = tester.widget<M3ESlider>(find.byType(M3ESlider));
       expect(slider.value, FontSizeService.maxFontSize);
       expect(slider.min, FontSizeService.minFontSize);
       expect(slider.max, FontSizeService.maxFontSize);

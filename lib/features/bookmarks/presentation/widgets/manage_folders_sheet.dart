@@ -1,3 +1,5 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
@@ -75,11 +77,11 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
           '"$folder" will be removed. Its articles stay bookmarked as Unsorted.',
         ),
         actions: [
-          TextButton(
+          M3EButton.text(
             onPressed: () => Navigator.pop(dialogContext, false),
             child: const Text('Cancel'),
           ),
-          FilledButton(
+          M3EButton.filled(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: const Text('Delete'),
           ),
@@ -170,7 +172,7 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                     valueListenable: _createController,
                     builder: (context, value, _) {
                       final hasText = value.text.trim().isNotEmpty;
-                      return FilledButton.tonalIcon(
+                      return M3EButton.tonal(
                         onPressed: _saving || !hasText ? null : _create,
                         icon: const Icon(Icons.add),
                         label: const Text('Add'),
@@ -237,12 +239,12 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                IconButton(
+                                ExpressiveIconButton(
                                   icon: const Icon(Icons.edit_outlined),
                                   tooltip: 'Rename',
                                   onPressed: () => _rename(folder),
                                 ),
-                                IconButton(
+                                ExpressiveIconButton(
                                   icon: Icon(
                                     Icons.delete_outline,
                                     color: theme.colorScheme.error,
@@ -258,7 +260,7 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                 loading: () => const Center(
                   child: Padding(
                     padding: EdgeInsets.all(16),
-                    child: CircularProgressIndicator(),
+                    child: M3EProgressIndicator.circularWavy(),
                   ),
                 ),
                 error: (_, _) => const Padding(

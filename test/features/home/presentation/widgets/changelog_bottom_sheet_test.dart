@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,7 +29,7 @@ void main() {
               body: Builder(
                 builder: (context) {
                   return Center(
-                    child: FilledButton(
+                    child: M3EButton(
                       onPressed: () {
                         showChangelogBottomSheet(
                           context,
@@ -54,7 +55,7 @@ void main() {
 
       expect(find.text('What\'s New'), findsOneWidget);
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Update Now'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Update Now'));
       await tester.pumpAndSettle();
 
       expect(launchedUrls, [releaseUrl]);
@@ -84,7 +85,7 @@ void main() {
               body: Builder(
                 builder: (context) {
                   return Center(
-                    child: FilledButton(
+                    child: M3EButton(
                       onPressed: () {
                         showChangelogBottomSheet(
                           context,

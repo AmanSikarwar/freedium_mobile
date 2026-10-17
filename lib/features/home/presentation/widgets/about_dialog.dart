@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -37,7 +39,7 @@ void showAppAboutDialog(BuildContext context, WidgetRef ref) {
         mainAxisSize: .min,
         children: [
           const Text('Made with ❤️ by', style: TextStyle(fontSize: 12)),
-          TextButton(
+          M3EButton.text(
             onPressed: () => unawaited(
               _launchUrl(context, ref, 'https://github.com/amansikarwar'),
             ),

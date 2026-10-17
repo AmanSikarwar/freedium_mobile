@@ -1,3 +1,4 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart'
     show libraryContentMaxWidth;
@@ -42,7 +43,7 @@ class const LibrarySearchHeader({
             leading: const Icon(Icons.search),
             trailing: [
               if (query.isNotEmpty)
-                IconButton(
+                ExpressiveIconButton(
                   icon: const Icon(Icons.close),
                   tooltip: 'Clear search',
                   onPressed: onClear,

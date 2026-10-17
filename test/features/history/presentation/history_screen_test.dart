@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart';
@@ -43,7 +45,7 @@ void main() {
 
       expect(find.textContaining('42% read'), findsOneWidget);
       expect(find.textContaining('Finished •'), findsOneWidget);
-      expect(find.byType(LinearProgressIndicator), findsNWidgets(2));
+      expect(find.byType(M3EProgressIndicator), findsNWidgets(2));
       expect(find.text('2 articles'), findsOneWidget);
       expect(find.text('medium.com'), findsNWidgets(2));
     });
@@ -109,9 +111,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Clear History'));
+      await tester.tap(findTooltip('Clear History'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
       await tester.pumpAndSettle();
 
       expect(find.text('No reading history yet.'), findsOneWidget);
@@ -153,9 +155,9 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      await tester.tap(find.byTooltip('Clear History'));
+      await tester.tap(findTooltip('Clear History'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
       await tester.pumpAndSettle();
 
       expect(find.widgetWithText(AlertDialog, 'Clear History'), findsOneWidget);
@@ -185,7 +187,7 @@ void main() {
         },
       );
 
-      await tester.tap(find.byTooltip('History options'));
+      await tester.tap(findTooltip('History options'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Keep last 30').last);
       await tester.pumpAndSettle();
@@ -211,7 +213,7 @@ void main() {
         },
       );
 
-      await tester.tap(find.byTooltip('History options'));
+      await tester.tap(findTooltip('History options'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Clear older than 30 days'));
       await tester.pumpAndSettle();

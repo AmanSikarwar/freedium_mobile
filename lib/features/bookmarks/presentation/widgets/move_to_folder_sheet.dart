@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
@@ -162,7 +163,7 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
                     valueListenable: _newFolderController,
                     builder: (context, value, _) {
                       final hasText = value.text.trim().isNotEmpty;
-                      return FilledButton.tonalIcon(
+                      return M3EButton.tonal(
                         onPressed: _saving || !hasText ? null : _createAndMove,
                         icon: const Icon(Icons.create_new_folder_outlined),
                         label: const Text('Create'),

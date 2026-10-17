@@ -1,3 +1,6 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -103,7 +106,7 @@ class _HomeScreenState()
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      appBar: AppBar(
+      appBar: M3EAppBar.top(
         title: const Text(
           AppConstants.appName,
           style: TextStyle(
@@ -113,7 +116,7 @@ class _HomeScreenState()
           ),
         ),
         actions: [
-          IconButton(
+          ExpressiveIconButton(
             icon: const Icon(Icons.bookmark_border),
             onPressed: () {
               HapticFeedback.lightImpact();
@@ -126,7 +129,7 @@ class _HomeScreenState()
             },
             tooltip: 'Bookmarks',
           ),
-          IconButton(
+          ExpressiveIconButton(
             icon: const Icon(Icons.history),
             onPressed: () {
               HapticFeedback.lightImpact();
@@ -139,7 +142,7 @@ class _HomeScreenState()
             },
             tooltip: 'History',
           ),
-          IconButton(
+          ExpressiveIconButton(
             icon: const Icon(Icons.settings),
             onPressed: () {
               HapticFeedback.lightImpact();
@@ -152,7 +155,7 @@ class _HomeScreenState()
             },
             tooltip: 'Settings',
           ),
-          IconButton(
+          ExpressiveIconButton(
             icon: const Icon(Icons.info),
             onPressed: () {
               HapticFeedback.lightImpact();
@@ -210,7 +213,7 @@ class _HomeScreenState()
                             border: const OutlineInputBorder(
                               borderRadius: .all(.circular(24)),
                             ),
-                            suffixIcon: IconButton(
+                            suffixIcon: ExpressiveIconButton(
                               icon: const Icon(Icons.paste),
                               onPressed: () {
                                 HapticFeedback.lightImpact();
@@ -235,15 +238,16 @@ class _HomeScreenState()
                       ),
                       SizedBox(
                         width: .infinity,
-                        child: FilledButton(
+                        child: M3EButton.filled(
+                          size: M3EButtonSize.md,
                           // Use a compose-style action's tonal container treatment.
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Theme.of(context)
-                                .colorScheme
-                                .primaryContainer,
-                            foregroundColor: Theme.of(context)
-                                .colorScheme
-                                .onPrimaryContainer,
+                          decoration: M3EButtonDecoration(
+                            backgroundColor: WidgetStatePropertyAll(
+                              Theme.of(context).colorScheme.primaryContainer,
+                            ),
+                            foregroundColor: WidgetStatePropertyAll(
+                              Theme.of(context).colorScheme.onPrimaryContainer,
+                            ),
                           ),
                           onPressed: () {
                             HapticFeedback.mediumImpact();
@@ -265,9 +269,9 @@ class _HomeScreenState()
                             Navigator.of(context)
                                 .push(webviewRoute(article.url)),
                       ),
-                      ActionChip(
-                        avatar: const Icon(Icons.star_border, size: 18),
-                        label: const Text('Star on GitHub'),
+                      M3EChip(
+                        leading: const Icon(Icons.star_border, size: 18),
+                        label: 'Star on GitHub',
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           unawaited(_launchSourceOnGithub());

@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
@@ -36,7 +37,7 @@ void main() {
     expect(find.text('Fourth'), findsNothing);
     expect(find.text('Finished'), findsNothing);
     expect(find.text('Finished stories'), findsNothing);
-    expect(find.byType(LinearProgressIndicator), findsNWidgets(3));
+    expect(find.byType(M3EProgressIndicator), findsNWidgets(3));
 
     await tester.tap(find.text('Second'));
     expect(tapped, [history[1]]);

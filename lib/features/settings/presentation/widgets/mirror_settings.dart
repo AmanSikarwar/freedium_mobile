@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -61,7 +63,7 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
         ),
         Padding(
           padding: const .symmetric(horizontal: 16, vertical: 8),
-          child: OutlinedButton.icon(
+          child: M3EButton.outlined(
             onPressed: () {
               HapticFeedback.lightImpact();
               showAddMirrorDialog(context, ref);
@@ -79,8 +81,8 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return SwitchListTile(
-      secondary: const Icon(Icons.swap_horiz),
+    return ExpressiveSwitchTile(
+      leading: const Icon(Icons.swap_horiz),
       title: const Text('Auto-Switch Mirror'),
       subtitle: const Text('Automatically use working mirror'),
       value: settings.autoSwitchMirror,
@@ -130,26 +132,30 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
                 '$timeout seconds',
                 style: Theme.of(context).textTheme.headlineMedium,
               ),
-              Slider(
-                value: timeout.toDouble(),
-                min: SettingsState.minMirrorTimeout.toDouble(),
-                max: SettingsState.maxMirrorTimeout.toDouble(),
-                divisions:
-                    SettingsState.maxMirrorTimeout -
-                    SettingsState.minMirrorTimeout,
-                onChanged: (value) {
-                  HapticFeedback.selectionClick();
-                  setState(() => timeout = value.toInt());
-                },
+              SizedBox(
+                width: 280,
+                height: 64,
+                child: M3ESlider(
+                  value: timeout.toDouble(),
+                  min: SettingsState.minMirrorTimeout.toDouble(),
+                  max: SettingsState.maxMirrorTimeout.toDouble(),
+                  divisions:
+                      SettingsState.maxMirrorTimeout -
+                      SettingsState.minMirrorTimeout,
+                  onChanged: (value) {
+                    HapticFeedback.selectionClick();
+                    setState(() => timeout = value.toInt());
+                  },
+                ),
               ),
             ],
           ),
           actions: [
-            TextButton(
+            M3EButton.text(
               onPressed: () => Navigator.pop(context),
               child: const Text('Cancel'),
             ),
-            FilledButton(
+            M3EButton.filled(
               onPressed: () async {
                 HapticFeedback.lightImpact();
                 final scaffoldMessenger = ScaffoldMessenger.of(context);

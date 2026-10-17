@@ -1,3 +1,5 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmark_backup_actions.dart';
@@ -107,7 +109,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
           ],
         ),
         actions: [
-          IconButton(
+          ExpressiveIconButton(
             icon: const Icon(Icons.create_new_folder_outlined),
             tooltip: 'Manage folders',
             onPressed: () => showManageFoldersSheet(context),
@@ -226,7 +228,7 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                             return progress > 0 ? progress : null;
                           },
                           badgeFor: (item) => item.folder,
-                          trailingFor: (item) => IconButton(
+                          trailingFor: (item) => ExpressiveIconButton(
                             icon: Icon(
                               item.folder == null
                                   ? Icons.bookmark_border
@@ -251,7 +253,8 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                       ),
                     ],
                   ),
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () =>
+                const Center(child: M3EProgressIndicator.circularWavy()),
             error: (error, _) => LibraryEmptyState(
               icon: Icons.error_outline,
               title: 'Something went wrong.',
@@ -365,12 +368,12 @@ class const _FilterChip({
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: FilterChip(
-        avatar: Icon(icon, size: 18),
-        label: Text(label),
+      child: M3EChip(
+        type: M3EChipType.filter,
+        leading: Icon(icon, size: 18),
+        label: label,
         selected: selected,
-        onSelected: (_) => onSelected(),
-        showCheckmark: false,
+        onPressed: onSelected,
       ),
     );
   }

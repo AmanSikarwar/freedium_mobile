@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -64,7 +65,7 @@ Future<void> _pumpAboutDialog(
           body: Consumer(
             builder: (context, ref, child) {
               return Center(
-                child: FilledButton(
+                child: M3EButton(
                   onPressed: () => showAppAboutDialog(context, ref),
                   child: const Text('Show about'),
                 ),

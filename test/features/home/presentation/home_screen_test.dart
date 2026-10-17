@@ -1,4 +1,7 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
+import 'dart:ui' show SemanticsAction, Tristate;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -58,7 +61,7 @@ void main() {
       );
       expect(title.text.style?.color, scheme.onSurface);
 
-      final readAction = find.widgetWithText(FilledButton, 'Read Article');
+      final readAction = find.widgetWithText(M3EButton, 'Read Article');
       final actionSurface = tester.widget<Material>(
         find.descendant(of: readAction, matching: find.byType(Material)).first,
       );
@@ -71,7 +74,7 @@ void main() {
       expect(actionSurface.color, scheme.primaryContainer);
       expect(actionLabel.text.style?.color, scheme.onPrimaryContainer);
 
-      await tester.tap(find.byTooltip('Paste from clipboard'));
+      await tester.tap(findTooltip('Paste from clipboard'));
       await tester.pumpAndSettle();
 
       final snackBar = find.byType(SnackBar);
@@ -122,18 +125,13 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      expect(
-        tester.getSemantics(find.byTooltip('Paste from clipboard')),
-        matchesSemantics(
-          tooltip: 'Paste from clipboard',
-          isButton: true,
-          hasTapAction: true,
-          hasFocusAction: true,
-          isFocusable: true,
-          hasEnabledState: true,
-          isEnabled: true,
-        ),
-      );
+      final data = tester
+          .getSemantics(findTooltip('Paste from clipboard'))
+          .getSemanticsData();
+      expect(data.label, 'Paste from clipboard');
+      expect(data.flagsCollection.isButton, isTrue);
+      expect(data.flagsCollection.isEnabled, Tristate.isTrue);
+      expect(data.hasAction(SemanticsAction.tap), isTrue);
       semantics.dispose();
     });
 

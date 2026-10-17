@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
@@ -7,6 +8,13 @@ import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+
+Finder findTooltip(String message) => find.byWidgetPredicate(
+  (widget) =>
+      widget is M3ETooltip && widget.message == message ||
+      widget is RawTooltip && widget.semanticsTooltip == message,
+  description: 'tooltip "$message"',
+);
 
 // NOTE: these helpers intentionally do not accept extra provider overrides.
 // Riverpod 3 keeps the `Override` type internal, so it cannot be named in a

@@ -1,3 +1,6 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -328,7 +331,7 @@ class _WebviewScreenState()
             ),
             if (webviewNotifier.canContinueWithoutStyling()) ...[
               const SizedBox(height: 16),
-              FilledButton(
+              M3EButton.filled(
                 onPressed: webviewNotifier.continueWithoutStyling,
                 child: const Text('Continue with original styling'),
               ),
@@ -339,12 +342,12 @@ class _WebviewScreenState()
               spacing: 16,
               runSpacing: 8,
               children: [
-                OutlinedButton.icon(
+                M3EButton.outlined(
                   onPressed: () => webviewNotifier.reload(),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Retry'),
                 ),
-                FilledButton.icon(
+                M3EButton.filled(
                   onPressed: () => webviewNotifier.retryWithNextMirror(),
                   icon: const Icon(Icons.swap_horiz),
                   label: const Text('Try Another Mirror'),
@@ -393,9 +396,8 @@ class _WebviewScreenState()
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          IconButton(
+          ExpressiveIconButton(
             tooltip: 'Font size',
-            color: theme.colorScheme.onSurfaceVariant,
             icon: const Icon(Icons.text_fields),
             onPressed: () {
               showModalBottomSheet<void>(
@@ -411,11 +413,23 @@ class _WebviewScreenState()
           ),
           divider,
           Semantics(
+            container: true,
+            button: true,
+            enabled: true,
             onLongPressHint: 'Move to folder',
-            child: IconButton(
+            child: M3EButton.text(
               tooltip: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
-              color: theme.colorScheme.onSurfaceVariant,
-              icon: Icon(isBookmarked ? Icons.bookmark : Icons.bookmark_border),
+              semanticLabel: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
+              decoration: M3EButtonDecoration(
+                minimumSize: const Size(48, 48),
+                padding: EdgeInsets.zero,
+                foregroundColor: WidgetStatePropertyAll(
+                  theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+              child: Icon(
+                isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+              ),
               onPressed: () {
                 HapticFeedback.lightImpact();
                 unawaited(_toggleBookmark(bookmarksNotifier));
@@ -427,9 +441,8 @@ class _WebviewScreenState()
             ),
           ),
           divider,
-          IconButton(
+          ExpressiveIconButton(
             tooltip: 'Share article',
-            color: theme.colorScheme.onSurfaceVariant,
             icon: const Icon(Icons.share),
             onPressed: () => unawaited(webviewNotifier.shareArticle()),
           ),

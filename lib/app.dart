@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 export 'core/routing/app_navigation.dart'
@@ -21,6 +23,7 @@ import 'package:freedium_mobile/core/routing/app_navigation.dart'
         shouldSkipIncomingWebviewNavigation;
 import 'package:freedium_mobile/core/services/intent_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
+import 'package:freedium_mobile/core/theme/expressive_theme.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
@@ -131,29 +134,27 @@ class const App({super.key}) extends ConsumerWidget {
         themeMode: themeMode,
         navigatorObservers: [currentRouteNameObserver],
         builder: (context, child) {
-          // Bridge legacy deps still on package:flutter/material.dart
-          // (webview_flutter, flutter_markdown_plus, flutter_riverpod).
-          // Remove once they migrate to package:material_ui.
-          // ignore: deprecated_member_use
-          return MaterialUiCompatibilityBridge(child: child!);
+          return ExpressiveTheme(child: child!);
         },
         home: onboarding.isLoading
-            ? const Scaffold(body: Center(child: CircularProgressIndicator()))
+            ? const Scaffold(
+                body: Center(child: M3EProgressIndicator.circularWavy()),
+              )
             : hasSeenOnboarding
             ? const HomeScreen()
             : const OnboardingScreen(),
       ),
       loading: () => MaterialApp(
         builder: (context, child) {
-          // ignore: deprecated_member_use
-          return MaterialUiCompatibilityBridge(child: child!);
+          return ExpressiveTheme(child: child!);
         },
-        home: const Scaffold(body: Center(child: CircularProgressIndicator())),
+        home: const Scaffold(
+          body: Center(child: M3EProgressIndicator.circularWavy()),
+        ),
       ),
       error: (err, stack) => MaterialApp(
         builder: (context, child) {
-          // ignore: deprecated_member_use
-          return MaterialUiCompatibilityBridge(child: child!);
+          return ExpressiveTheme(child: child!);
         },
         home: Scaffold(body: Center(child: Text('Error: $err'))),
       ),

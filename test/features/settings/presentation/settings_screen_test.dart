@@ -1,3 +1,6 @@
+import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:convert';
 
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
@@ -36,9 +39,11 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.text('Could not load settings.'), findsOneWidget);
-        await tester.tap(find.widgetWithText(TextButton, 'Restore defaults'));
+        await tester.tap(find.widgetWithText(M3EButton, 'Restore defaults'));
         await tester.pumpAndSettle();
-        await tester.tap(find.widgetWithText(FilledButton, 'Restore defaults'));
+        await tester.tap(
+          find.widgetWithText(M3EButton, 'Restore defaults').last,
+        );
         await tester.pumpAndSettle();
 
         expect(
@@ -67,14 +72,14 @@ void main() {
       );
       await tester.pumpAndSettle();
 
-      final tile = find.widgetWithText(SwitchListTile, 'Freedium Popups');
-      expect(tester.widget<SwitchListTile>(tile).value, isTrue);
+      final tile = find.widgetWithText(ExpressiveSwitchTile, 'Freedium Popups');
+      expect(tester.widget<ExpressiveSwitchTile>(tile).value, isTrue);
 
       await tester.tap(tile);
       await tester.pumpAndSettle();
 
       expect(SettingsService(prefs).loadShowSitePopups(), isFalse);
-      expect(tester.widget<SwitchListTile>(tile).value, isFalse);
+      expect(tester.widget<ExpressiveSwitchTile>(tile).value, isFalse);
     });
 
     testWidgets('closes the update dialog before opening changelog', (
@@ -143,7 +148,7 @@ void main() {
 
       await tester.tap(find.text('Reset to Defaults'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Reset'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Reset'));
       await tester.pumpAndSettle();
 
       expect(find.text('Failed to reset settings'), findsOneWidget);
@@ -194,7 +199,7 @@ void main() {
 
       await tester.tap(find.text('Check for Updates'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Update'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Update'));
       await tester.pumpAndSettle();
 
       expect(launchedUrls, [releaseUrl]);
@@ -256,7 +261,7 @@ void main() {
 
       await tester.tap(find.text('Mirror Timeout'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Save'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Save'));
       await tester.pumpAndSettle();
 
       expect(
@@ -352,7 +357,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.tap(
-        find.widgetWithText(SwitchListTile, 'Auto-Switch Mirror'),
+        find.widgetWithText(ExpressiveSwitchTile, 'Auto-Switch Mirror'),
       );
       await tester.pumpAndSettle();
 
@@ -388,7 +393,7 @@ void main() {
 
       final customMirrorCard = find.ancestor(
         of: find.text('https://custom.example'),
-        matching: find.byType(Card),
+        matching: find.byType(M3ECard),
       );
       await tester.scrollUntilVisible(customMirrorCard, 300);
       await tester.pumpAndSettle();
@@ -401,7 +406,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.text('Delete'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Delete'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Delete'));
       await tester.pumpAndSettle();
 
       expect(find.widgetWithText(AlertDialog, 'Delete Mirror'), findsOneWidget);

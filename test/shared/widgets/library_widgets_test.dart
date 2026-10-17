@@ -1,3 +1,6 @@
+import '../../test_helpers.dart';
+
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
@@ -37,7 +40,7 @@ void main() {
       await pumpHeader(tester, onChanged: (v) => changedTo = v);
 
       expect(find.text('Search library…'), findsOneWidget);
-      expect(find.byTooltip('Clear search'), findsNothing);
+      expect(findTooltip('Clear search'), findsNothing);
 
       await tester.enterText(find.byType(SearchBar), 'Example');
       expect(changedTo, 'Example');
@@ -47,7 +50,7 @@ void main() {
       var cleared = false;
       await pumpHeader(tester, query: 'Example', onClear: () => cleared = true);
 
-      await tester.tap(find.byTooltip('Clear search'));
+      await tester.tap(findTooltip('Clear search'));
       expect(cleared, isTrue);
     });
   });
@@ -62,7 +65,7 @@ void main() {
           home: Builder(
             builder: (context) {
               return Scaffold(
-                body: FilledButton(
+                body: M3EButton(
                   onPressed: () => showLibraryClearDialog(
                     context: context,
                     title: 'Clear Library',
@@ -84,7 +87,7 @@ void main() {
 
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
       await tester.pumpAndSettle();
 
       expect(cleared, isTrue);
@@ -100,7 +103,7 @@ void main() {
           home: Builder(
             builder: (context) {
               return Scaffold(
-                body: FilledButton(
+                body: M3EButton(
                   onPressed: () => showLibraryClearDialog(
                     context: context,
                     title: 'Clear Library',
@@ -119,7 +122,7 @@ void main() {
 
       await tester.tap(find.text('Open'));
       await tester.pumpAndSettle();
-      await tester.tap(find.widgetWithText(FilledButton, 'Clear'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
       await tester.pumpAndSettle();
 
       expect(find.text('Clear Library'), findsOneWidget);

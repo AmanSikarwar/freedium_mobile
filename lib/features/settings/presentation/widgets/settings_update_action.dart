@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -16,7 +18,7 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
           SizedBox(
             width: 20,
             height: 20,
-            child: CircularProgressIndicator(
+            child: M3EProgressIndicator.circularWavy(
               strokeWidth: 2,
               color: Theme.of(context).colorScheme.onInverseSurface,
             ),
@@ -69,18 +71,18 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
           ],
         ),
         actions: [
-          TextButton(
+          M3EButton.text(
             onPressed: () => Navigator.pop(dialogContext),
             child: const Text('Later'),
           ),
-          TextButton(
+          M3EButton.text(
             onPressed: () {
               Navigator.pop(dialogContext);
               showChangelogBottomSheet(context, availableUpdate);
             },
             child: const Text('Changelog'),
           ),
-          FilledButton(
+          M3EButton.filled(
             onPressed: () {
               Navigator.pop(dialogContext);
               unawaited(

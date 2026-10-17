@@ -1,3 +1,6 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -65,7 +68,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
                         ],
                       ),
                     ),
-                    IconButton(
+                    ExpressiveIconButton(
                       onPressed: () => Navigator.of(context).pop(),
                       icon: const Icon(Icons.close),
                       tooltip: 'Close',
@@ -180,7 +183,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
                   top: false,
                   child: SizedBox(
                     width: .infinity,
-                    child: FilledButton.icon(
+                    child: M3EButton.filled(
                       onPressed: () {
                         unawaited(
                           _launchUrl(
@@ -193,9 +196,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
                       },
                       icon: const Icon(Icons.download),
                       label: const Text('Update Now'),
-                      style: FilledButton.styleFrom(
-                        padding: const .symmetric(vertical: 16),
-                      ),
+                      size: M3EButtonSize.md,
                     ),
                   ),
                 ),

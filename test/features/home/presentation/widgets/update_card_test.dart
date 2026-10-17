@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
@@ -46,7 +48,7 @@ void main() {
             matching: find.byType(RichText),
           ),
         );
-        final background = tester.widget<Card>(find.byType(Card)).color!;
+        final background = tester.widget<M3ECard>(find.byType(M3ECard)).color!;
         final foreground = Color.alphaBlend(
           version.text.style!.color!,
           background,
@@ -91,7 +93,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.widgetWithText(FilledButton, 'Update'));
+      await tester.tap(find.widgetWithText(M3EButton, 'Update'));
       await tester.pumpAndSettle();
 
       expect(launchedUrls, [releaseUrl]);

@@ -1,3 +1,5 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
+
 import 'dart:async';
 
 import 'package:material_ui/material_ui.dart';
@@ -107,11 +109,11 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
         ),
       ),
       actions: [
-        TextButton(
+        M3EButton.text(
           onPressed: _isSubmitting ? null : () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
-        FilledButton(
+        M3EButton.filled(
           onPressed: _isSubmitting ? null : _submit,
           child: Text(
             _isSubmitting ? 'Saving...' : (isEditing ? 'Save' : 'Add'),

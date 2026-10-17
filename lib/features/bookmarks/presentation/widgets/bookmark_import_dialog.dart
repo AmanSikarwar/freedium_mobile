@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmark_file_picker.dart';
@@ -42,7 +43,7 @@ class _BookmarkImportDialogState() extends ConsumerState<BookmarkImportDialog> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          OutlinedButton.icon(
+          M3EButton.outlined(
             onPressed: _reading ? null : _chooseFile,
             icon: const Icon(Icons.folder_open),
             label: Text(_reading ? 'Reading backup...' : 'Choose backup file'),
@@ -62,11 +63,11 @@ class _BookmarkImportDialogState() extends ConsumerState<BookmarkImportDialog> {
       ),
     ),
     actions: [
-      TextButton(
+      M3EButton.text(
         onPressed: () => Navigator.pop(context),
         child: const Text('Cancel'),
       ),
-      FilledButton(
+      M3EButton.filled(
         onPressed: _reading
             ? null
             : () => Navigator.pop(context, _controller.text),

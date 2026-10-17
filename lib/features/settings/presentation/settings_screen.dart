@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
@@ -13,7 +14,10 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
 
     return settingsAsync.when(
       data: (settings) => Scaffold(
-        appBar: AppBar(title: const Text('Settings')),
+        appBar: M3EAppBar.top(
+          automaticallyImplyLeading: true,
+          titleText: 'Settings',
+        ),
         body: ListView(
           children: [
             _buildSectionHeader(context, 'Appearance'),
@@ -29,11 +33,17 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
         ),
       ),
       loading: () => Scaffold(
-        appBar: AppBar(title: const Text('Settings')),
-        body: const Center(child: CircularProgressIndicator()),
+        appBar: M3EAppBar.top(
+          automaticallyImplyLeading: true,
+          titleText: 'Settings',
+        ),
+        body: const Center(child: M3EProgressIndicator.circularWavy()),
       ),
       error: (error, _) => Scaffold(
-        appBar: AppBar(title: const Text('Settings')),
+        appBar: M3EAppBar.top(
+          automaticallyImplyLeading: true,
+          titleText: 'Settings',
+        ),
         body: SafeArea(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
@@ -55,11 +65,11 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
                       textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 12),
-                    FilledButton(
+                    M3EButton.filled(
                       onPressed: () => ref.invalidate(settingsProvider),
                       child: const Text('Retry'),
                     ),
-                    TextButton(
+                    M3EButton.text(
                       onPressed: () async {
                         final confirmed = await showDialog<bool>(
                           context: context,
@@ -70,12 +80,12 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
                               'recovery copy before defaults are saved.',
                             ),
                             actions: [
-                              TextButton(
+                              M3EButton.text(
                                 onPressed: () =>
                                     Navigator.pop(dialogContext, false),
                                 child: const Text('Cancel'),
                               ),
-                              FilledButton(
+                              M3EButton.filled(
                                 onPressed: () =>
                                     Navigator.pop(dialogContext, true),
                                 child: const Text('Restore defaults'),

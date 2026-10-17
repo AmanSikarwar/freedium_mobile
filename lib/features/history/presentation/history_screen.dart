@@ -1,3 +1,5 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
@@ -95,7 +97,7 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                 ];
               },
             ),
-            IconButton(
+            ExpressiveIconButton(
               icon: const Icon(Icons.delete_sweep),
               tooltip: 'Clear History',
               onPressed: () => _confirmClear(context),
@@ -152,7 +154,8 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
                     onTap: (item) =>
                         Navigator.push(context, webviewRoute(item.url)),
                   ),
-            loading: () => const Center(child: CircularProgressIndicator()),
+            loading: () =>
+                const Center(child: M3EProgressIndicator.circularWavy()),
             error: (error, _) => LibraryEmptyState(
               icon: Icons.error_outline,
               title: 'Something went wrong.',

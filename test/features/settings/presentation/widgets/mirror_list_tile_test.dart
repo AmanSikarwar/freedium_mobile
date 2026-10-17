@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_ui/material_ui.dart';
@@ -35,7 +36,7 @@ void main() {
         );
 
         expect(tester.takeException(), isNull);
-        final card = tester.getRect(find.byType(Card));
+        final card = tester.getRect(find.byType(M3ECard));
         final title = tester.getRect(find.text(mirror.name));
         final badge = tester.getRect(find.text('Default'));
         expect(title.right, lessThanOrEqualTo(card.right));

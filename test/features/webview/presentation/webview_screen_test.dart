@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -49,14 +50,14 @@ void main() {
     );
     await tester.pumpAndSettle();
     for (final label in ['Font size', 'Save bookmark', 'Share article']) {
-      final node = tester.getSemantics(find.byTooltip(label));
-      expect(node.getSemanticsData().tooltip, label);
+      final node = tester.getSemantics(findTooltip(label));
+      expect(node.getSemanticsData().label, label);
       expect(node.getSemanticsData().flagsCollection.isButton, isTrue);
     }
-    await tester.tap(find.byTooltip('Save bookmark'));
+    await tester.tap(findTooltip('Save bookmark'));
     await tester.pumpAndSettle();
-    expect(find.byTooltip('Remove bookmark'), findsOneWidget);
-    await tester.longPress(find.byTooltip('Remove bookmark'));
+    expect(findTooltip('Remove bookmark'), findsOneWidget);
+    await tester.longPress(findTooltip('Remove bookmark'));
     await tester.pumpAndSettle();
     expect(find.text('Move to folder'), findsWidgets);
     semantics.dispose();
@@ -98,9 +99,7 @@ void main() {
 
       expect(
         tester
-            .widget<LinearProgressIndicator>(
-              find.byType(LinearProgressIndicator),
-            )
+            .widget<M3EProgressIndicator>(find.byType(M3EProgressIndicator))
             .value,
         progress / 100,
       );

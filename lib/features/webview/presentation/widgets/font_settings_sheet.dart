@@ -1,3 +1,5 @@
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,7 +80,8 @@ class _FontSettingsSheetState() extends ConsumerState<FontSettingsSheet> {
                     fontWeight: .bold,
                   ),
                 ),
-                IconButton(
+                ExpressiveIconButton(
+                  tooltip: 'Close',
                   icon: const Icon(Icons.close),
                   onPressed: () {
                     HapticFeedback.lightImpact();
@@ -98,7 +101,8 @@ class _FontSettingsSheetState() extends ConsumerState<FontSettingsSheet> {
                   'Size: ${_currentFontSize.toInt()}px',
                   style: theme.textTheme.bodyLarge?.copyWith(fontWeight: .w500),
                 ),
-                TextButton.icon(
+                M3EButton.icon(
+                  style: M3EButtonStyle.text,
                   onPressed: () {
                     HapticFeedback.mediumImpact();
                     setState(() {
@@ -119,7 +123,7 @@ class _FontSettingsSheetState() extends ConsumerState<FontSettingsSheet> {
               children: [
                 const Icon(Icons.text_fields, size: 16),
                 Expanded(
-                  child: Slider(
+                  child: M3ESlider(
                     value: _currentFontSize,
                     min: FontSizeService.minFontSize,
                     max: FontSizeService.maxFontSize,

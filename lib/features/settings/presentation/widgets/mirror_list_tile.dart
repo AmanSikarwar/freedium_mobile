@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -28,9 +29,10 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Card(
-      margin: const .symmetric(horizontal: 16, vertical: 4),
-      child: Padding(
+    return Padding(
+      padding: const .symmetric(horizontal: 16, vertical: 4),
+      child: M3ECard(
+        variant: M3ECardVariant.filled,
         padding: const .all(12),
         child: Column(
           crossAxisAlignment: .start,
@@ -172,7 +174,7 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
             if (_isTesting)
               const Padding(
                 padding: .only(top: 8),
-                child: LinearProgressIndicator(),
+                child: M3EProgressIndicator.linear(),
               ),
             if (_testResult != null && !_isTesting)
               Padding(
