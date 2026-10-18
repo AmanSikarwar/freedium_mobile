@@ -106,9 +106,15 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
             tooltip: 'Manage folders',
             onPressed: () => showManageFoldersSheet(context),
           ),
-          PopupMenuButton<String>(
-            tooltip: 'More actions',
-            enabled: bookmarksAsync.hasValue || bookmarksAsync.hasError,
+          M3EMenu.entries(
+            anchorBuilder: (context, open) => ExpressiveIconButton(
+              icon: const Icon(Icons.more_vert),
+              tooltip: 'More actions',
+              onPressed: (bookmarksAsync.hasValue || bookmarksAsync.hasError)
+                  ? open
+                  : null,
+            ),
+            position: M3EMenuAnchorPosition.bottomEnd,
             onSelected: (value) {
               switch (value) {
                 case 'export':
@@ -119,29 +125,24 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                   _confirmClear(context);
               }
             },
-            itemBuilder: (context) => [
+            entries: [
               if (bookmarks.isNotEmpty || folders.isNotEmpty)
-                const PopupMenuItem(
+                const M3EMenuEntry(
+                  label: 'Export bookmarks',
                   value: 'export',
-                  child: _OverflowMenuRow(
-                    icon: Icons.upload_outlined,
-                    label: 'Export bookmarks',
-                  ),
+                  leading: Icon(Icons.upload_outlined),
                 ),
-              const PopupMenuItem(
+              const M3EMenuEntry(
+                label: 'Import bookmarks',
                 value: 'import',
-                child: _OverflowMenuRow(
-                  icon: Icons.download_outlined,
-                  label: 'Import bookmarks',
-                ),
+                leading: Icon(Icons.download_outlined),
               ),
               if (bookmarks.isNotEmpty)
-                const PopupMenuItem(
+                const M3EMenuEntry(
+                  label: 'Clear bookmarks',
                   value: 'clear',
-                  child: _OverflowMenuRow(
-                    icon: Icons.delete_sweep_outlined,
-                    label: 'Clear bookmarks',
-                  ),
+                  leading: Icon(Icons.delete_sweep_outlined),
+                  isDestructive: true,
                 ),
             ],
           ),
@@ -282,24 +283,6 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
       failMessage: 'Failed to clear bookmarks',
       onClear: () => ref.read(bookmarksProvider.notifier).clearBookmarks(),
       onCleared: _clearFilters,
-    );
-  }
-}
-
-class const _OverflowMenuRow({required this.icon, required this.label})
-    extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20),
-        const SizedBox(width: 12),
-        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-      ],
     );
   }
 }
