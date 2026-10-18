@@ -38,59 +38,54 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
     final settings = ref.watch(settingsProvider).value ?? const SettingsState();
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
-    return Material(
-      // M3EBottomSheet provides no Material ancestor; ListTile needs one until
-      // the list migrates to M3EListItem.
-      type: MaterialType.transparency,
-      child: Padding(
-        padding: const .symmetric(vertical: 16),
-        child: Column(
-          mainAxisSize: .min,
-          children: [
-            Padding(
-              padding: const .symmetric(horizontal: 16, vertical: 8),
-              child: Text(
-                'Choose Theme',
-                style: Theme.of(context).textTheme.titleLarge
-                    ?.copyWith(fontWeight: .bold),
-              ),
+    return Padding(
+      padding: const .symmetric(vertical: 16),
+      child: Column(
+        mainAxisSize: .min,
+        children: [
+          Padding(
+            padding: const .symmetric(horizontal: 16, vertical: 8),
+            child: Text(
+              'Choose Theme',
+              style: Theme.of(context).textTheme.titleLarge
+                  ?.copyWith(fontWeight: .bold),
             ),
-            const M3EDivider(),
-            ListTile(
-              leading: const Icon(Icons.light_mode),
-              title: const Text('Light'),
-              trailing: settings.themeMode == .light
-                  ? Icon(
-                      Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () => _selectTheme(context, settingsNotifier, .light),
-            ),
-            ListTile(
-              leading: const Icon(Icons.dark_mode),
-              title: const Text('Dark'),
-              trailing: settings.themeMode == .dark
-                  ? Icon(
-                      Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () => _selectTheme(context, settingsNotifier, .dark),
-            ),
-            ListTile(
-              leading: const Icon(Icons.brightness_auto),
-              title: const Text('System'),
-              trailing: settings.themeMode == .system
-                  ? Icon(
-                      Icons.check,
-                      color: Theme.of(context).colorScheme.primary,
-                    )
-                  : null,
-              onTap: () => _selectTheme(context, settingsNotifier, .system),
-            ),
-          ],
-        ),
+          ),
+          const M3EDivider(),
+          M3EListItem(
+            headline: 'Light',
+            leading: const Icon(Icons.light_mode),
+            trailing: settings.themeMode == .light
+                ? Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
+                  )
+                : null,
+            onTap: () => _selectTheme(context, settingsNotifier, .light),
+          ),
+          M3EListItem(
+            headline: 'Dark',
+            leading: const Icon(Icons.dark_mode),
+            trailing: settings.themeMode == .dark
+                ? Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
+                  )
+                : null,
+            onTap: () => _selectTheme(context, settingsNotifier, .dark),
+          ),
+          M3EListItem(
+            headline: 'System',
+            leading: const Icon(Icons.brightness_auto),
+            trailing: settings.themeMode == .system
+                ? Icon(
+                    Icons.check,
+                    color: Theme.of(context).colorScheme.primary,
+                  )
+                : null,
+            onTap: () => _selectTheme(context, settingsNotifier, .system),
+          ),
+        ],
       ),
     );
   }
