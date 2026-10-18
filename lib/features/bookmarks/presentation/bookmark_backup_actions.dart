@@ -32,9 +32,11 @@ Future<void> exportBookmarkBackup(BuildContext context, WidgetRef ref) async {
     }
   } catch (_) {
     if (context.mounted) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not share backup')));
+        message: 'Could not share backup',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 }
@@ -49,8 +51,10 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
   try {
     parsed = parseBookmarksJson(raw);
   } on FormatException {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Not a valid bookmarks backup')),
+    M3ESnackbar.show(
+      context,
+      message: 'Not a valid bookmarks backup',
+      duration: const Duration(seconds: 4),
     );
     return;
   }
@@ -96,8 +100,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
         ? 'Could not restore bookmarks; saved data was preserved'
         : 'Restored $restored bookmark${restored == 1 ? '' : 's'}; '
               'unreadable data was kept on this device';
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(resultMessage)));
+    M3ESnackbar.show(
+      context,
+      message: resultMessage,
+      duration: const Duration(seconds: 4),
+    );
     return;
   }
   if (!context.mounted) return;
@@ -171,9 +178,9 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
       : added > 0
       ? 'Imported $added bookmark${added == 1 ? '' : 's'}'
       : 'No new bookmarks';
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('$resultMessage$skippedNote$folderNote$capacityNote'),
-    ),
+  M3ESnackbar.show(
+    context,
+    message: '$resultMessage$skippedNote$folderNote$capacityNote',
+    duration: const Duration(seconds: 4),
   );
 }

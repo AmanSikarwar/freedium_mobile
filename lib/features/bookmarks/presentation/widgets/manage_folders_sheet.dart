@@ -41,10 +41,10 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
     if (didCreate) {
       _createController.clear();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not create folder (duplicate or limit)'),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: 'Could not create folder (duplicate or limit)',
+        duration: const Duration(seconds: 4),
       );
     }
   }
@@ -60,9 +60,11 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
         .renameFolder(folder, newName);
     if (!mounted) return;
     if (!didRename) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not rename folder')));
+        message: 'Could not rename folder',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 
@@ -93,9 +95,11 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
         .deleteFolder(folder);
     if (!mounted) return;
     if (!didDelete) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not delete folder')));
+        message: 'Could not delete folder',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 

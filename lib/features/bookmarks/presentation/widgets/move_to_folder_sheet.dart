@@ -49,9 +49,11 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
     if (!mounted) return;
     Navigator.pop(context);
     if (!didMove) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to move bookmark')));
+        message: 'Failed to move bookmark',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 
@@ -64,9 +66,11 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
     final didCreate = await folders.createFolder(name);
     if (!didCreate && mounted) {
       setState(() => _saving = false);
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not create folder')));
+        message: 'Could not create folder',
+        duration: const Duration(seconds: 4),
+      );
       return;
     }
     final normalized = normalizeBookmarkFolderName(name);
@@ -76,9 +80,11 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
     if (!mounted) return;
     Navigator.pop(context);
     if (!didMove) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to move bookmark')));
+        message: 'Failed to move bookmark',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 
