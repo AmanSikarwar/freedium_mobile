@@ -37,6 +37,8 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
   Widget build(BuildContext context) {
     final historyAsync = ref.watch(historyProvider);
     final history = historyAsync.value ?? const <ReadingHistory>[];
+    final historyLimit =
+        ref.watch(historyLimitProvider).value ?? HistoryService.defaultLimit;
     final lowercaseQuery = _query.toLowerCase();
 
     final filtered = _query.isEmpty
@@ -64,30 +66,31 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
             : null,
         actions: [
           if (history.isNotEmpty) ...[
-            PopupMenuButton<String>(
-              tooltip: 'History options',
-              onSelected: (value) => _onOption(context, value),
-              itemBuilder: (context) {
-                final limit =
-                    ref.watch(historyLimitProvider).value ??
-                    HistoryService.defaultLimit;
-                return [
-                  for (final option in HistoryService.allowedLimits)
-                    CheckedPopupMenuItem(
-                      value: 'keep_$option',
-                      checked: limit == option,
-                      child: Text('Keep last $option'),
-                    ),
-                  const PopupMenuItem(
-                    value: 'prune_30d',
-                    child: Text('Clear older than 30 days'),
+            M3EMenu(
+              anchorBuilder: (context, open) => ExpressiveIconButton(
+                icon: const Icon(Icons.more_vert),
+                tooltip: 'History options',
+                onPressed: open,
+              ),
+              position: M3EMenuAnchorPosition.bottomEnd,
+              onSelected: (value) => _onOption(context, value! as String),
+              children: [
+                for (final option in HistoryService.allowedLimits)
+                  M3EMenuSelectable(
+                    label: 'Keep last $option',
+                    value: 'keep_$option',
+                    selected: historyLimit == option,
                   ),
-                  const PopupMenuItem(
-                    value: 'clear',
-                    child: Text('Clear history'),
-                  ),
-                ];
-              },
+                const M3EMenuEntry(
+                  label: 'Clear older than 30 days',
+                  value: 'prune_30d',
+                ),
+                const M3EMenuEntry(
+                  label: 'Clear history',
+                  value: 'clear',
+                  isDestructive: true,
+                ),
+              ],
             ),
             ExpressiveIconButton(
               icon: const Icon(Icons.delete_sweep),
