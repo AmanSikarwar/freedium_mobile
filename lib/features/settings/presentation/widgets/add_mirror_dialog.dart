@@ -23,9 +23,10 @@ class const AddMirrorDialog({
 class _AddMirrorDialogState() extends State<AddMirrorDialog> {
   late TextEditingController _nameController;
   late TextEditingController _urlController;
-  final _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
   String? _submissionError;
+  String? _nameError;
+  String? _urlError;
 
   bool get isEditing => widget.existingMirror != null;
 
@@ -51,67 +52,41 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
   Widget build(BuildContext context) {
     return M3EDialog(
       title: isEditing ? 'Edit Mirror' : 'Add Custom Mirror',
-      content: Material(
-        // M3EDialog provides no Material ancestor; the Material inputs need
-        // one until they move to M3ETextField.
-        type: MaterialType.transparency,
-        child: Form(
-          key: _formKey,
-          child: Column(
-            mainAxisSize: .min,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Name',
-                  hintText: 'My Custom Mirror',
-                  prefixIcon: Icon(Icons.label),
-                ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Please enter a name';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _urlController,
-                decoration: const InputDecoration(
-                  labelText: 'URL',
-                  hintText: 'https://freedium.example.com',
-                  prefixIcon: Icon(Icons.link),
-                ),
-                keyboardType: .url,
-                validator: (value) {
-                  final url = value?.trim();
-                  if (url == null || url.isEmpty) {
-                    return 'Please enter a URL';
-                  }
-                  if (normalizeMirrorUrl(url) == null) {
-                    return 'Please enter a valid HTTPS mirror URL';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Tip: Make sure the mirror uses the same API as freedium-mirror.cfd',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              if (_submissionError != null) ...[
-                const SizedBox(height: 12),
-                Text(
-                  _submissionError!,
-                  style: Theme.of(context).textTheme.bodySmall
-                      ?.copyWith(color: Theme.of(context).colorScheme.error),
-                ),
-              ],
-            ],
+      content: Column(
+        mainAxisSize: .min,
+        children: [
+          M3ETextField(
+            controller: _nameController,
+            label: 'Name',
+            placeholder: 'My Custom Mirror',
+            leading: const Icon(Icons.label),
+            errorText: _nameError,
           ),
-        ),
+          const SizedBox(height: 16),
+          M3ETextField(
+            controller: _urlController,
+            label: 'URL',
+            placeholder: 'https://freedium.example.com',
+            leading: const Icon(Icons.link),
+            keyboardType: .url,
+            errorText: _urlError,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'Tip: Make sure the mirror uses the same API as freedium-mirror.cfd',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+          if (_submissionError != null) ...[
+            const SizedBox(height: 12),
+            Text(
+              _submissionError!,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: Theme.of(context).colorScheme.error),
+            ),
+          ],
+        ],
       ),
       actions: [
         M3EButton.text(
@@ -129,14 +104,25 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
   }
 
   Future<void> _submit() async {
-    setState(() => _submissionError = null);
-    if (!_formKey.currentState!.validate()) {
+    setState(() {
+      _submissionError = null;
+      _nameError = _nameController.text.trim().isEmpty
+          ? 'Please enter a name'
+          : null;
+      final rawUrl = _urlController.text.trim();
+      _urlError = rawUrl.isEmpty
+          ? 'Please enter a URL'
+          : normalizeMirrorUrl(rawUrl) == null
+          ? 'Please enter a valid HTTPS mirror URL'
+          : null;
+    });
+    if (_nameError != null || _urlError != null) {
       return;
     }
 
     HapticFeedback.mediumImpact();
     final rawUrl = _urlController.text.trim();
-    // Validator already guarantees non-null, fallback to trimmed raw.
+    // Validation already guarantees a normalizable URL.
     final url = normalizeMirrorUrl(rawUrl) ?? trimTrailingSlash(rawUrl);
 
     final mirror = FreediumMirror(

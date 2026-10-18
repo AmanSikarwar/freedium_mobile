@@ -36,9 +36,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextFormField).at(0), ' Custom ');
+    await tester.enterText(find.byType(M3ETextField).at(0), ' Custom ');
     await tester.enterText(
-      find.byType(TextFormField).at(1),
+      find.byType(M3ETextField).at(1),
       ' HTTPS://custom.example/// ',
     );
 
@@ -85,9 +85,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'Duplicate');
+    await tester.enterText(find.byType(M3ETextField).at(0), 'Duplicate');
     await tester.enterText(
-      find.byType(TextFormField).at(1),
+      find.byType(M3ETextField).at(1),
       'https://freedium-mirror.cfd',
     );
 
@@ -132,9 +132,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'Custom');
+    await tester.enterText(find.byType(M3ETextField).at(0), 'Custom');
     await tester.enterText(
-      find.byType(TextFormField).at(1),
+      find.byType(M3ETextField).at(1),
       'https://custom.example',
     );
 
