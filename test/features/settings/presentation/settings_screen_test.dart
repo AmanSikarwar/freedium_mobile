@@ -397,7 +397,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: customMirrorCard,
-          matching: find.byType(PopupMenuButton<String>),
+          matching: findTooltip('Mirror options'),
         ),
       );
       await tester.pumpAndSettle();
