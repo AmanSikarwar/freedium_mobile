@@ -10,10 +10,8 @@ void showFontSettingsSheet(
   required double initialFontSize,
   required void Function(double) onFontSizeChanged,
 }) {
-  showModalBottomSheet<void>(
-    context: context,
-    isScrollControlled: true,
-    backgroundColor: Colors.transparent,
+  M3EBottomSheet.show<void>(
+    context,
     builder: (context) {
       return FontSettingsSheet(
         initialFontSize: initialFontSize,
@@ -50,25 +48,13 @@ class _FontSettingsSheetState() extends ConsumerState<FontSettingsSheet> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Container(
+    return Padding(
+      // M3EBottomSheet does not consume keyboard insets; keep the content
+      // above an open keyboard.
       padding: .only(bottom: MediaQuery.of(context).viewInsets.bottom),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainerLow,
-        borderRadius: const .vertical(top: .circular(20)),
-      ),
       child: Column(
         mainAxisSize: .min,
         children: [
-          Container(
-            margin: const .only(top: 12, bottom: 8),
-            width: 40,
-            height: 4,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
-              borderRadius: .circular(2),
-            ),
-          ),
-
           Padding(
             padding: const .symmetric(horizontal: 24, vertical: 16),
             child: Row(

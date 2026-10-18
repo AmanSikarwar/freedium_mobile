@@ -400,14 +400,10 @@ class _WebviewScreenState()
             tooltip: 'Font size',
             icon: const Icon(Icons.text_fields),
             onPressed: () {
-              showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => FontSettingsSheet(
-                  initialFontSize: fontSize,
-                  onFontSizeChanged: webviewNotifier.updateFontSize,
-                ),
+              showFontSettingsSheet(
+                context,
+                initialFontSize: fontSize,
+                onFontSizeChanged: webviewNotifier.updateFontSize,
               );
             },
           ),
