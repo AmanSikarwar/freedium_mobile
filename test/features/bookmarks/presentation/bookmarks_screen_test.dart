@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
+import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
@@ -66,7 +67,7 @@ void main() {
       expect(find.text('medium.com'), findsNWidgets(2));
     });
 
-    testWidgets('reserves enough app bar height for padded search', (
+    testWidgets('reserves full height for the padded search header', (
       tester,
     ) async {
       final bookmark = BookmarkedArticle(
@@ -82,8 +83,8 @@ void main() {
         },
       );
 
-      final appBar = tester.widget<AppBar>(find.byType(AppBar));
-      expect(appBar.bottom?.preferredSize.height, 64);
+      final searchSize = tester.getSize(find.byType(LibrarySearchHeader));
+      expect(searchSize.height, 64);
     });
 
     testWidgets('removes a bookmark after swipe dismissal', (tester) async {
