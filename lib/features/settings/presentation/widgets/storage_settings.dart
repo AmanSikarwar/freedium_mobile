@@ -17,16 +17,16 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        ListTile(
+        M3EListItem(
+          headline: 'Clear Cache',
+          supportingText: 'Clear WebView cache and local storage',
           leading: const Icon(Icons.delete_outline),
-          title: const Text('Clear Cache'),
-          subtitle: const Text('Clear WebView cache and local storage'),
           onTap: () => _clearCache(context, ref),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Check for Updates',
+          supportingText: 'Check if a new version is available',
           leading: const Icon(Icons.update),
-          title: const Text('Check for Updates'),
-          subtitle: const Text('Check if a new version is available'),
           onTap: () => checkForUpdates(context, ref),
         ),
         const M3EDivider(),
@@ -44,23 +44,23 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
             ),
           ),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Version',
+          supportingText: AppConstants.appVersion,
           leading: const Icon(Icons.info_outline),
-          title: const Text('Version'),
-          subtitle: Text(AppConstants.appVersion),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Source Code',
+          supportingText: 'View on GitHub',
           leading: const Icon(Icons.code),
-          title: const Text('Source Code'),
-          subtitle: const Text('View on GitHub'),
           onTap: () => unawaited(
             launchSettingsUrl(context, ref, AppConstants.appSourceUrl),
           ),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Reset to Defaults',
+          supportingText: 'Reset all settings to default values',
           leading: const Icon(Icons.restore),
-          title: const Text('Reset to Defaults'),
-          subtitle: const Text('Reset all settings to default values'),
           onTap: () => _confirmResetDefaults(context, ref),
         ),
       ],

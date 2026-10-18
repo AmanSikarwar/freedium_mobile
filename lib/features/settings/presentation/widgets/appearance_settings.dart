@@ -27,10 +27,10 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return ListTile(
+    return M3EListItem(
+      headline: 'Theme',
+      supportingText: _getThemeModeName(settings.themeMode),
       leading: const Icon(Icons.brightness_6),
-      title: const Text('Theme'),
-      subtitle: Text(_getThemeModeName(settings.themeMode)),
       onTap: () => showThemeChooserBottomSheet(context),
     );
   }
@@ -48,10 +48,10 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return ListTile(
+    return M3EListItem(
+      headline: 'Default Font Size',
+      supportingText: '${settings.defaultFontSize.toInt()}px',
       leading: const Icon(Icons.text_fields),
-      title: const Text('Default Font Size'),
-      subtitle: Text('${settings.defaultFontSize.toInt()}px'),
       onTap: () => showFontSettingsSheet(
         context,
         initialFontSize: settings.defaultFontSize,
@@ -77,8 +77,8 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
   ) {
     return ExpressiveSwitchTile(
       leading: const Icon(Icons.notifications_outlined),
-      title: const Text('Freedium Popups'),
-      subtitle: const Text('Show site announcements and notifications'),
+      title: 'Freedium Popups',
+      subtitle: 'Show site announcements and notifications',
       value: settings.showSitePopups,
       onChanged: (value) async {
         HapticFeedback.lightImpact();

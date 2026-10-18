@@ -82,8 +82,8 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
   ) {
     return ExpressiveSwitchTile(
       leading: const Icon(Icons.swap_horiz),
-      title: const Text('Auto-Switch Mirror'),
-      subtitle: const Text('Automatically use working mirror'),
+      title: 'Auto-Switch Mirror',
+      subtitle: 'Automatically use working mirror',
       value: settings.autoSwitchMirror,
       onChanged: (value) async {
         HapticFeedback.lightImpact();
@@ -105,10 +105,10 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return ListTile(
+    return M3EListItem(
+      headline: 'Mirror Timeout',
+      supportingText: '${settings.mirrorTimeout} seconds',
       leading: const Icon(Icons.timer),
-      title: const Text('Mirror Timeout'),
-      subtitle: Text('${settings.mirrorTimeout} seconds'),
       onTap: () => _showTimeoutDialog(context, settings, notifier),
     );
   }
