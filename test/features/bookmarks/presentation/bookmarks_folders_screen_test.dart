@@ -161,7 +161,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(M3EDialog),
           matching: find.byType(TextField),
         ),
         exportBookmarksJson([
@@ -204,7 +204,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(M3EDialog),
           matching: find.byType(TextField),
         ),
         exportBookmarksJson([], ['Empty']),
@@ -233,7 +233,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(M3EDialog),
           matching: find.byType(TextField),
         ),
         exportBookmarksJson([
@@ -292,7 +292,7 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(M3EDialog),
           matching: find.byType(TextField),
         ),
         'Renamed imported',
@@ -506,7 +506,7 @@ void main() {
       );
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(M3EDialog),
           matching: find.byType(TextField),
         ),
         backup,
@@ -541,7 +541,7 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
+          of: find.byType(M3EDialog),
           matching: find.byType(TextField),
         ),
         'not json',

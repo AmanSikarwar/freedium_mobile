@@ -36,30 +36,37 @@ class _BookmarkImportDialogState() extends ConsumerState<BookmarkImportDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Import bookmarks'),
-    content: SingleChildScrollView(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          M3EButton.outlined(
-            onPressed: _reading ? null : _chooseFile,
-            icon: const Icon(Icons.folder_open),
-            label: Text(_reading ? 'Reading backup...' : 'Choose backup file'),
-          ),
-          const SizedBox(height: 12),
-          TextField(
-            controller: _controller,
-            maxLines: 6,
-            minLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Or paste a bookmarks backup (JSON)',
-              border: OutlineInputBorder(),
+  Widget build(BuildContext context) => M3EDialog(
+    title: 'Import bookmarks',
+    content: Material(
+      // M3EDialog provides no Material ancestor; the Material TextField needs
+      // one until it moves to M3ETextField.
+      type: MaterialType.transparency,
+      child: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            M3EButton.outlined(
+              onPressed: _reading ? null : _chooseFile,
+              icon: const Icon(Icons.folder_open),
+              label: Text(
+                _reading ? 'Reading backup...' : 'Choose backup file',
+              ),
             ),
-          ),
-          if (_error != null) Text(_error!),
-        ],
+            const SizedBox(height: 12),
+            TextField(
+              controller: _controller,
+              maxLines: 6,
+              minLines: 3,
+              decoration: const InputDecoration(
+                hintText: 'Or paste a bookmarks backup (JSON)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            if (_error != null) Text(_error!),
+          ],
+        ),
       ),
     ),
     actions: [

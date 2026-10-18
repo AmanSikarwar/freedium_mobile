@@ -40,9 +40,9 @@ Future<void> exportBookmarkBackup(BuildContext context, WidgetRef ref) async {
 }
 
 Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
-  final raw = await showDialog<String>(
-    context: context,
-    builder: (_) => const BookmarkImportDialog(),
+  final raw = await M3EDialog.show<String>(
+    context,
+    dialog: const BookmarkImportDialog(),
   );
   if (raw == null || !context.mounted) return;
   final BookmarkImport parsed;
@@ -62,10 +62,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
     final limitNote = parsed.bookmarks.length > Bookmarks.maxBookmarks
         ? '\nOnly the newest ${Bookmarks.maxBookmarks} articles will be restored.'
         : '';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Restore unreadable bookmarks?'),
+    final confirmed = await M3EDialog.show<bool>(
+      context,
+      autofocusFirst: false,
+      dialog: M3EDialog(
+        title: 'Restore unreadable bookmarks?',
         content: Text(
           'Freedium could not read the saved bookmark library. Restoring this '
           'backup replaces the unreadable library. A local recovery copy of '
@@ -76,11 +77,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
         ),
         actions: [
           M3EButton.text(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           M3EButton.filled(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Restore backup'),
           ),
         ],
@@ -109,10 +110,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
     Bookmarks.maxBookmarks,
   );
   final retained = fresh.length.clamp(0, available);
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: const Text('Restore bookmarks?'),
+  final confirmed = await M3EDialog.show<bool>(
+    context,
+    autofocusFirst: false,
+    dialog: M3EDialog(
+      title: 'Restore bookmarks?',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,11 +131,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
       ),
       actions: [
         M3EButton.text(
-          onPressed: () => Navigator.pop(dialogContext, false),
+          onPressed: () => Navigator.pop(context, false),
           child: const Text('Cancel'),
         ),
         M3EButton.filled(
-          onPressed: () => Navigator.pop(dialogContext, true),
+          onPressed: () => Navigator.pop(context, true),
           child: const Text('Restore'),
         ),
       ],

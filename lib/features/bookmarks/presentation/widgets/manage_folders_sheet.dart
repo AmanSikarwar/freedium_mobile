@@ -52,9 +52,9 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
   }
 
   Future<void> _rename(String folder) async {
-    final newName = await showDialog<String>(
-      context: context,
-      builder: (_) => RenameBookmarkFolderDialog(folder: folder),
+    final newName = await M3EDialog.show<String>(
+      context,
+      dialog: RenameBookmarkFolderDialog(folder: folder),
     );
     if (newName == null || !mounted) return;
     final didRename = await ref
@@ -69,20 +69,21 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
   }
 
   Future<void> _delete(String folder) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete folder?'),
+    final confirmed = await M3EDialog.show<bool>(
+      context,
+      autofocusFirst: false,
+      dialog: M3EDialog(
+        title: 'Delete folder?',
         content: Text(
           '"$folder" will be removed. Its articles stay bookmarked as Unsorted.',
         ),
         actions: [
           M3EButton.text(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           M3EButton.filled(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
         ],

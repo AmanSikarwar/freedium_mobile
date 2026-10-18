@@ -225,10 +225,7 @@ void main() {
       await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.widgetWithText(AlertDialog, 'Clear Bookmarks'),
-        findsOneWidget,
-      );
+      expect(find.widgetWithText(M3EDialog, 'Clear Bookmarks'), findsOneWidget);
       expect(find.text('Failed to clear bookmarks'), findsOneWidget);
       expect(find.text('No results for "Missing"'), findsOneWidget);
       expect(find.text('No saved articles yet.'), findsNothing);

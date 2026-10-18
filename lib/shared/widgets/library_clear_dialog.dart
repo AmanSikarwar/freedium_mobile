@@ -5,9 +5,7 @@ import 'package:flutter/services.dart';
 /// Confirmation dialog for clearing an entire library list
 /// (reading history, bookmarks).
 ///
-/// Unifies the two previously duplicated `_confirmClear` dialogs. Always pops
-/// with the dialog's own [dialogContext] — the bookmarks copy previously
-/// popped with the outer context by mistake.
+/// Unifies the two previously duplicated `_confirmClear` dialogs.
 Future<void> showLibraryClearDialog({
   required BuildContext context,
   required String title,
@@ -16,25 +14,26 @@ Future<void> showLibraryClearDialog({
   required Future<bool> Function() onClear,
   required VoidCallback onCleared,
 }) {
-  return showDialog(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: Text(title),
+  return M3EDialog.show<void>(
+    context,
+    autofocusFirst: false,
+    dialog: M3EDialog(
+      title: title,
       content: Text(content),
       actions: [
         M3EButton.text(
-          onPressed: () => Navigator.pop(dialogContext),
+          onPressed: () => Navigator.pop(context),
           child: const Text('Cancel'),
         ),
         M3EButton.filled(
           onPressed: () async {
             HapticFeedback.mediumImpact();
             final didClear = await onClear();
-            if (!context.mounted || !dialogContext.mounted) return;
+            if (!context.mounted) return;
 
             if (didClear) {
               onCleared();
-              Navigator.pop(dialogContext);
+              Navigator.pop(context);
               return;
             }
 
