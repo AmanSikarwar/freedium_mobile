@@ -1,4 +1,5 @@
 import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart'
     show libraryContentMaxWidth;
@@ -37,7 +38,7 @@ class const LibrarySearchHeader({
         constraints: const BoxConstraints(maxWidth: libraryContentMaxWidth),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(12, 0, 12, searchBarBottomPadding),
-          child: SearchBar(
+          child: M3ESearchBar(
             controller: controller,
             hintText: hintText,
             leading: const Icon(Icons.search),
@@ -54,6 +55,9 @@ class const LibrarySearchHeader({
             side: WidgetStatePropertyAll(
               BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
             ),
+            // The header supplies its own horizontal inset.
+            margin: 0,
+            focusedMargin: 0,
           ),
         ),
       ),

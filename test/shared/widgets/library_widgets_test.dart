@@ -42,7 +42,7 @@ void main() {
       expect(find.text('Search library…'), findsOneWidget);
       expect(findTooltip('Clear search'), findsNothing);
 
-      await tester.enterText(find.byType(SearchBar), 'Example');
+      await tester.enterText(find.byType(M3ESearchBar), 'Example');
       expect(changedTo, 'Example');
     });
 

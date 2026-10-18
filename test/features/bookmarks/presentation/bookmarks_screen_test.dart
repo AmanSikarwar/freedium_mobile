@@ -165,7 +165,7 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(SearchBar),
+          of: find.byType(M3ESearchBar),
           matching: find.byType(EditableText),
         ),
         'Example',
@@ -211,7 +211,7 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(SearchBar),
+          of: find.byType(M3ESearchBar),
           matching: find.byType(EditableText),
         ),
         'Missing',
