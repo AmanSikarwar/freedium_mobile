@@ -392,7 +392,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(MoveToFolderSheet),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         'Tech',
       );
@@ -425,7 +425,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(ManageFoldersSheet),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         'Reading',
       );

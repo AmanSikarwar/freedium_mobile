@@ -157,16 +157,12 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
-                  child: TextField(
+                  child: M3ETextField(
                     controller: _createController,
-                    decoration: const InputDecoration(
-                      hintText: 'New folder name',
-                      prefixIcon: Icon(Icons.create_new_folder_outlined),
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      counterText: '',
-                    ),
+                    leading: const Icon(Icons.create_new_folder_outlined),
+                    label: 'New folder name',
                     maxLength: maxBookmarkFolderNameLength,
+                    showCounter: false,
                     textInputAction: TextInputAction.done,
                     onSubmitted: (_) => _create(),
                   ),
