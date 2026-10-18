@@ -25,10 +25,14 @@ void main() {
                 child: child!,
               ),
               home: Scaffold(
-                body: RadioGroup<String>(
+                body: M3ERadioGroup<String>(
                   groupValue: mirror.url,
                   onChanged: (_) {},
-                  child: MirrorListTile(mirror: mirror, isSelected: true),
+                  child: MirrorListTile(
+                    mirror: mirror,
+                    selectedMirrorUrl: mirror.url,
+                    onSelect: (_) {},
+                  ),
                 ),
               ),
             ),

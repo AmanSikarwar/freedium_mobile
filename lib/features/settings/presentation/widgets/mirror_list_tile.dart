@@ -9,12 +9,14 @@ import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
 class const MirrorListTile({
   super.key,
   required this.mirror,
-  required this.isSelected,
+  required this.selectedMirrorUrl,
+  required this.onSelect,
   this.onEdit,
   this.onDelete,
 }) extends ConsumerStatefulWidget {
   final FreediumMirror mirror;
-  final bool isSelected;
+  final String? selectedMirrorUrl;
+  final ValueChanged<String> onSelect;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -40,7 +42,11 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
           children: [
             Row(
               children: [
-                Radio<String>(value: widget.mirror.url),
+                M3ERadio<String>(
+                  value: widget.mirror.url,
+                  groupValue: widget.selectedMirrorUrl,
+                  onChanged: widget.onSelect,
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: .start,

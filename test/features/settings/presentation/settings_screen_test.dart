@@ -326,7 +326,8 @@ void main() {
 
       final mirrorRadio = find.byWidgetPredicate(
         (widget) =>
-            widget is Radio<String> && widget.value == 'https://custom.example',
+            widget is M3ERadio<String> &&
+            widget.value == 'https://custom.example',
       );
       await tester.scrollUntilVisible(mirrorRadio, 300);
       await tester.pumpAndSettle();

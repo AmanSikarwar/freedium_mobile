@@ -14,6 +14,20 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider).requireValue;
     final settingsNotifier = ref.read(settingsProvider.notifier);
+
+    Future<void> selectMirror(String url) async {
+      HapticFeedback.selectionClick();
+      final didSave = await settingsNotifier.setSelectedMirror(url);
+      if (!context.mounted) return;
+      if (!didSave) {
+        M3ESnackbar.show(
+          context,
+          message: 'Failed to save selected mirror',
+          duration: const Duration(seconds: 4),
+        );
+      }
+    }
+
     return Column(
       children: [
         _buildAutoSwitchTile(context, settings, settingsNotifier),
@@ -27,28 +41,17 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
                 ?.copyWith(color: Theme.of(context).colorScheme.primary),
           ),
         ),
-        RadioGroup<String>(
+        M3ERadioGroup<String>(
           groupValue: settings.selectedMirrorUrl,
-          onChanged: (url) async {
-            if (url != null) {
-              HapticFeedback.selectionClick();
-              final didSave = await settingsNotifier.setSelectedMirror(url);
-              if (!context.mounted) return;
-              if (!didSave) {
-                M3ESnackbar.show(
-                  context,
-                  message: 'Failed to save selected mirror',
-                  duration: const Duration(seconds: 4),
-                );
-              }
-            }
-          },
+          groupLabel: 'Available Mirrors',
+          onChanged: selectMirror,
           child: Column(
             children: settings.mirrors
                 .map(
                   (mirror) => MirrorListTile(
                     mirror: mirror,
-                    isSelected: mirror.url == settings.selectedMirrorUrl,
+                    selectedMirrorUrl: settings.selectedMirrorUrl,
+                    onSelect: selectMirror,
                     onEdit: mirror.isCustom
                         ? () => showEditMirrorDialog(context, ref, mirror)
                         : null,
