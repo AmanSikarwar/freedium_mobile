@@ -29,7 +29,7 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
           subtitle: const Text('Check if a new version is available'),
           onTap: () => checkForUpdates(context, ref),
         ),
-        const Divider(),
+        const M3EDivider(),
 
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),

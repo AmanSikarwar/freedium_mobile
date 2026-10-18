@@ -77,7 +77,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
                 ),
               ),
 
-              const Divider(),
+              const M3EDivider(),
 
               Expanded(
                 child: Markdown(

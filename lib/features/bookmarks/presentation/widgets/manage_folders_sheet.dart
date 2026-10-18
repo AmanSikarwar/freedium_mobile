@@ -210,7 +210,7 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                     : ListView.separated(
                         shrinkWrap: true,
                         itemCount: folders.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
+                        separatorBuilder: (_, _) => const M3EDivider(),
                         itemBuilder: (context, index) {
                           final folder = folders[index];
                           final count = counts[folder.toLowerCase()] ?? 0;

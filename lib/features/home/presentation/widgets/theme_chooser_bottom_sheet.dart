@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -50,7 +51,7 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
                     ?.copyWith(fontWeight: .bold),
               ),
             ),
-            const Divider(),
+            const M3EDivider(),
             ListTile(
               leading: const Icon(Icons.light_mode),
               title: const Text('Light'),

@@ -22,10 +22,10 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
           children: [
             _buildSectionHeader(context, 'Appearance'),
             const AppearanceSettings(),
-            const Divider(),
+            const M3EDivider(),
             _buildSectionHeader(context, 'Freedium Mirrors'),
             const MirrorSettings(),
-            const Divider(),
+            const M3EDivider(),
             _buildSectionHeader(context, 'Storage & Updates'),
             const StorageSettings(),
             const SizedBox(height: 24),

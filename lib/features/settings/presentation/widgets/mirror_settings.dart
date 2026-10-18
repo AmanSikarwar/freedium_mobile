@@ -18,7 +18,7 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
       children: [
         _buildAutoSwitchTile(context, settings, settingsNotifier),
         _buildMirrorTimeoutTile(context, settings, settingsNotifier),
-        const Divider(height: 1),
+        const M3EDivider(),
         Padding(
           padding: const .symmetric(horizontal: 16, vertical: 8),
           child: Text(

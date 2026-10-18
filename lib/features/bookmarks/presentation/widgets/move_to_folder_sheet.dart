@@ -137,7 +137,7 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
                 ],
               ),
             ),
-            const Divider(),
+            const M3EDivider(),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
