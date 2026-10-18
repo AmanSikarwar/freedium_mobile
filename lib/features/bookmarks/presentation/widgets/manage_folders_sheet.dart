@@ -118,159 +118,154 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
       }
     }
 
-    return Material(
-      // M3EBottomSheet provides no Material ancestor; ListTile and TextField
-      // need one until they migrate to M3EListItem/M3ETextField.
-      type: MaterialType.transparency,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          8,
-          16,
-          24 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Manage folders',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${foldersAsync.value?.length ?? 0}/$maxBookmarkFolders '
-                  'saved · ${folders.length} total',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: M3ETextField(
-                    controller: _createController,
-                    leading: const Icon(Icons.create_new_folder_outlined),
-                    label: 'New folder name',
-                    maxLength: maxBookmarkFolderNameLength,
-                    showCounter: false,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _create(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: ValueListenableBuilder(
-                    valueListenable: _createController,
-                    builder: (context, value, _) {
-                      final hasText = value.text.trim().isNotEmpty;
-                      return M3EButton.tonal(
-                        onPressed: _saving || !hasText ? null : _create,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add'),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Flexible(
-              child: foldersAsync.when(
-                data: (_) => folders.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.create_new_folder_outlined,
-                              size: 40,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'No folders yet. Create one above to organize your bookmarks.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: folders.length,
-                        separatorBuilder: (_, _) => const M3EDivider(),
-                        itemBuilder: (context, index) {
-                          final folder = folders[index];
-                          final count = counts[folder.toLowerCase()] ?? 0;
-                          return M3EListItem(
-                            headline: folder,
-                            supportingText: count == 0
-                                ? 'Empty'
-                                : '$count article${count == 1 ? '' : 's'}',
-                            leading: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.folder,
-                                color: theme.colorScheme.onPrimaryContainer,
-                              ),
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ExpressiveIconButton(
-                                  icon: const Icon(Icons.edit_outlined),
-                                  tooltip: 'Rename',
-                                  onPressed: () => _rename(folder),
-                                ),
-                                ExpressiveIconButton(
-                                  icon: Icon(
-                                    Icons.delete_outline,
-                                    color: theme.colorScheme.error,
-                                  ),
-                                  tooltip: 'Delete',
-                                  onPressed: () => _delete(folder),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: M3EProgressIndicator.circularWavy(),
-                  ),
-                ),
-                error: (_, _) => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text(
-                    'Could not load folders.',
-                    textAlign: TextAlign.center,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        24 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Manage folders',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+              Text(
+                '${foldersAsync.value?.length ?? 0}/$maxBookmarkFolders '
+                'saved · ${folders.length} total',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: M3ETextField(
+                  controller: _createController,
+                  leading: const Icon(Icons.create_new_folder_outlined),
+                  label: 'New folder name',
+                  maxLength: maxBookmarkFolderNameLength,
+                  showCounter: false,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _create(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: ValueListenableBuilder(
+                  valueListenable: _createController,
+                  builder: (context, value, _) {
+                    final hasText = value.text.trim().isNotEmpty;
+                    return M3EButton.tonal(
+                      onPressed: _saving || !hasText ? null : _create,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add'),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Flexible(
+            child: foldersAsync.when(
+              data: (_) => folders.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.create_new_folder_outlined,
+                            size: 40,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No folders yet. Create one above to organize your bookmarks.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: folders.length,
+                      separatorBuilder: (_, _) => const M3EDivider(),
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        final count = counts[folder.toLowerCase()] ?? 0;
+                        return M3EListItem(
+                          headline: folder,
+                          supportingText: count == 0
+                              ? 'Empty'
+                              : '$count article${count == 1 ? '' : 's'}',
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.folder,
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ExpressiveIconButton(
+                                icon: const Icon(Icons.edit_outlined),
+                                tooltip: 'Rename',
+                                onPressed: () => _rename(folder),
+                              ),
+                              ExpressiveIconButton(
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  color: theme.colorScheme.error,
+                                ),
+                                tooltip: 'Delete',
+                                onPressed: () => _delete(folder),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: M3EProgressIndicator.circularWavy(),
+                ),
+              ),
+              error: (_, _) => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  'Could not load folders.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
