@@ -6,8 +6,8 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 
 void showThemeChooserBottomSheet(BuildContext context) {
-  showModalBottomSheet<void>(
-    context: context,
+  M3EBottomSheet.show<void>(
+    context,
     builder: (context) => const ThemeChooserBottomSheet(),
   );
 }
@@ -37,7 +37,10 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
     final settings = ref.watch(settingsProvider).value ?? const SettingsState();
     final settingsNotifier = ref.read(settingsProvider.notifier);
 
-    return SafeArea(
+    return Material(
+      // M3EBottomSheet provides no Material ancestor; ListTile needs one until
+      // the list migrates to M3EListItem.
+      type: MaterialType.transparency,
       child: Padding(
         padding: const .symmetric(vertical: 16),
         child: Column(
