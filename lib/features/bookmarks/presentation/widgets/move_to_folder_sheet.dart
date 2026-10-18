@@ -205,7 +205,9 @@ class const _FolderOption({
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ListTile(
+    return M3EListItem(
+      headline: label,
+      supportingText: subtitle,
       leading: Container(
         width: 40,
         height: 40,
@@ -222,13 +224,10 @@ class const _FolderOption({
               : theme.colorScheme.onSurfaceVariant,
         ),
       ),
-      title: Text(label),
-      subtitle: Text(subtitle),
       trailing: selected
           ? Icon(Icons.check, color: theme.colorScheme.primary)
           : null,
       onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 }

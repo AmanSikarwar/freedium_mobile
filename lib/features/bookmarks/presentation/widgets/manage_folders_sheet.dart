@@ -216,10 +216,11 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                         itemBuilder: (context, index) {
                           final folder = folders[index];
                           final count = counts[folder.toLowerCase()] ?? 0;
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                            ),
+                          return M3EListItem(
+                            headline: folder,
+                            supportingText: count == 0
+                                ? 'Empty'
+                                : '$count article${count == 1 ? '' : 's'}',
                             leading: Container(
                               width: 40,
                               height: 40,
@@ -231,12 +232,6 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
                                 Icons.folder,
                                 color: theme.colorScheme.onPrimaryContainer,
                               ),
-                            ),
-                            title: Text(folder),
-                            subtitle: Text(
-                              count == 0
-                                  ? 'Empty'
-                                  : '$count article${count == 1 ? '' : 's'}',
                             ),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
