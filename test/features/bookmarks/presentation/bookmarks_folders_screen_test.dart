@@ -14,6 +14,7 @@ import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/widgets/manage_folders_sheet.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -390,7 +391,7 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(BottomSheet),
+          of: find.byType(MoveToFolderSheet),
           matching: find.byType(TextField),
         ),
         'Tech',
@@ -423,7 +424,7 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(BottomSheet),
+          of: find.byType(ManageFoldersSheet),
           matching: find.byType(TextField),
         ),
         'Reading',

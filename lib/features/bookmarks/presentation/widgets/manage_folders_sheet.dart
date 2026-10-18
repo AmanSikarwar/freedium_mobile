@@ -7,10 +7,8 @@ import 'package:freedium_mobile/features/bookmarks/presentation/widgets/rename_b
 
 /// Shows the manage-folders bottom sheet (create, rename, delete).
 Future<void> showManageFoldersSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
+  return M3EBottomSheet.show<void>(
+    context,
     builder: (_) => const ManageFoldersSheet(),
   );
 }
@@ -116,7 +114,10 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
       }
     }
 
-    return SafeArea(
+    return Material(
+      // M3EBottomSheet provides no Material ancestor; ListTile and TextField
+      // need one until they migrate to M3EListItem/M3ETextField.
+      type: MaterialType.transparency,
       child: Padding(
         padding: EdgeInsets.fromLTRB(
           16,

@@ -9,9 +9,8 @@ Future<void> showMoveToFolderSheet(
   WidgetRef ref, {
   required String url,
 }) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
+  return M3EBottomSheet.show<void>(
+    context,
     builder: (_) => MoveToFolderSheet(url: url),
   );
 }
@@ -101,9 +100,17 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
       }
     }
 
-    return SafeArea(
+    return Material(
+      // M3EBottomSheet provides no Material ancestor; ListTile and TextField
+      // need one until they migrate to M3EListItem/M3ETextField.
+      type: MaterialType.transparency,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: EdgeInsets.fromLTRB(
+          16,
+          8,
+          16,
+          24 + MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
