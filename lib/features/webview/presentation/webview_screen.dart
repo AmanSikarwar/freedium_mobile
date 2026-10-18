@@ -128,14 +128,12 @@ class _WebviewScreenState()
     if (!mounted || didSave) return;
 
     HapticFeedback.heavyImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          !wasBookmarked && bookmarksNotifier.isAtCapacity()
-              ? Bookmarks.limitMessage
-              : 'Failed to update bookmark',
-        ),
-      ),
+    M3ESnackbar.show(
+      context,
+      message: !wasBookmarked && bookmarksNotifier.isAtCapacity()
+          ? Bookmarks.limitMessage
+          : 'Failed to update bookmark',
+      duration: const Duration(seconds: 4),
     );
   }
 
@@ -150,14 +148,12 @@ class _WebviewScreenState()
       if (!mounted) return;
       if (!didSave) {
         HapticFeedback.heavyImpact();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              bookmarksNotifier.isAtCapacity()
-                  ? Bookmarks.limitMessage
-                  : 'Failed to update bookmark',
-            ),
-          ),
+        M3ESnackbar.show(
+          context,
+          message: bookmarksNotifier.isAtCapacity()
+              ? Bookmarks.limitMessage
+              : 'Failed to update bookmark',
+          duration: const Duration(seconds: 4),
         );
         return;
       }
@@ -183,15 +179,14 @@ class _WebviewScreenState()
     );
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
 
-    // Listen for one-shot user messages and display them as SnackBars.
+    // Listen for one-shot user messages and display them as snackbars.
     ref.listen<WebviewState>(webviewProvider(widget.url), (previous, next) {
       if (next.userMessage != null &&
           next.userMessage != previous?.userMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.userMessage!),
-            duration: const Duration(seconds: 2),
-          ),
+        M3ESnackbar.show(
+          context,
+          message: next.userMessage!,
+          duration: const Duration(seconds: 2),
         );
         webviewNotifier.clearUserMessage();
       }
