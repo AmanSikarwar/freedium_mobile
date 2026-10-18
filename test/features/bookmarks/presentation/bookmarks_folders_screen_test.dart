@@ -163,7 +163,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(M3EDialog),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         exportBookmarksJson([
           for (var i = 0; i < 2; i++)
@@ -206,7 +206,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(M3EDialog),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         exportBookmarksJson([], ['Empty']),
       );
@@ -235,7 +235,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(M3EDialog),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         exportBookmarksJson([
           BookmarkedArticle(
@@ -294,7 +294,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(M3EDialog),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         'Renamed imported',
       );
@@ -508,7 +508,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(M3EDialog),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         backup,
       );
@@ -543,7 +543,7 @@ void main() {
       await tester.enterText(
         find.descendant(
           of: find.byType(M3EDialog),
-          matching: find.byType(TextField),
+          matching: find.byType(M3ETextField),
         ),
         'not json',
       );

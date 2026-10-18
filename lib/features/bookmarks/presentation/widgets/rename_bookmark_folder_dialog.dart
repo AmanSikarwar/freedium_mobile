@@ -32,19 +32,11 @@ class _RenameBookmarkFolderDialogState()
   Widget build(BuildContext context) {
     return M3EDialog(
       title: 'Rename folder',
-      content: Material(
-        // M3EDialog provides no Material ancestor; the Material TextField needs
-        // one until it moves to M3ETextField.
-        type: MaterialType.transparency,
-        child: TextField(
-          controller: _controller,
-          autofocus: true,
-          maxLength: maxBookmarkFolderNameLength,
-          decoration: const InputDecoration(
-            hintText: 'Folder name',
-            border: OutlineInputBorder(),
-          ),
-        ),
+      content: M3ETextField(
+        controller: _controller,
+        autofocus: true,
+        maxLength: maxBookmarkFolderNameLength,
+        label: 'Folder name',
       ),
       actions: [
         M3EButton.text(
