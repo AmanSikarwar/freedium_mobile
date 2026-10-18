@@ -1,4 +1,3 @@
-import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 
 import 'dart:async';
@@ -7,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
-import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
@@ -137,31 +135,6 @@ class _WebviewScreenState()
     );
   }
 
-  /// Long-press action: ensures the article is bookmarked, then opens the
-  /// move-to-folder sheet.
-  Future<void> _moveBookmarkToFolder(Bookmarks bookmarksNotifier) async {
-    final articleUrl = _articleUrl;
-    final title =
-        ref.read(webviewProvider(widget.url)).articleMeta?.title ?? '';
-    if (!bookmarksNotifier.isBookmarked(articleUrl)) {
-      final didSave = await bookmarksNotifier.addBookmark(articleUrl, title);
-      if (!mounted) return;
-      if (!didSave) {
-        HapticFeedback.heavyImpact();
-        M3ESnackbar.show(
-          context,
-          message: bookmarksNotifier.isAtCapacity()
-              ? Bookmarks.limitMessage
-              : 'Failed to update bookmark',
-          duration: const Duration(seconds: 4),
-        );
-        return;
-      }
-    }
-    if (!mounted) return;
-    await showMoveToFolderSheet(context, ref, url: articleUrl);
-  }
-
   @override
   Widget build(BuildContext context) {
     final webviewState = ref.watch(
@@ -283,10 +256,10 @@ class _WebviewScreenState()
             ),
             if (webviewState.hasError)
               _buildErrorWidget(webviewState, webviewNotifier),
+            if (showWebView) _buildActionButtons(),
           ],
         ),
       ),
-      floatingActionButton: showWebView ? _buildActionButtons() : null,
     );
   }
 
@@ -356,7 +329,6 @@ class _WebviewScreenState()
   }
 
   Widget _buildActionButtons() {
-    final theme = Theme.of(context);
     final fontSize = ref.watch(
       webviewProvider(widget.url).select((state) => state.fontSize),
     );
@@ -370,75 +342,37 @@ class _WebviewScreenState()
         ),
       ),
     );
-    final divider = Container(
-      width: 1,
-      height: 24,
-      color: theme.colorScheme.outlineVariant,
-    );
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ExpressiveIconButton(
-            tooltip: 'Font size',
-            icon: const Icon(Icons.text_fields),
-            onPressed: () {
-              showFontSettingsSheet(
-                context,
-                initialFontSize: fontSize,
-                onFontSizeChanged: webviewNotifier.updateFontSize,
-              );
-            },
-          ),
-          divider,
-          Semantics(
-            container: true,
-            button: true,
-            enabled: true,
-            onLongPressHint: 'Move to folder',
-            child: M3EButton.text(
-              tooltip: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
-              semanticLabel: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
-              decoration: M3EButtonDecoration(
-                minimumSize: const Size(48, 48),
-                padding: EdgeInsets.zero,
-                foregroundColor: WidgetStatePropertyAll(
-                  theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              child: Icon(
-                isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              ),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                unawaited(_toggleBookmark(bookmarksNotifier));
-              },
-              onLongPress: () {
-                HapticFeedback.mediumImpact();
-                unawaited(_moveBookmarkToFolder(bookmarksNotifier));
-              },
-            ),
-          ),
-          divider,
-          ExpressiveIconButton(
-            tooltip: 'Share article',
-            icon: const Icon(Icons.share),
-            onPressed: () => unawaited(webviewNotifier.shareArticle()),
-          ),
-        ],
-      ),
+    return M3EToolbar(
+      alignment: Alignment.bottomCenter,
+      semanticLabel: 'Reader actions',
+      actions: [
+        M3EToolbarAction(
+          icon: Icons.text_fields,
+          tooltip: 'Font size',
+          onPressed: () {
+            showFontSettingsSheet(
+              context,
+              initialFontSize: fontSize,
+              onFontSizeChanged: webviewNotifier.updateFontSize,
+            );
+          },
+        ),
+        M3EToolbarAction(
+          icon: isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+          tooltip: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
+          semanticLabel: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            unawaited(_toggleBookmark(bookmarksNotifier));
+          },
+        ),
+        M3EToolbarAction(
+          icon: Icons.share,
+          tooltip: 'Share article',
+          onPressed: () => unawaited(webviewNotifier.shareArticle()),
+        ),
+      ],
     );
   }
 }
