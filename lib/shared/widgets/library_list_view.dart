@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
@@ -63,8 +64,11 @@ class const LibraryListView<T extends Object>({
                 if (!context.mounted) return false;
 
                 if (!didRemove) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(removeFailMessage)));
+                  M3ESnackbar.show(
+                    context,
+                    message: removeFailMessage,
+                    duration: const Duration(seconds: 4),
+                  );
                 }
 
                 return didRemove;

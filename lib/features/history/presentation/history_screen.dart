@@ -188,14 +188,12 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
           .read(historyLimitProvider.notifier)
           .setLimit(limit);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            didApply
-                ? 'Keeping last $limit articles'
-                : 'Could not update history limit',
-          ),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: didApply
+            ? 'Keeping last $limit articles'
+            : 'Could not update history limit',
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -204,16 +202,14 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
           .read(historyProvider.notifier)
           .clearOlderThan(const Duration(days: 30));
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            removed < 0
-                ? 'Could not clear old history'
-                : removed == 0
-                ? 'No articles older than 30 days'
-                : 'Cleared $removed article${removed == 1 ? '' : 's'}',
-          ),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: removed < 0
+            ? 'Could not clear old history'
+            : removed == 0
+            ? 'No articles older than 30 days'
+            : 'Cleared $removed article${removed == 1 ? '' : 's'}',
+        duration: const Duration(seconds: 4),
       );
       return;
     }
