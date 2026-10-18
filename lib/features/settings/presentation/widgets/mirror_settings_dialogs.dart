@@ -55,7 +55,6 @@ void confirmDeleteMirror(
         M3EButton.filled(
           onPressed: () async {
             HapticFeedback.mediumImpact();
-            final scaffoldMessenger = ScaffoldMessenger.of(context);
             final navigator = Navigator.of(context);
             final didRemove = await ref
                 .read(settingsProvider.notifier)
@@ -64,8 +63,10 @@ void confirmDeleteMirror(
             if (didRemove) {
               navigator.pop();
             } else {
-              scaffoldMessenger.showSnackBar(
-                const SnackBar(content: Text('Failed to remove mirror')),
+              M3ESnackbar.show(
+                context,
+                message: 'Failed to remove mirror',
+                duration: const Duration(seconds: 4),
               );
             }
           },

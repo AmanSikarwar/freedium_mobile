@@ -11,24 +11,10 @@ import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/changelog_bottom_sheet.dart';
 
 Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Row(
-        children: [
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: M3EProgressIndicator.circularWavy(
-              strokeWidth: 2,
-              color: Theme.of(context).colorScheme.onInverseSurface,
-            ),
-          ),
-          const SizedBox(width: 16),
-          const Text('Checking for updates...'),
-        ],
-      ),
-      duration: const Duration(seconds: 10),
-    ),
+  M3ESnackbar.show(
+    context,
+    message: 'Checking for updates...',
+    duration: const Duration(seconds: 10),
   );
 
   final updateService = ref.read(updateServiceProvider);
@@ -38,17 +24,17 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
   } on UpdateCheckException {
     if (!context.mounted) return;
 
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(
-        const SnackBar(content: Text('Failed to check for updates')),
-      );
+    M3ESnackbar.show(
+      context,
+      message: 'Failed to check for updates',
+      duration: const Duration(seconds: 4),
+    );
     return;
   }
 
   if (!context.mounted) return;
 
-  ScaffoldMessenger.of(context).hideCurrentSnackBar();
+  M3ESnackbar.defaultController.dismiss();
 
   final availableUpdate = updateInfo;
   if (availableUpdate != null) {
@@ -96,8 +82,10 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
       ),
     );
   } else {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('You are using the latest version!')),
+    M3ESnackbar.show(
+      context,
+      message: 'You are using the latest version!',
+      duration: const Duration(seconds: 4),
     );
   }
 }
@@ -111,6 +99,9 @@ Future<void> launchSettingsUrl(
   if (!context.mounted || launched) return;
 
   HapticFeedback.heavyImpact();
-  ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('Could not open link')));
+  M3ESnackbar.show(
+    context,
+    message: 'Could not open link',
+    duration: const Duration(seconds: 4),
+  );
 }

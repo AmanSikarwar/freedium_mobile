@@ -97,14 +97,12 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
                             .read(settingsProvider.notifier)
                             .restoreDefaultsPreservingUnreadableSnapshot();
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              restored
-                                  ? 'Settings restored to defaults'
-                                  : 'Could not restore default settings',
-                            ),
-                          ),
+                        M3ESnackbar.show(
+                          context,
+                          message: restored
+                              ? 'Settings restored to defaults'
+                              : 'Could not restore default settings',
+                          duration: const Duration(seconds: 4),
                         );
                       },
                       child: const Text('Restore defaults'),

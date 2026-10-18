@@ -32,14 +32,13 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
           onChanged: (url) async {
             if (url != null) {
               HapticFeedback.selectionClick();
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
               final didSave = await settingsNotifier.setSelectedMirror(url);
               if (!context.mounted) return;
               if (!didSave) {
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Failed to save selected mirror'),
-                  ),
+                M3ESnackbar.show(
+                  context,
+                  message: 'Failed to save selected mirror',
+                  duration: const Duration(seconds: 4),
                 );
               }
             }
@@ -88,12 +87,13 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
       value: settings.autoSwitchMirror,
       onChanged: (value) async {
         HapticFeedback.lightImpact();
-        final scaffoldMessenger = ScaffoldMessenger.of(context);
         final didSave = await notifier.setAutoSwitchMirror(value);
         if (!context.mounted) return;
         if (!didSave) {
-          scaffoldMessenger.showSnackBar(
-            const SnackBar(content: Text('Failed to save auto-switch mirror')),
+          M3ESnackbar.show(
+            context,
+            message: 'Failed to save auto-switch mirror',
+            duration: const Duration(seconds: 4),
           );
         }
       },
@@ -158,17 +158,16 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
             M3EButton.filled(
               onPressed: () async {
                 HapticFeedback.lightImpact();
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
                 final navigator = Navigator.of(context);
                 final didSave = await notifier.setMirrorTimeout(timeout);
                 if (!context.mounted) return;
                 if (didSave) {
                   navigator.pop();
                 } else {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to save mirror timeout'),
-                    ),
+                  M3ESnackbar.show(
+                    context,
+                    message: 'Failed to save mirror timeout',
+                    duration: const Duration(seconds: 4),
                   );
                 }
               },

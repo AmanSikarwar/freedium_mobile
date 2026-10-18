@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -55,12 +56,13 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
         context,
         initialFontSize: settings.defaultFontSize,
         onFontSizeChanged: (newSize) async {
-          final scaffoldMessenger = ScaffoldMessenger.of(context);
           final didSave = await notifier.setDefaultFontSize(newSize);
           if (!context.mounted) return;
           if (!didSave) {
-            scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text('Failed to save default font size')),
+            M3ESnackbar.show(
+              context,
+              message: 'Failed to save default font size',
+              duration: const Duration(seconds: 4),
             );
           }
         },
@@ -80,11 +82,12 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
       value: settings.showSitePopups,
       onChanged: (value) async {
         HapticFeedback.lightImpact();
-        final scaffoldMessenger = ScaffoldMessenger.of(context);
         final didSave = await notifier.setShowSitePopups(value);
         if (!context.mounted || didSave) return;
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('Failed to save site popup setting')),
+        M3ESnackbar.show(
+          context,
+          message: 'Failed to save site popup setting',
+          duration: const Duration(seconds: 4),
         );
       },
     );

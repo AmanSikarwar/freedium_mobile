@@ -84,21 +84,18 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
           M3EButton.filled(
             onPressed: () async {
               HapticFeedback.mediumImpact();
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
               final navigator = Navigator.of(context);
               final didReset = await ref
                   .read(settingsProvider.notifier)
                   .resetToDefaults();
               if (!context.mounted) return;
               navigator.pop();
-              scaffoldMessenger.showSnackBar(
-                SnackBar(
-                  content: Text(
-                    didReset
-                        ? 'Settings reset to defaults'
-                        : 'Failed to reset settings',
-                  ),
-                ),
+              M3ESnackbar.show(
+                context,
+                message: didReset
+                    ? 'Settings reset to defaults'
+                    : 'Failed to reset settings',
+                duration: const Duration(seconds: 4),
               );
             },
             child: const Text('Reset'),
@@ -119,12 +116,12 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
       } else {
         HapticFeedback.heavyImpact();
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success ? 'Cache cleared successfully' : 'Failed to clear cache',
-          ),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: success
+            ? 'Cache cleared successfully'
+            : 'Failed to clear cache',
+        duration: const Duration(seconds: 4),
       );
     }
   }
