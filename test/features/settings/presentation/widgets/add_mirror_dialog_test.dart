@@ -15,9 +15,9 @@ void main() {
             return Scaffold(
               body: M3EButton(
                 onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (_) => AddMirrorDialog(
+                  M3EDialog.show<void>(
+                    context,
+                    dialog: AddMirrorDialog(
                       onAdd: (mirror) {
                         addedMirror = mirror;
                         return true;
@@ -64,9 +64,9 @@ void main() {
             return Scaffold(
               body: M3EButton(
                 onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (_) => AddMirrorDialog(
+                  M3EDialog.show<void>(
+                    context,
+                    dialog: AddMirrorDialog(
                       onAdd: (mirror) {
                         submittedMirror = mirror;
                         return false;
@@ -112,9 +112,9 @@ void main() {
             return Scaffold(
               body: M3EButton(
                 onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (_) => AddMirrorDialog(
+                  M3EDialog.show<void>(
+                    context,
+                    dialog: AddMirrorDialog(
                       onAdd: (mirror) async {
                         throw Exception('preferences unavailable');
                       },

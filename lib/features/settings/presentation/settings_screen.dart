@@ -71,23 +71,22 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
                     ),
                     M3EButton.text(
                       onPressed: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            title: const Text('Restore default settings?'),
+                        final confirmed = await M3EDialog.show<bool>(
+                          context,
+                          autofocusFirst: false,
+                          dialog: M3EDialog(
+                            title: 'Restore default settings?',
                             content: const Text(
                               'The unreadable settings will be kept in a local '
                               'recovery copy before defaults are saved.',
                             ),
                             actions: [
                               M3EButton.text(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, false),
+                                onPressed: () => Navigator.pop(context, false),
                                 child: const Text('Cancel'),
                               ),
                               M3EButton.filled(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, true),
+                                onPressed: () => Navigator.pop(context, true),
                                 child: const Text('Restore defaults'),
                               ),
                             ],

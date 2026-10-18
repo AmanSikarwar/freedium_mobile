@@ -8,9 +8,9 @@ import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'add_mirror_dialog.dart';
 
 void showAddMirrorDialog(BuildContext context, WidgetRef ref) {
-  showDialog<void>(
-    context: context,
-    builder: (context) => AddMirrorDialog(
+  M3EDialog.show<void>(
+    context,
+    dialog: AddMirrorDialog(
       onAdd: (mirror) {
         return ref.read(settingsProvider.notifier).addMirror(mirror);
       },
@@ -23,9 +23,9 @@ void showEditMirrorDialog(
   WidgetRef ref,
   FreediumMirror mirror,
 ) {
-  showDialog<void>(
-    context: context,
-    builder: (context) => AddMirrorDialog(
+  M3EDialog.show<void>(
+    context,
+    dialog: AddMirrorDialog(
       existingMirror: mirror,
       onAdd: (updatedMirror) {
         return ref
@@ -41,10 +41,11 @@ void confirmDeleteMirror(
   WidgetRef ref,
   FreediumMirror mirror,
 ) {
-  showDialog<void>(
-    context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Delete Mirror'),
+  M3EDialog.show<void>(
+    context,
+    autofocusFirst: false,
+    dialog: M3EDialog(
+      title: 'Delete Mirror',
       content: Text('Are you sure you want to delete "${mirror.name}"?'),
       actions: [
         M3EButton.text(

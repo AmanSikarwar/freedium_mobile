@@ -52,10 +52,11 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
 
   final availableUpdate = updateInfo;
   if (availableUpdate != null) {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Update Available'),
+    M3EDialog.show<void>(
+      context,
+      autofocusFirst: false,
+      dialog: M3EDialog(
+        title: 'Update Available',
         content: Column(
           mainAxisSize: .min,
           crossAxisAlignment: .start,
@@ -72,19 +73,19 @@ Future<void> checkForUpdates(BuildContext context, WidgetRef ref) async {
         ),
         actions: [
           M3EButton.text(
-            onPressed: () => Navigator.pop(dialogContext),
+            onPressed: () => Navigator.pop(context),
             child: const Text('Later'),
           ),
           M3EButton.text(
             onPressed: () {
-              Navigator.pop(dialogContext);
+              Navigator.pop(context);
               showChangelogBottomSheet(context, availableUpdate);
             },
             child: const Text('Changelog'),
           ),
           M3EButton.filled(
             onPressed: () {
-              Navigator.pop(dialogContext);
+              Navigator.pop(context);
               unawaited(
                 launchSettingsUrl(context, ref, availableUpdate.releaseUrl),
               );

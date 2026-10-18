@@ -120,11 +120,11 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
   ) {
     int timeout = SettingsState.normalizeMirrorTimeout(settings.mirrorTimeout);
 
-    showDialog<void>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Mirror Timeout'),
+    M3EDialog.show<void>(
+      context,
+      dialog: StatefulBuilder(
+        builder: (context, setState) => M3EDialog(
+          title: 'Mirror Timeout',
           content: Column(
             mainAxisSize: .min,
             children: [

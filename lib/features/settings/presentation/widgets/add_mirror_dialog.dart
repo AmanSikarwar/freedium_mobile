@@ -49,63 +49,68 @@ class _AddMirrorDialogState() extends State<AddMirrorDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(isEditing ? 'Edit Mirror' : 'Add Custom Mirror'),
-      content: Form(
-        key: _formKey,
-        child: Column(
-          mainAxisSize: .min,
-          children: [
-            TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                hintText: 'My Custom Mirror',
-                prefixIcon: Icon(Icons.label),
+    return M3EDialog(
+      title: isEditing ? 'Edit Mirror' : 'Add Custom Mirror',
+      content: Material(
+        // M3EDialog provides no Material ancestor; the Material inputs need
+        // one until they move to M3ETextField.
+        type: MaterialType.transparency,
+        child: Form(
+          key: _formKey,
+          child: Column(
+            mainAxisSize: .min,
+            children: [
+              TextFormField(
+                controller: _nameController,
+                decoration: const InputDecoration(
+                  labelText: 'Name',
+                  hintText: 'My Custom Mirror',
+                  prefixIcon: Icon(Icons.label),
+                ),
+                validator: (value) {
+                  if (value == null || value.trim().isEmpty) {
+                    return 'Please enter a name';
+                  }
+                  return null;
+                },
               ),
-              validator: (value) {
-                if (value == null || value.trim().isEmpty) {
-                  return 'Please enter a name';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: _urlController,
-              decoration: const InputDecoration(
-                labelText: 'URL',
-                hintText: 'https://freedium.example.com',
-                prefixIcon: Icon(Icons.link),
+              const SizedBox(height: 16),
+              TextFormField(
+                controller: _urlController,
+                decoration: const InputDecoration(
+                  labelText: 'URL',
+                  hintText: 'https://freedium.example.com',
+                  prefixIcon: Icon(Icons.link),
+                ),
+                keyboardType: .url,
+                validator: (value) {
+                  final url = value?.trim();
+                  if (url == null || url.isEmpty) {
+                    return 'Please enter a URL';
+                  }
+                  if (normalizeMirrorUrl(url) == null) {
+                    return 'Please enter a valid HTTPS mirror URL';
+                  }
+                  return null;
+                },
               ),
-              keyboardType: .url,
-              validator: (value) {
-                final url = value?.trim();
-                if (url == null || url.isEmpty) {
-                  return 'Please enter a URL';
-                }
-                if (normalizeMirrorUrl(url) == null) {
-                  return 'Please enter a valid HTTPS mirror URL';
-                }
-                return null;
-              },
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'Tip: Make sure the mirror uses the same API as freedium-mirror.cfd',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-              ),
-            ),
-            if (_submissionError != null) ...[
-              const SizedBox(height: 12),
+              const SizedBox(height: 16),
               Text(
-                _submissionError!,
-                style: Theme.of(context).textTheme.bodySmall
-                    ?.copyWith(color: Theme.of(context).colorScheme.error),
+                'Tip: Make sure the mirror uses the same API as freedium-mirror.cfd',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
+              if (_submissionError != null) ...[
+                const SizedBox(height: 12),
+                Text(
+                  _submissionError!,
+                  style: Theme.of(context).textTheme.bodySmall
+                      ?.copyWith(color: Theme.of(context).colorScheme.error),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
       actions: [

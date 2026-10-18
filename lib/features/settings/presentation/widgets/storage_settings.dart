@@ -68,10 +68,11 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
   }
 
   void _confirmResetDefaults(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset to Defaults'),
+    M3EDialog.show<void>(
+      context,
+      autofocusFirst: false,
+      dialog: M3EDialog(
+        title: 'Reset to Defaults',
         content: const Text(
           'This will reset all settings to their default values. Continue?',
         ),
