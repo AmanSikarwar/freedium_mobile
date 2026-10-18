@@ -11,11 +11,19 @@ import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
 class const ChangelogBottomSheet({super.key, required this.updateInfo})
-    extends ConsumerWidget {
+    extends ConsumerStatefulWidget {
   final UpdateInfo updateInfo;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ChangelogBottomSheet> createState() =>
+      _ChangelogBottomSheetState();
+}
+
+class _ChangelogBottomSheetState() extends ConsumerState<ChangelogBottomSheet> {
+  bool _isLaunching = false;
+
+  @override
+  Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Column(
@@ -36,7 +44,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Version ${updateInfo.latestVersion}',
+                      'Version ${widget.updateInfo.latestVersion}',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
@@ -58,7 +66,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
         Flexible(
           child: Markdown(
             padding: const .symmetric(horizontal: 24),
-            data: updateInfo.releaseNotes,
+            data: widget.updateInfo.releaseNotes,
             selectable: true,
             styleSheet: MarkdownStyleSheet(
               p: TextStyle(
@@ -132,7 +140,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
               ),
             ),
             onTapLink: (text, href, title) {
-              unawaited(_launchUrl(context, ref, href));
+              unawaited(_launchUrl(context, href));
             },
           ),
         ),
@@ -157,8 +165,7 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
                 unawaited(
                   _launchUrl(
                     context,
-                    ref,
-                    updateInfo.releaseUrl,
+                    widget.updateInfo.releaseUrl,
                     dismissBeforeLaunch: true,
                   ),
                 );
@@ -175,24 +182,29 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
 
   Future<void> _launchUrl(
     BuildContext context,
-    WidgetRef ref,
     String? url, {
     bool dismissBeforeLaunch = false,
   }) async {
-    final launched = await ref.read(externalUrlLauncherProvider)(url);
+    if (_isLaunching) return;
+    _isLaunching = true;
+    try {
+      final launched = await ref.read(externalUrlLauncherProvider)(url);
 
-    if (!context.mounted) return;
-    if (dismissBeforeLaunch) {
-      Navigator.of(context).pop();
+      if (!context.mounted) return;
+      if (dismissBeforeLaunch && (ModalRoute.of(context)?.isCurrent ?? false)) {
+        Navigator.of(context).pop();
+      }
+      if (launched) return;
+
+      HapticFeedback.heavyImpact();
+      M3ESnackbar.show(
+        context,
+        message: 'Could not open link',
+        duration: const Duration(seconds: 4),
+      );
+    } finally {
+      _isLaunching = false;
     }
-    if (launched) return;
-
-    HapticFeedback.heavyImpact();
-    M3ESnackbar.show(
-      context,
-      message: 'Could not open link',
-      duration: const Duration(seconds: 4),
-    );
   }
 }
 
