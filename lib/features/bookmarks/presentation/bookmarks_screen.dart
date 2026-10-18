@@ -313,29 +313,32 @@ class const _FolderFilterBar({
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-        child: Row(
-          children: [
-            _FilterChip(
-              icon: Icons.bookmarks_outlined,
-              label: 'All · $totalCount',
-              selected: selected == null,
-              onSelected: () => onSelected(null),
-            ),
-            if (hasUnsorted)
+        child: M3EChipGroup(
+          groupLabel: 'Filter by folder',
+          child: Row(
+            children: [
               _FilterChip(
-                icon: Icons.folder_outlined,
-                label: 'Unsorted · $unsortedCount',
-                selected: selected == unsortedFolderFilter,
-                onSelected: () => onSelected(unsortedFolderFilter),
+                icon: Icons.bookmarks_outlined,
+                label: 'All · $totalCount',
+                selected: selected == null,
+                onSelected: () => onSelected(null),
               ),
-            for (final folder in folders)
-              _FilterChip(
-                icon: Icons.folder,
-                label: '$folder · ${counts[folder.toLowerCase()] ?? 0}',
-                selected: selected == folder,
-                onSelected: () => onSelected(folder),
-              ),
-          ],
+              if (hasUnsorted)
+                _FilterChip(
+                  icon: Icons.folder_outlined,
+                  label: 'Unsorted · $unsortedCount',
+                  selected: selected == unsortedFolderFilter,
+                  onSelected: () => onSelected(unsortedFolderFilter),
+                ),
+              for (final folder in folders)
+                _FilterChip(
+                  icon: Icons.folder,
+                  label: '$folder · ${counts[folder.toLowerCase()] ?? 0}',
+                  selected: selected == folder,
+                  onSelected: () => onSelected(folder),
+                ),
+            ],
+          ),
         ),
       ),
     );
