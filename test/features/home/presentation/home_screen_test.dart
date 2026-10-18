@@ -257,7 +257,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(
-        find.byType(TextFormField),
+        find.byType(M3ETextField),
         'https://medium.com/manual/story',
       );
       clipboard.text = 'https://medium.com/clipboard/story';

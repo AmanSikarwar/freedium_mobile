@@ -32,7 +32,7 @@ class _HomeScreenState()
     with WidgetsBindingObserver {
   bool _isUpdateCardDismissed = false;
   late final TextEditingController _urlController;
-  final _formKey = GlobalKey<FormState>();
+  String? _urlError;
 
   @override
   void initState() {
@@ -69,6 +69,16 @@ class _HomeScreenState()
     }
 
     _urlController.text = url;
+  }
+
+  String? _validateUrl(String value) {
+    if (value.trim().isEmpty) {
+      return 'Please enter a URL';
+    }
+    if (extractArticleUrl(value) == null) {
+      return 'Please enter a valid URL';
+    }
+    return null;
   }
 
   Future<void> _pasteFromClipboard() async {
@@ -207,39 +217,26 @@ class _HomeScreenState()
                         textAlign: .center,
                         style: TextStyle(fontSize: 32, fontWeight: .bold),
                       ),
-                      Form(
-                        key: _formKey,
-                        autovalidateMode: .onUserInteraction,
-                        child: TextFormField(
-                          controller: _urlController,
-                          decoration: InputDecoration(
-                            hintText: 'Article URL',
-                            prefixIcon: const Icon(Icons.link),
-                            border: const OutlineInputBorder(
-                              borderRadius: .all(.circular(24)),
-                            ),
-                            suffixIcon: ExpressiveIconButton(
-                              icon: const Icon(Icons.paste),
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                unawaited(_pasteFromClipboard());
-                              },
-                              tooltip: 'Paste from clipboard',
-                            ),
-                          ),
-                          keyboardType: .url,
-                          textInputAction: .done,
-                          scrollPadding: const .only(bottom: 120),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter a URL';
-                            }
-                            if (extractArticleUrl(value) == null) {
-                              return 'Please enter a valid URL';
-                            }
-                            return null;
+                      M3ETextField(
+                        controller: _urlController,
+                        label: 'Article URL',
+                        leading: const Icon(Icons.link),
+                        trailing: ExpressiveIconButton(
+                          icon: const Icon(Icons.paste),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            unawaited(_pasteFromClipboard());
                           },
+                          tooltip: 'Paste from clipboard',
                         ),
+                        keyboardType: .url,
+                        textInputAction: .done,
+                        errorText: _urlError,
+                        onChanged: (value) {
+                          if (_urlError != null) {
+                            setState(() => _urlError = _validateUrl(value));
+                          }
+                        },
                       ),
                       SizedBox(
                         width: .infinity,
@@ -256,14 +253,16 @@ class _HomeScreenState()
                           ),
                           onPressed: () {
                             HapticFeedback.mediumImpact();
-                            if (_formKey.currentState!.validate()) {
-                              final url = extractArticleUrl(
-                                _urlController.text,
-                              )!;
-                              _urlController.text = url;
-                              homeNotifier.setUrl(url);
-                              Navigator.of(context).push(webviewRoute(url));
+                            final url = extractArticleUrl(_urlController.text);
+                            if (url == null) {
+                              setState(() {
+                                _urlError = _validateUrl(_urlController.text);
+                              });
+                              return;
                             }
+                            _urlController.text = url;
+                            homeNotifier.setUrl(url);
+                            Navigator.of(context).push(webviewRoute(url));
                           },
                           child: const Text('Read Article'),
                         ),
