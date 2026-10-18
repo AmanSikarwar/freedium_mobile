@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Improved
+
+- Migrated the remaining app chrome to `material_3_expressive`: the M3E
+  theme scope now comes from `ExpressiveTheme`, and dividers, app bars,
+  dialogs, bottom sheets, overflow menus, snackbars, text fields, list
+  rows, radios, the library search bar, bookmark filter chips, and the
+  reader action bar all render M3E components. The reader bookmark
+  long-press shortcut is dropped; move-to-folder remains available from
+  the Bookmarks screen.
+
 ### Changed
 
 - Replaced `listen_sharing_intent` with `receive_intent` (pinned 0.2.8)
