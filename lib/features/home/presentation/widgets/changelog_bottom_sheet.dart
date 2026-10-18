@@ -179,18 +179,19 @@ class const ChangelogBottomSheet({super.key, required this.updateInfo})
     String? url, {
     bool dismissBeforeLaunch = false,
   }) async {
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
+    final launched = await ref.read(externalUrlLauncherProvider)(url);
+
+    if (!context.mounted) return;
     if (dismissBeforeLaunch) {
       Navigator.of(context).pop();
     }
-
-    final launched = await ref.read(externalUrlLauncherProvider)(url);
     if (launched) return;
-    if (!dismissBeforeLaunch && !context.mounted) return;
 
     HapticFeedback.heavyImpact();
-    scaffoldMessenger.showSnackBar(
-      const SnackBar(content: Text('Could not open link')),
+    M3ESnackbar.show(
+      context,
+      message: 'Could not open link',
+      duration: const Duration(seconds: 4),
     );
   }
 }

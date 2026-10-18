@@ -19,15 +19,16 @@ class const ThemeChooserBottomSheet({super.key}) extends ConsumerWidget {
     ThemeMode themeMode,
   ) async {
     HapticFeedback.selectionClick();
-    final scaffoldMessenger = ScaffoldMessenger.of(context);
     final navigator = Navigator.of(context);
     final didSave = await settingsNotifier.setThemeMode(themeMode);
     if (!context.mounted) return;
     if (didSave) {
       navigator.pop();
     } else {
-      scaffoldMessenger.showSnackBar(
-        const SnackBar(content: Text('Failed to save theme')),
+      M3ESnackbar.show(
+        context,
+        message: 'Failed to save theme',
+        duration: const Duration(seconds: 4),
       );
     }
   }

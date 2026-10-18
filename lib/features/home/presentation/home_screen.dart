@@ -76,8 +76,10 @@ class _HomeScreenState()
     if (!mounted) return;
     if (text == null) {
       HapticFeedback.heavyImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not paste from clipboard')),
+      M3ESnackbar.show(
+        context,
+        message: 'Could not paste from clipboard',
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -92,8 +94,11 @@ class _HomeScreenState()
     if (!mounted || launched) return;
 
     HapticFeedback.heavyImpact();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Could not open GitHub')));
+    M3ESnackbar.show(
+      context,
+      message: 'Could not open GitHub',
+      duration: const Duration(seconds: 4),
+    );
   }
 
   @override

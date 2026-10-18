@@ -77,9 +77,9 @@ void main() {
       await tester.tap(findTooltip('Paste from clipboard'));
       await tester.pumpAndSettle();
 
-      final snackBar = find.byType(SnackBar);
-      final surface = tester.widget<Material>(
-        find.descendant(of: snackBar, matching: find.byType(Material)).first,
+      final snackBar = find.byType(M3ESnackbar);
+      final container = tester.widget<Container>(
+        find.descendant(of: snackBar, matching: find.byType(Container)).first,
       );
       final message = tester.widget<RichText>(
         find.descendant(
@@ -87,7 +87,10 @@ void main() {
           matching: find.byType(RichText),
         ),
       );
-      expect(surface.color, scheme.inverseSurface);
+      expect(
+        (container.decoration! as BoxDecoration).color,
+        scheme.inverseSurface,
+      );
       expect(message.text.style?.color, scheme.onInverseSurface);
     });
   }
