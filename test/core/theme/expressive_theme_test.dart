@@ -92,4 +92,28 @@ void main() {
     expect(overlayStyle().statusBarBrightness, Brightness.dark);
     expect(overlayStyle().systemStatusBarContrastEnforced, isFalse);
   });
+
+  testWidgets('filled text fields use the expressive rounded shape', (
+    tester,
+  ) async {
+    late M3ETextFieldTheme textFields;
+    final scheme = ColorScheme.fromSeed(seedColor: const Color(0xff006c4c));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme(Typography.englishLike2021).theme(scheme),
+        builder: (context, child) => ExpressiveTheme(child: child!),
+        home: Builder(
+          builder: (context) {
+            textFields = M3ETheme.of(context).textFieldTheme;
+            return const Scaffold();
+          },
+        ),
+      ),
+    );
+
+    expect(textFields.filledShape, M3EShapes.radiusExtraLarge);
+    expect(textFields.activeIndicatorWidth, 0);
+    expect(textFields.focusActiveIndicatorWidth, 0);
+  });
 }

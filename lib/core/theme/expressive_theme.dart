@@ -16,6 +16,18 @@ class const ExpressiveTheme({required this.child, super.key})
           .toTextTheme(),
     );
     final isDark = material.brightness == Brightness.dark;
+    final base = M3EThemeData.fromMaterial(themed);
+    final themeData = base.copyWith(
+      textFieldTheme: base.textFieldTheme.copyWith(
+        // Filled fields use the expressive rounding of buttons and the search
+        // bar. The M3 spec's bottom indicator paints a full-width bar that
+        // cannot follow rounded corners, so it is disabled; errors still read
+        // through the label, caret and supporting text.
+        filledShape: M3EShapes.radiusExtraLarge,
+        activeIndicatorWidth: 0,
+        focusActiveIndicatorWidth: 0,
+      ),
+    );
     return AnnotatedRegion<SystemUiOverlayStyle>(
       // M3E app bars paint behind the transparent status bar. Keeping the
       // style at the app root ties the icon brightness to the resolved theme;
@@ -28,7 +40,7 @@ class const ExpressiveTheme({required this.child, super.key})
         systemStatusBarContrastEnforced: false,
       ),
       child: M3ETheme(
-        data: M3EThemeData.fromMaterial(themed),
+        data: themeData,
         // M3ETheme projects its color scheme onto Theme.of for descendants and
         // drops native fixed roles. Re-assert the complete native scheme below
         // the M3E scope so Material widgets keep it while M3E components read
