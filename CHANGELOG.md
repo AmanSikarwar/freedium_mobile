@@ -21,6 +21,8 @@ All notable changes to this project will be documented in this file.
   through `intentShareText`, with no media-file handling (unused) and no
   reset API (initial intents are consumed exactly once). This removes the
   last Kotlin Gradle Plugin build warning.
+- Text fields now use the expressive rounded container, so they match
+  the buttons and the search bar.
 
 ### Fixed
 
