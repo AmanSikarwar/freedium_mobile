@@ -22,6 +22,12 @@ All notable changes to this project will be documented in this file.
   reset API (initial intents are consumed exactly once). This removes the
   last Kotlin Gradle Plugin build warning.
 
+### Fixed
+
+- Status bar icons now update when the app switches between light and
+  dark themes; previously they could keep the last style a sheet or
+  dialog applied until an app restart.
+
 ## [0.13.0] - 2026-09-26
 
 ### Added
