@@ -130,9 +130,13 @@ class _HomeScreenState()
             fontWeight: .bold,
           ),
         ),
+      ),
+      bottomNavigationBar: M3EToolbar.docked(
+        semanticLabel: 'Home actions',
         actions: [
-          ExpressiveIconButton(
-            icon: const Icon(Icons.bookmark_border),
+          M3EToolbarAction(
+            icon: Icons.bookmark_border,
+            tooltip: 'Bookmarks',
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.push(
@@ -142,10 +146,10 @@ class _HomeScreenState()
                 ),
               );
             },
-            tooltip: 'Bookmarks',
           ),
-          ExpressiveIconButton(
-            icon: const Icon(Icons.history),
+          M3EToolbarAction(
+            icon: Icons.history,
+            tooltip: 'History',
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.push(
@@ -155,10 +159,10 @@ class _HomeScreenState()
                 ),
               );
             },
-            tooltip: 'History',
           ),
-          ExpressiveIconButton(
-            icon: const Icon(Icons.settings),
+          M3EToolbarAction(
+            icon: Icons.settings,
+            tooltip: 'Settings',
             onPressed: () {
               HapticFeedback.lightImpact();
               Navigator.push(
@@ -168,15 +172,14 @@ class _HomeScreenState()
                 ),
               );
             },
-            tooltip: 'Settings',
           ),
-          ExpressiveIconButton(
-            icon: const Icon(Icons.info),
+          M3EToolbarAction(
+            icon: Icons.info,
+            tooltip: 'About',
             onPressed: () {
               HapticFeedback.lightImpact();
               showAppAboutDialog(context, ref);
             },
-            tooltip: 'About',
           ),
         ],
       ),

@@ -395,4 +395,36 @@ void main() {
       expect(tester.takeException(), isNull);
     });
   });
+
+  testWidgets('keeps navigation actions in the docked bottom toolbar', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          clipboardServiceProvider.overrideWith(
+            (ref) => FakeClipboardService(),
+          ),
+        ],
+        child: MaterialApp(
+          theme: AppTheme(Typography.englishLike2021)
+              .theme(ColorScheme.fromSeed(seedColor: const Color(0xff006c4c))),
+          home: const HomeScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final appBar = tester.widget<M3EAppBar>(find.byType(M3EAppBar));
+    expect(appBar.actions ?? const <Widget>[], isEmpty);
+
+    final toolbar = find.byType(M3EToolbar);
+    expect(toolbar, findsOneWidget);
+    for (final label in ['Bookmarks', 'History', 'Settings', 'About']) {
+      expect(
+        find.descendant(of: toolbar, matching: findTooltip(label)),
+        findsOneWidget,
+      );
+    }
+  });
 }
