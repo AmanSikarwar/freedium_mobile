@@ -23,8 +23,9 @@ All notable changes to this project will be documented in this file.
   last Kotlin Gradle Plugin build warning.
 - Text fields now use the expressive rounded container, so they match
   the buttons and the search bar.
-- The Home screen's Bookmarks, History, Settings, and About actions moved
-  from the top app bar into a docked bottom toolbar.
+- Home, Bookmarks, History, and Settings are now tabs of a floating bottom
+  toolbar: the selected destination expands to an icon and label while the
+  others stay icon-only. About remains in the Home app bar.
 
 ### Fixed
 
