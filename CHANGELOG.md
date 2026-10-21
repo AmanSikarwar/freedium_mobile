@@ -23,6 +23,8 @@ All notable changes to this project will be documented in this file.
   last Kotlin Gradle Plugin build warning.
 - Text fields now use the expressive rounded container, so they match
   the buttons and the search bar.
+- The Home screen's Bookmarks, History, Settings, and About actions moved
+  from the top app bar into a docked bottom toolbar.
 
 ### Fixed
 
