@@ -11,15 +11,12 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
-import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/continue_reading_section.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
-import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/core/routing/app_navigation.dart';
 
 class const HomeScreen({super.key}) extends ConsumerStatefulWidget {
@@ -130,56 +127,14 @@ class _HomeScreenState()
             fontWeight: .bold,
           ),
         ),
-      ),
-      bottomNavigationBar: M3EToolbar.docked(
-        semanticLabel: 'Home actions',
         actions: [
-          M3EToolbarAction(
-            icon: Icons.bookmark_border,
-            tooltip: 'Bookmarks',
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const BookmarksScreen(),
-                ),
-              );
-            },
-          ),
-          M3EToolbarAction(
-            icon: Icons.history,
-            tooltip: 'History',
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const HistoryScreen(),
-                ),
-              );
-            },
-          ),
-          M3EToolbarAction(
-            icon: Icons.settings,
-            tooltip: 'Settings',
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
-            },
-          ),
-          M3EToolbarAction(
-            icon: Icons.info,
-            tooltip: 'About',
+          ExpressiveIconButton(
+            icon: const Icon(Icons.info),
             onPressed: () {
               HapticFeedback.lightImpact();
               showAppAboutDialog(context, ref);
             },
+            tooltip: 'About',
           ),
         ],
       ),
