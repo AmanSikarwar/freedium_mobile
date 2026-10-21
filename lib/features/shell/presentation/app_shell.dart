@@ -63,29 +63,34 @@ class _AppShellState() extends State<AppShell> {
       },
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        body: IndexedStack(
-          index: _index,
+        body: Stack(
+          fit: StackFit.expand,
           children: [
-            for (var i = 0; i < _destinations.length; i++) _buildTab(i),
-          ],
-        ),
-        bottomNavigationBar: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            M3EToolbar(
-              alignment: Alignment.bottomCenter,
-              semanticLabel: 'Main navigation',
-              safeArea: true,
-              actions: [
-                for (var i = 0; i < _destinations.length; i++)
-                  M3EToolbarAction(
-                    icon: _destinations[i].icon,
-                    label: _destinations[i].label,
-                    tooltip: _destinations[i].label,
-                    active: _index == i,
-                    onPressed: () => _select(i),
-                  ),
+            IndexedStack(
+              index: _index,
+              children: [
+                for (var i = 0; i < _destinations.length; i++) _buildTab(i),
               ],
+            ),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: M3EToolbar(
+                alignment: Alignment.bottomCenter,
+                semanticLabel: 'Main navigation',
+                safeArea: true,
+                actions: [
+                  for (var i = 0; i < _destinations.length; i++)
+                    M3EToolbarAction(
+                      icon: _destinations[i].icon,
+                      label: _destinations[i].label,
+                      tooltip: _destinations[i].label,
+                      active: _index == i,
+                      onPressed: () => _select(i),
+                    ),
+                ],
+              ),
             ),
           ],
         ),

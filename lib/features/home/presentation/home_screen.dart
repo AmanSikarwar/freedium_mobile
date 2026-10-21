@@ -8,6 +8,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
@@ -147,6 +148,9 @@ class _HomeScreenState()
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
               keyboardDismissBehavior: .onDrag,
+              padding: EdgeInsets.only(
+                bottom: floatingToolbarClearance(context),
+              ),
               child: ConstrainedBox(
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Align(

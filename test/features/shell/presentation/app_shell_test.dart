@@ -87,6 +87,30 @@ void main() {
     expect(find.byType(HomeScreen, skipOffstage: false), findsOneWidget);
   });
 
+  testWidgets('lets tab content scroll above the floating toolbar', (
+    tester,
+  ) async {
+    final prefs = await mockPrefs();
+    await tester.pumpWidget(_app(prefs));
+    await tester.pumpAndSettle();
+
+    final toolbar = find.byType(M3EToolbar);
+    await tester.tap(
+      find.descendant(of: toolbar, matching: find.byIcon(Icons.settings)),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(ListView), const Offset(0, -4000));
+    await tester.pumpAndSettle();
+
+    final lastItem = find.text('Reset to Defaults');
+    expect(lastItem, findsOneWidget);
+    expect(
+      tester.getBottomLeft(lastItem).dy,
+      lessThan(tester.getTopLeft(toolbar).dy),
+    );
+  });
+
   testWidgets('system back returns to the home tab', (tester) async {
     final prefs = await mockPrefs();
     await tester.pumpWidget(_app(prefs));

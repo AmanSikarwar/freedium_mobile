@@ -1,6 +1,7 @@
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 
 import 'widgets/appearance_settings.dart';
@@ -19,6 +20,7 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
           titleText: 'Settings',
         ),
         body: ListView(
+          padding: EdgeInsets.only(bottom: floatingToolbarClearance(context)),
           children: [
             _buildSectionHeader(context, 'Appearance'),
             const AppearanceSettings(),
