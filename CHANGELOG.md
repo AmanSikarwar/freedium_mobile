@@ -25,7 +25,8 @@ All notable changes to this project will be documented in this file.
   the buttons and the search bar.
 - Home, Bookmarks, History, and Settings are now tabs of a floating bottom
   toolbar: the selected destination expands to an icon and label while the
-  others stay icon-only. About remains in the Home app bar.
+  others stay icon-only. The toolbar floats over the content, which scrolls
+  behind it. About remains in the Home app bar.
 
 ### Fixed
 
