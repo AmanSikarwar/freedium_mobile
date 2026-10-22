@@ -31,6 +31,8 @@ All notable changes to this project will be documented in this file.
 
 ### Fixed
 
+- Home content is centered in the space above the floating toolbar and no
+  longer scrolls into empty space when the page is short.
 - Tab crossfades stay smooth when tapping through destinations quickly.
 - Status bar icons now update when the app switches between light and
   dark themes; previously they could keep the last style a sheet or
