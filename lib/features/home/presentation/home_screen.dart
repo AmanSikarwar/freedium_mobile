@@ -3,6 +3,7 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -116,6 +117,11 @@ class _HomeScreenState()
     final history =
         ref.watch(historyProvider).value ?? const <ReadingHistory>[];
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    // The toolbar hides behind the keyboard while editing, so only reserve
+    // room for it when the keyboard is closed.
+    final toolbarClearance = keyboardInset > 0
+        ? 0.0
+        : floatingToolbarClearance(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -148,11 +154,14 @@ class _HomeScreenState()
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
               keyboardDismissBehavior: .onDrag,
-              padding: EdgeInsets.only(
-                bottom: floatingToolbarClearance(context),
-              ),
+              padding: EdgeInsets.only(bottom: toolbarClearance),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                constraints: BoxConstraints(
+                  minHeight: math.max(
+                    0.0,
+                    constraints.maxHeight - toolbarClearance,
+                  ),
+                ),
                 child: Align(
                   child: Column(
                     spacing: 24,

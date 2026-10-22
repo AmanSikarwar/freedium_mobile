@@ -114,6 +114,33 @@ void main() {
       expect(find.text('Get Article'), findsNothing);
     });
 
+    testWidgets('does not scroll into empty space above the toolbar', (
+      tester,
+    ) async {
+      final clipboard = FakeClipboardService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final scrollable = find
+          .descendant(
+            of: find.byType(SingleChildScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      expect(
+        tester.state<ScrollableState>(scrollable).position.maxScrollExtent,
+        0,
+      );
+    });
+
     testWidgets('paste button exposes an accessible label', (tester) async {
       final semantics = tester.ensureSemantics();
       final clipboard = FakeClipboardService();
