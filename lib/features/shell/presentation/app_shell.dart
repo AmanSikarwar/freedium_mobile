@@ -82,6 +82,7 @@ class _AppShellState()
   void _select(int index) {
     if (index == _index) return;
     HapticFeedback.lightImpact();
+    FocusManager.instance.primaryFocus?.unfocus();
 
     final double progress = Curves.easeInOut.transform(_crossfade.value);
     final starts = <int, double>{};
@@ -123,11 +124,14 @@ class _AppShellState()
           final double opacity = isSelected
               ? start + (1 - start) * progress
               : start * (1 - progress);
-          return IgnorePointer(
-            ignoring: !isSelected,
-            child: ExcludeSemantics(
-              excluding: !isSelected,
-              child: Opacity(opacity: opacity, child: child),
+          return ExcludeFocus(
+            excluding: !isSelected,
+            child: IgnorePointer(
+              ignoring: !isSelected,
+              child: ExcludeSemantics(
+                excluding: !isSelected,
+                child: Opacity(opacity: opacity, child: child),
+              ),
             ),
           );
         },

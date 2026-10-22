@@ -186,6 +186,38 @@ void main() {
     );
   });
 
+  testWidgets('drops focus from a hidden tab', (tester) async {
+    await _pumpShell(tester);
+
+    await tester.enterText(
+      find.byType(M3ETextField),
+      'https://medium.com/focus',
+    );
+    await tester.pump();
+
+    final field = tester.widget<EditableText>(
+      find.descendant(
+        of: find.byType(M3ETextField),
+        matching: find.byType(EditableText),
+      ),
+    );
+    expect(field.focusNode.hasFocus, isTrue);
+
+    await tester.tap(
+      find.descendant(
+        of: find.byType(M3EToolbar),
+        matching: find.byIcon(Icons.settings),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(field.focusNode.hasFocus, isFalse);
+
+    // Hidden tabs must not take focus back while another tab is selected.
+    field.focusNode.requestFocus();
+    await tester.pump();
+    expect(field.focusNode.hasFocus, isFalse);
+  });
+
   testWidgets('system back returns to the home tab', (tester) async {
     await _pumpShell(tester);
 
