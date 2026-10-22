@@ -111,6 +111,44 @@ void main() {
     );
   });
 
+  testWidgets('crossfades between tabs', (tester) async {
+    final prefs = await mockPrefs();
+    await tester.pumpWidget(_app(prefs));
+    await tester.pumpAndSettle();
+
+    final toolbar = find.byType(M3EToolbar);
+    await tester.tap(
+      find.descendant(
+        of: toolbar,
+        matching: find.byIcon(Icons.bookmark_border),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 110));
+
+    expect(find.byType(HomeScreen), findsOneWidget);
+    expect(find.byType(BookmarksScreen), findsOneWidget);
+
+    final homeOpacity = tester.widget<Opacity>(
+      find
+          .ancestor(of: find.byType(HomeScreen), matching: find.byType(Opacity))
+          .first,
+    );
+    final bookmarksOpacity = tester.widget<Opacity>(
+      find
+          .ancestor(
+            of: find.byType(BookmarksScreen),
+            matching: find.byType(Opacity),
+          )
+          .first,
+    );
+    expect(homeOpacity.opacity, inExclusiveRange(0, 1));
+    expect(bookmarksOpacity.opacity, inExclusiveRange(0, 1));
+
+    await tester.pumpAndSettle();
+    expect(find.byType(HomeScreen), findsNothing);
+  });
+
   testWidgets('system back returns to the home tab', (tester) async {
     final prefs = await mockPrefs();
     await tester.pumpWidget(_app(prefs));
