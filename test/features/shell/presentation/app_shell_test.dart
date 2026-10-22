@@ -89,6 +89,34 @@ void main() {
     expect(find.byType(HomeScreen, skipOffstage: false), findsOneWidget);
   });
 
+  testWidgets('keeps typed input when switching tabs', (tester) async {
+    await _pumpShell(tester);
+
+    await tester.enterText(
+      find.byType(M3ETextField),
+      'https://medium.com/kept',
+    );
+    await tester.tap(
+      find.descendant(
+        of: find.byType(M3EToolbar),
+        matching: find.byIcon(Icons.settings),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.tap(
+      find.descendant(
+        of: find.byType(M3EToolbar),
+        matching: find.byIcon(Icons.home_outlined),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      tester.widget<M3ETextField>(find.byType(M3ETextField)).controller?.text,
+      'https://medium.com/kept',
+    );
+  });
+
   testWidgets('lets tab content scroll above the floating toolbar', (
     tester,
   ) async {
@@ -105,10 +133,9 @@ void main() {
 
     final lastItem = find.text('Reset to Defaults');
     expect(lastItem, findsOneWidget);
-    expect(
-      tester.getBottomLeft(lastItem).dy,
-      lessThan(tester.getTopLeft(toolbar).dy),
-    );
+    final pillTop =
+        tester.getTopLeft(toolbar).dy + M3EToolbarTokens.screenOffset;
+    expect(tester.getBottomLeft(lastItem).dy, lessThan(pillTop));
   });
 
   testWidgets('crossfades between tabs', (tester) async {
