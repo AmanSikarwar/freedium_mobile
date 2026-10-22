@@ -37,10 +37,15 @@ class _AppShellState()
 
   late final AnimationController _crossfade;
   int _index = 0;
-  int? _previousIndex;
 
   /// Tabs are built on first visit so unopened screens do not load data.
   final Set<int> _visited = {0};
+
+  /// Opacity each visible tab started the current crossfade from.
+  ///
+  /// Keeping a start per tab (instead of a single outgoing tab) keeps the fade
+  /// continuous when another destination is tapped mid-transition.
+  final Map<int, double> _fadeStarts = <int, double>{};
 
   @override
   void initState() {
@@ -61,16 +66,36 @@ class _AppShellState()
   }
 
   void _handleCrossfadeStatus(AnimationStatus status) {
-    if (status == AnimationStatus.completed && _previousIndex != null) {
-      setState(() => _previousIndex = null);
+    if (status == AnimationStatus.completed && _fadeStarts.isNotEmpty) {
+      setState(_fadeStarts.clear);
     }
+  }
+
+  /// Current opacity of [index] at [progress] through the crossfade.
+  double _opacityAt(int index, double progress) {
+    final double start = _fadeStarts[index] ?? 0;
+    return index == _index
+        ? start + (1 - start) * progress
+        : start * (1 - progress);
   }
 
   void _select(int index) {
     if (index == _index) return;
     HapticFeedback.lightImpact();
+
+    final double progress = Curves.easeInOut.transform(_crossfade.value);
+    final starts = <int, double>{};
+    for (final tab in {_index, ..._fadeStarts.keys, index}) {
+      final double opacity = _opacityAt(tab, progress);
+      if (opacity > 0) {
+        starts[tab] = opacity;
+      }
+    }
+
     setState(() {
-      _previousIndex = _index;
+      _fadeStarts
+        ..clear()
+        ..addAll(starts);
       _index = index;
       _visited.add(index);
     });
@@ -86,26 +111,23 @@ class _AppShellState()
 
   Widget _buildTabLayer(int index) {
     final bool isSelected = index == _index;
-    final bool isFadingOut = index == _previousIndex;
+    final bool isVisible = isSelected || _fadeStarts.containsKey(index);
     return Offstage(
-      offstage: !isSelected && !isFadingOut,
+      offstage: !isVisible,
       child: AnimatedBuilder(
         animation: _crossfade,
         child: _buildTab(index),
         builder: (context, child) {
           final double progress = Curves.easeInOut.transform(_crossfade.value);
+          final double start = _fadeStarts[index] ?? 0;
+          final double opacity = isSelected
+              ? start + (1 - start) * progress
+              : start * (1 - progress);
           return IgnorePointer(
             ignoring: !isSelected,
             child: ExcludeSemantics(
               excluding: !isSelected,
-              child: Opacity(
-                opacity: isSelected
-                    ? progress
-                    : isFadingOut
-                    ? 1 - progress
-                    : 0,
-                child: child,
-              ),
+              child: Opacity(opacity: opacity, child: child),
             ),
           );
         },

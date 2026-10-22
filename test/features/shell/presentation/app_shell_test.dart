@@ -6,6 +6,7 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
+import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
 
@@ -144,6 +145,45 @@ void main() {
 
     await tester.pumpAndSettle();
     expect(find.byType(HomeScreen), findsNothing);
+  });
+
+  testWidgets('keeps the crossfade continuous when tabs change quickly', (
+    tester,
+  ) async {
+    await _pumpShell(tester);
+
+    final toolbar = find.byType(M3EToolbar);
+    await tester.tap(
+      find.descendant(
+        of: toolbar,
+        matching: find.byIcon(Icons.bookmark_border),
+      ),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    double opacityOf(Finder screen) => tester
+        .widget<Opacity>(
+          find.ancestor(of: screen, matching: find.byType(Opacity)).first,
+        )
+        .opacity;
+
+    final homeBefore = opacityOf(find.byType(HomeScreen));
+    final bookmarksBefore = opacityOf(find.byType(BookmarksScreen));
+    expect(homeBefore, inExclusiveRange(0, 1));
+    expect(bookmarksBefore, inExclusiveRange(0, 1));
+
+    await tester.tap(
+      find.descendant(of: toolbar, matching: find.byIcon(Icons.history)),
+    );
+    await tester.pump();
+
+    expect(opacityOf(find.byType(HistoryScreen)), lessThan(0.05));
+    expect(opacityOf(find.byType(HomeScreen)), closeTo(homeBefore, 0.03));
+    expect(
+      opacityOf(find.byType(BookmarksScreen)),
+      closeTo(bookmarksBefore, 0.03),
+    );
   });
 
   testWidgets('system back returns to the home tab', (tester) async {
