@@ -8,26 +8,29 @@ import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../test_helpers.dart';
 
-Widget _app(SharedPreferences prefs) => ProviderScope(
-  overrides: [sharedPreferencesProvider.overrideWith((ref) async => prefs)],
-  child: MaterialApp(
-    theme: AppTheme(Typography.englishLike2021)
-        .theme(ColorScheme.fromSeed(seedColor: const Color(0xff006c4c))),
-    home: const AppShell(),
-  ),
-);
+Future<void> _pumpShell(WidgetTester tester) async {
+  final prefs = await mockPrefs();
+  await tester.pumpWidget(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWith((ref) async => prefs)],
+      child: MaterialApp(
+        theme: AppTheme(Typography.englishLike2021)
+            .theme(ColorScheme.fromSeed(seedColor: const Color(0xff006c4c))),
+        home: const AppShell(),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+}
 
 void main() {
   testWidgets('floats a labelled toolbar above the selected destination', (
     tester,
   ) async {
-    final prefs = await mockPrefs();
-    await tester.pumpWidget(_app(prefs));
-    await tester.pumpAndSettle();
+    await _pumpShell(tester);
 
     final toolbar = find.byType(M3EToolbar);
     expect(toolbar, findsOneWidget);
@@ -51,9 +54,7 @@ void main() {
   });
 
   testWidgets('switches tabs and labels the new destination', (tester) async {
-    final prefs = await mockPrefs();
-    await tester.pumpWidget(_app(prefs));
-    await tester.pumpAndSettle();
+    await _pumpShell(tester);
 
     final toolbar = find.byType(M3EToolbar);
     await tester.tap(
@@ -90,9 +91,7 @@ void main() {
   testWidgets('lets tab content scroll above the floating toolbar', (
     tester,
   ) async {
-    final prefs = await mockPrefs();
-    await tester.pumpWidget(_app(prefs));
-    await tester.pumpAndSettle();
+    await _pumpShell(tester);
 
     final toolbar = find.byType(M3EToolbar);
     await tester.tap(
@@ -112,9 +111,7 @@ void main() {
   });
 
   testWidgets('crossfades between tabs', (tester) async {
-    final prefs = await mockPrefs();
-    await tester.pumpWidget(_app(prefs));
-    await tester.pumpAndSettle();
+    await _pumpShell(tester);
 
     final toolbar = find.byType(M3EToolbar);
     await tester.tap(
@@ -150,9 +147,7 @@ void main() {
   });
 
   testWidgets('system back returns to the home tab', (tester) async {
-    final prefs = await mockPrefs();
-    await tester.pumpWidget(_app(prefs));
-    await tester.pumpAndSettle();
+    await _pumpShell(tester);
 
     final toolbar = find.byType(M3EToolbar);
     await tester.tap(
