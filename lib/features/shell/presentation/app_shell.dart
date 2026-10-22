@@ -22,12 +22,17 @@ class const AppShell({super.key}) extends StatefulWidget {
 class _AppShellState()
     extends State<AppShell>
     with SingleTickerProviderStateMixin {
-  static const List<({String label, IconData icon})> _destinations = [
-    (label: 'Home', icon: Icons.home_outlined),
-    (label: 'Bookmarks', icon: Icons.bookmark_border),
-    (label: 'History', icon: Icons.history),
-    (label: 'Settings', icon: Icons.settings),
-  ];
+  static const List<({String label, IconData icon, Widget tab})> _destinations =
+      [
+        (label: 'Home', icon: Icons.home_outlined, tab: HomeScreen()),
+        (
+          label: 'Bookmarks',
+          icon: Icons.bookmark_border,
+          tab: BookmarksScreen(),
+        ),
+        (label: 'History', icon: Icons.history, tab: HistoryScreen()),
+        (label: 'Settings', icon: Icons.settings, tab: SettingsScreen()),
+      ];
   static const Duration _crossfadeDuration = Duration(milliseconds: 220);
 
   late final AnimationController _crossfade;
@@ -76,12 +81,7 @@ class _AppShellState()
     if (!_visited.contains(index)) {
       return const SizedBox.shrink();
     }
-    return switch (index) {
-      0 => const HomeScreen(),
-      1 => const BookmarksScreen(),
-      2 => const HistoryScreen(),
-      _ => const SettingsScreen(),
-    };
+    return _destinations[index].tab;
   }
 
   Widget _buildTabLayer(int index) {
