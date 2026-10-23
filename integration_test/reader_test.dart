@@ -122,16 +122,26 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
           'Native article',
     );
     // Exercise native touch dispatch through the composition mode, as well as
-    // the existing programmatic progress/navigation checks below.
-    await tester.fling(find.byType(WebViewWidget), const Offset(0, -500), 1200);
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(
-      double.parse(
+    // the existing programmatic progress/navigation checks below. A stepped
+    // drag instead of a fling keeps this deterministic on emulators whose
+    // animations are disabled.
+    final thumb = await tester.startGesture(
+      tester.getCenter(find.byType(WebViewWidget)),
+    );
+    for (var i = 0; i < 10; i++) {
+      await thumb.moveBy(const Offset(0, -30));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await thumb.up();
+    var scrollY = 0.0;
+    for (var i = 0; i < 10 && scrollY == 0; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      scrollY = double.parse(
         (await controller.runJavaScriptReturningResult('window.scrollY'))
             .toString(),
-      ),
-      greaterThan(0),
-    );
+      );
+    }
+    expect(scrollY, greaterThan(0));
     // Hydrated code blocks must get the same colors and copy actions as the
     // initial document, without relying on delayed full-document rescans.
     await controller.runJavaScript(r'''
