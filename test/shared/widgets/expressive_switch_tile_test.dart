@@ -16,8 +16,8 @@ void main() {
           body: StatefulBuilder(
             builder: (context, setState) {
               return ExpressiveSwitchTile(
-                title: const Text('Site popups'),
-                subtitle: const Text('Show announcements'),
+                title: 'Site popups',
+                subtitle: 'Show announcements',
                 leading: const Icon(Icons.notifications_outlined),
                 value: value,
                 onChanged: (next) => setState(() {

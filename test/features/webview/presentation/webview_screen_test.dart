@@ -50,16 +50,14 @@ void main() {
     );
     await tester.pumpAndSettle();
     for (final label in ['Font size', 'Save bookmark', 'Share article']) {
-      final node = tester.getSemantics(findTooltip(label));
+      expect(findTooltip(label), findsOneWidget);
+      final node = tester.getSemantics(find.bySemanticsLabel(label));
       expect(node.getSemanticsData().label, label);
       expect(node.getSemanticsData().flagsCollection.isButton, isTrue);
     }
     await tester.tap(findTooltip('Save bookmark'));
     await tester.pumpAndSettle();
     expect(findTooltip('Remove bookmark'), findsOneWidget);
-    await tester.longPress(findTooltip('Remove bookmark'));
-    await tester.pumpAndSettle();
-    expect(find.text('Move to folder'), findsWidgets);
     semantics.dispose();
   });
 

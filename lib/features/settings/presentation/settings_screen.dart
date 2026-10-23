@@ -1,6 +1,7 @@
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 
 import 'widgets/appearance_settings.dart';
@@ -19,13 +20,14 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
           titleText: 'Settings',
         ),
         body: ListView(
+          padding: EdgeInsets.only(bottom: floatingToolbarClearance(context)),
           children: [
             _buildSectionHeader(context, 'Appearance'),
             const AppearanceSettings(),
-            const Divider(),
+            const M3EDivider(),
             _buildSectionHeader(context, 'Freedium Mirrors'),
             const MirrorSettings(),
-            const Divider(),
+            const M3EDivider(),
             _buildSectionHeader(context, 'Storage & Updates'),
             const StorageSettings(),
             const SizedBox(height: 24),
@@ -71,23 +73,22 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
                     ),
                     M3EButton.text(
                       onPressed: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (dialogContext) => AlertDialog(
-                            title: const Text('Restore default settings?'),
+                        final confirmed = await M3EDialog.show<bool>(
+                          context,
+                          autofocusFirst: false,
+                          dialog: M3EDialog(
+                            title: 'Restore default settings?',
                             content: const Text(
                               'The unreadable settings will be kept in a local '
                               'recovery copy before defaults are saved.',
                             ),
                             actions: [
                               M3EButton.text(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, false),
+                                onPressed: () => Navigator.pop(context, false),
                                 child: const Text('Cancel'),
                               ),
                               M3EButton.filled(
-                                onPressed: () =>
-                                    Navigator.pop(dialogContext, true),
+                                onPressed: () => Navigator.pop(context, true),
                                 child: const Text('Restore defaults'),
                               ),
                             ],
@@ -98,14 +99,12 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
                             .read(settingsProvider.notifier)
                             .restoreDefaultsPreservingUnreadableSnapshot();
                         if (!context.mounted) return;
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              restored
-                                  ? 'Settings restored to defaults'
-                                  : 'Could not restore default settings',
-                            ),
-                          ),
+                        M3ESnackbar.show(
+                          context,
+                          message: restored
+                              ? 'Settings restored to defaults'
+                              : 'Could not restore default settings',
+                          duration: const Duration(seconds: 4),
                         );
                       },
                       child: const Text('Restore defaults'),

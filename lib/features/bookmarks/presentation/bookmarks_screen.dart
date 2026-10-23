@@ -94,29 +94,27 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Bookmarks'),
-            if (bookmarks.isNotEmpty)
-              Text(
-                '${bookmarks.length} ${bookmarks.length == 1 ? 'article' : 'articles'}',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-          ],
-        ),
+      appBar: M3EAppBar.top(
+        automaticallyImplyLeading: true,
+        titleText: 'Bookmarks',
+        subtitleText: bookmarks.isNotEmpty
+            ? '${bookmarks.length} ${bookmarks.length == 1 ? 'article' : 'articles'}'
+            : null,
         actions: [
           ExpressiveIconButton(
             icon: const Icon(Icons.create_new_folder_outlined),
             tooltip: 'Manage folders',
             onPressed: () => showManageFoldersSheet(context),
           ),
-          PopupMenuButton<String>(
-            tooltip: 'More actions',
-            enabled: bookmarksAsync.hasValue || bookmarksAsync.hasError,
+          M3EMenu.entries(
+            anchorBuilder: (context, open) => ExpressiveIconButton(
+              icon: const Icon(Icons.more_vert),
+              tooltip: 'More actions',
+              onPressed: (bookmarksAsync.hasValue || bookmarksAsync.hasError)
+                  ? open
+                  : null,
+            ),
+            position: M3EMenuAnchorPosition.bottomEnd,
             onSelected: (value) {
               switch (value) {
                 case 'export':
@@ -127,143 +125,152 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
                   _confirmClear(context);
               }
             },
-            itemBuilder: (context) => [
+            entries: [
               if (bookmarks.isNotEmpty || folders.isNotEmpty)
-                const PopupMenuItem(
+                const M3EMenuEntry(
+                  label: 'Export bookmarks',
                   value: 'export',
-                  child: _OverflowMenuRow(
-                    icon: Icons.upload_outlined,
-                    label: 'Export bookmarks',
-                  ),
+                  leading: Icon(Icons.upload_outlined),
                 ),
-              const PopupMenuItem(
+              const M3EMenuEntry(
+                label: 'Import bookmarks',
                 value: 'import',
-                child: _OverflowMenuRow(
-                  icon: Icons.download_outlined,
-                  label: 'Import bookmarks',
-                ),
+                leading: Icon(Icons.download_outlined),
               ),
               if (bookmarks.isNotEmpty)
-                const PopupMenuItem(
+                const M3EMenuEntry(
+                  label: 'Clear bookmarks',
                   value: 'clear',
-                  child: _OverflowMenuRow(
-                    icon: Icons.delete_sweep_outlined,
-                    label: 'Clear bookmarks',
-                  ),
+                  leading: Icon(Icons.delete_sweep_outlined),
+                  isDestructive: true,
                 ),
             ],
           ),
         ],
-        bottom: bookmarks.isNotEmpty
-            ? LibrarySearchHeader(
-                controller: _searchController,
-                hintText: 'Search bookmarks…',
-                query: _query,
-                onChanged: (v) => setState(() => _query = v),
-                onClear: _clearSearch,
-              )
-            : null,
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: libraryContentMaxWidth),
-          child: bookmarksAsync.when(
-            data: (_) => filtered.isEmpty
-                ? LibraryEmptyState(
-                    icon: _query.isNotEmpty || _folderFilter != null
-                        ? Icons.search_off
-                        : Icons.bookmark_border,
-                    title: _query.isNotEmpty
-                        ? 'No results for "$_query"'
-                        : _folderFilter != null
-                        ? 'No bookmarks here yet.'
-                        : 'No saved articles yet.',
-                    message: _query.isNotEmpty || _folderFilter != null
-                        ? 'Try another title, URL, or folder.'
-                        : 'Tap the bookmark icon while reading to save articles.',
-                    actionLabel: _query.isNotEmpty || _folderFilter != null
-                        ? 'Clear filters'
-                        : null,
-                    onAction: _query.isNotEmpty || _folderFilter != null
-                        ? _clearFilters
-                        : null,
-                  )
-                : Column(
-                    children: [
-                      if (showFilters)
-                        _FolderFilterBar(
-                          folders: folders,
-                          counts: counts,
-                          totalCount: bookmarks.length,
-                          unsortedCount: unsortedCount,
-                          hasUnsorted: hasUnsorted,
-                          selected: _folderFilter,
-                          onSelected: (folder) =>
-                              setState(() => _folderFilter = folder),
-                        ),
-                      Expanded(
-                        child: LibraryListView<BookmarkedArticle>(
-                          grouped: grouped,
-                          keyFor: (item) =>
-                              '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
-                          titleFor: (item) => item.title,
-                          subtitleFor: (item) {
-                            final historyItem = historyByUrl[item.url];
-                            final progress = historyItem?.progress ?? 0;
-                            final relativeTime = du.relativeTime(item.savedAt);
-                            final readingStatus =
-                                historyItem?.isFinished ?? false
-                                ? 'Finished'
-                                : progress > 0
-                                ? '${(progress * 100).round()}% read'
-                                : null;
-                            return readingStatus == null
-                                ? relativeTime
-                                : '$readingStatus • $relativeTime';
-                          },
-                          urlFor: (item) => item.url,
-                          progressFor: (item) {
-                            final progress =
-                                historyByUrl[item.url]?.progress ?? 0;
-                            return progress > 0 ? progress : null;
-                          },
-                          badgeFor: (item) => item.folder,
-                          trailingFor: (item) => ExpressiveIconButton(
-                            icon: Icon(
-                              item.folder == null
-                                  ? Icons.bookmark_border
-                                  : Icons.bookmark,
-                              size: 20,
-                              color: Theme.of(context).colorScheme.primary,
+      body: Column(
+        children: [
+          if (bookmarks.isNotEmpty)
+            LibrarySearchHeader(
+              controller: _searchController,
+              hintText: 'Search bookmarks…',
+              query: _query,
+              onChanged: (v) => setState(() => _query = v),
+              onClear: _clearSearch,
+            ),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: libraryContentMaxWidth,
+                ),
+                child: bookmarksAsync.when(
+                  data: (_) => filtered.isEmpty
+                      ? LibraryEmptyState(
+                          icon: _query.isNotEmpty || _folderFilter != null
+                              ? Icons.search_off
+                              : Icons.bookmark_border,
+                          title: _query.isNotEmpty
+                              ? 'No results for "$_query"'
+                              : _folderFilter != null
+                              ? 'No bookmarks here yet.'
+                              : 'No saved articles yet.',
+                          message: _query.isNotEmpty || _folderFilter != null
+                              ? 'Try another title, URL, or folder.'
+                              : 'Tap the bookmark icon while reading to save articles.',
+                          actionLabel:
+                              _query.isNotEmpty || _folderFilter != null
+                              ? 'Clear filters'
+                              : null,
+                          onAction: _query.isNotEmpty || _folderFilter != null
+                              ? _clearFilters
+                              : null,
+                        )
+                      : Column(
+                          children: [
+                            if (showFilters)
+                              _FolderFilterBar(
+                                folders: folders,
+                                counts: counts,
+                                totalCount: bookmarks.length,
+                                unsortedCount: unsortedCount,
+                                hasUnsorted: hasUnsorted,
+                                selected: _folderFilter,
+                                onSelected: (folder) =>
+                                    setState(() => _folderFilter = folder),
+                              ),
+                            Expanded(
+                              child: LibraryListView<BookmarkedArticle>(
+                                grouped: grouped,
+                                keyFor: (item) =>
+                                    '${item.url}_${item.savedAt.millisecondsSinceEpoch}',
+                                titleFor: (item) => item.title,
+                                subtitleFor: (item) {
+                                  final historyItem = historyByUrl[item.url];
+                                  final progress = historyItem?.progress ?? 0;
+                                  final relativeTime = du.relativeTime(
+                                    item.savedAt,
+                                  );
+                                  final readingStatus =
+                                      historyItem?.isFinished ?? false
+                                      ? 'Finished'
+                                      : progress > 0
+                                      ? '${(progress * 100).round()}% read'
+                                      : null;
+                                  return readingStatus == null
+                                      ? relativeTime
+                                      : '$readingStatus • $relativeTime';
+                                },
+                                urlFor: (item) => item.url,
+                                progressFor: (item) {
+                                  final progress =
+                                      historyByUrl[item.url]?.progress ?? 0;
+                                  return progress > 0 ? progress : null;
+                                },
+                                badgeFor: (item) => item.folder,
+                                trailingFor: (item) => ExpressiveIconButton(
+                                  icon: Icon(
+                                    item.folder == null
+                                        ? Icons.bookmark_border
+                                        : Icons.bookmark,
+                                    size: 20,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primary,
+                                  ),
+                                  tooltip: 'Move to folder',
+                                  onPressed: () => showMoveToFolderSheet(
+                                    context,
+                                    ref,
+                                    url: item.url,
+                                  ),
+                                ),
+                                onRemove: (item) => ref
+                                    .read(bookmarksProvider.notifier)
+                                    .removeBookmark(item),
+                                removeFailMessage: 'Failed to remove bookmark',
+                                onTap: (item) => Navigator.push(
+                                  context,
+                                  webviewRoute(item.url),
+                                ),
+                              ),
                             ),
-                            tooltip: 'Move to folder',
-                            onPressed: () => showMoveToFolderSheet(
-                              context,
-                              ref,
-                              url: item.url,
-                            ),
-                          ),
-                          onRemove: (item) => ref
-                              .read(bookmarksProvider.notifier)
-                              .removeBookmark(item),
-                          removeFailMessage: 'Failed to remove bookmark',
-                          onTap: (item) =>
-                              Navigator.push(context, webviewRoute(item.url)),
+                          ],
                         ),
-                      ),
-                    ],
+                  loading: () =>
+                      const Center(child: M3EProgressIndicator.circularWavy()),
+                  error: (error, _) => LibraryEmptyState(
+                    icon: Icons.error_outline,
+                    title: 'Something went wrong.',
+                    message: 'Could not load bookmarks.',
+                    actionLabel: 'Retry',
+                    onAction: () => ref.invalidate(bookmarksProvider),
                   ),
-            loading: () =>
-                const Center(child: M3EProgressIndicator.circularWavy()),
-            error: (error, _) => LibraryEmptyState(
-              icon: Icons.error_outline,
-              title: 'Something went wrong.',
-              message: 'Could not load bookmarks.',
-              actionLabel: 'Retry',
-              onAction: () => ref.invalidate(bookmarksProvider),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -276,24 +283,6 @@ class _BookmarksScreenState() extends ConsumerState<BookmarksScreen> {
       failMessage: 'Failed to clear bookmarks',
       onClear: () => ref.read(bookmarksProvider.notifier).clearBookmarks(),
       onCleared: _clearFilters,
-    );
-  }
-}
-
-class const _OverflowMenuRow({required this.icon, required this.label})
-    extends StatelessWidget {
-  final IconData icon;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20),
-        const SizedBox(width: 12),
-        Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-      ],
     );
   }
 }
@@ -324,29 +313,32 @@ class const _FolderFilterBar({
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 4),
-        child: Row(
-          children: [
-            _FilterChip(
-              icon: Icons.bookmarks_outlined,
-              label: 'All · $totalCount',
-              selected: selected == null,
-              onSelected: () => onSelected(null),
-            ),
-            if (hasUnsorted)
+        child: M3EChipGroup(
+          groupLabel: 'Filter by folder',
+          child: Row(
+            children: [
               _FilterChip(
-                icon: Icons.folder_outlined,
-                label: 'Unsorted · $unsortedCount',
-                selected: selected == unsortedFolderFilter,
-                onSelected: () => onSelected(unsortedFolderFilter),
+                icon: Icons.bookmarks_outlined,
+                label: 'All · $totalCount',
+                selected: selected == null,
+                onSelected: () => onSelected(null),
               ),
-            for (final folder in folders)
-              _FilterChip(
-                icon: Icons.folder,
-                label: '$folder · ${counts[folder.toLowerCase()] ?? 0}',
-                selected: selected == folder,
-                onSelected: () => onSelected(folder),
-              ),
-          ],
+              if (hasUnsorted)
+                _FilterChip(
+                  icon: Icons.folder_outlined,
+                  label: 'Unsorted · $unsortedCount',
+                  selected: selected == unsortedFolderFilter,
+                  onSelected: () => onSelected(unsortedFolderFilter),
+                ),
+              for (final folder in folders)
+                _FilterChip(
+                  icon: Icons.folder,
+                  label: '$folder · ${counts[folder.toLowerCase()] ?? 0}',
+                  selected: selected == folder,
+                  onSelected: () => onSelected(folder),
+                ),
+            ],
+          ),
         ),
       ),
     );

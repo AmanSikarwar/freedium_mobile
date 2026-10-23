@@ -10,6 +10,7 @@ import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
@@ -82,7 +83,7 @@ void main() {
         );
         await tester.pumpAndSettle();
         await tester.enterText(
-          find.byType(TextFormField),
+          find.byType(M3ETextField),
           TestFixtures.storyUrl,
         );
         await tester.tap(find.text('Read Article'));

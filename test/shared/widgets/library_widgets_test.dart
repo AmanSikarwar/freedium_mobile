@@ -1,5 +1,7 @@
 import '../../test_helpers.dart';
 
+import 'dart:async';
+
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -42,7 +44,7 @@ void main() {
       expect(find.text('Search library…'), findsOneWidget);
       expect(findTooltip('Clear search'), findsNothing);
 
-      await tester.enterText(find.byType(SearchBar), 'Example');
+      await tester.enterText(find.byType(M3ESearchBar), 'Example');
       expect(changedTo, 'Example');
     });
 
@@ -127,6 +129,103 @@ void main() {
 
       expect(find.text('Clear Library'), findsOneWidget);
       expect(find.text('Failed'), findsOneWidget);
+    });
+
+    testWidgets('ignores repeat taps while a clear is in flight', (
+      tester,
+    ) async {
+      final completer = Completer<bool>();
+      var clearCalls = 0;
+      var onCleared = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: M3EButton(
+                  onPressed: () => showLibraryClearDialog(
+                    context: context,
+                    title: 'Clear Library',
+                    content: 'Remove everything?',
+                    failMessage: 'Failed',
+                    onClear: () {
+                      clearCalls++;
+                      return completer.future;
+                    },
+                    onCleared: () => onCleared = true,
+                  ),
+                  child: const Text('Open'),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
+      await tester.pump();
+
+      expect(clearCalls, 1);
+
+      completer.complete(true);
+      await tester.pumpAndSettle();
+
+      expect(onCleared, isTrue);
+      expect(find.text('Clear Library'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('keeps the route below when cancelled during a clear', (
+      tester,
+    ) async {
+      final completer = Completer<bool>();
+      var onCleared = false;
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Builder(
+            builder: (context) {
+              return Scaffold(
+                body: M3EButton(
+                  onPressed: () => showLibraryClearDialog(
+                    context: context,
+                    title: 'Clear Library',
+                    content: 'Remove everything?',
+                    failMessage: 'Failed',
+                    onClear: () => completer.future,
+                    onCleared: () => onCleared = true,
+                  ),
+                  child: const Text('Open'),
+                ),
+              );
+            },
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Open'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(M3EButton, 'Clear'));
+      await tester.pump();
+
+      // Cancel the dialog while the clear is still pending.
+      await tester.tap(find.widgetWithText(M3EButton, 'Cancel'));
+      await tester.pump(const Duration(milliseconds: 50));
+
+      completer.complete(true);
+      await tester.pumpAndSettle();
+
+      expect(onCleared, isFalse);
+      expect(find.text('Open'), findsOneWidget);
+      expect(find.text('Clear Library'), findsNothing);
+      expect(tester.takeException(), isNull);
     });
   });
 

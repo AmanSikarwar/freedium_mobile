@@ -11,11 +11,14 @@ import 'package:freedium_mobile/features/settings/application/settings_service.d
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+
+import '../test/test_helpers.dart';
 
 const _article = 'https://medium.com/native-reader';
 const _nextArticle = 'https://medium.com/native-next';
@@ -97,7 +100,7 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
     final container = ProviderScope.containerOf(
       tester.element(find.byType(HomeScreen)),
     );
-    await tester.enterText(find.byType(TextFormField), _article);
+    await tester.enterText(find.byType(M3ETextField), _article);
     await tester.tap(find.text('Read Article'));
     await _waitFor(
       tester,
@@ -119,16 +122,26 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
           'Native article',
     );
     // Exercise native touch dispatch through the composition mode, as well as
-    // the existing programmatic progress/navigation checks below.
-    await tester.fling(find.byType(WebViewWidget), const Offset(0, -500), 1200);
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(
-      double.parse(
+    // the existing programmatic progress/navigation checks below. A stepped
+    // drag instead of a fling keeps this deterministic on emulators whose
+    // animations are disabled.
+    final thumb = await tester.startGesture(
+      tester.getCenter(find.byType(WebViewWidget)),
+    );
+    for (var i = 0; i < 10; i++) {
+      await thumb.moveBy(const Offset(0, -30));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await thumb.up();
+    var scrollY = 0.0;
+    for (var i = 0; i < 10 && scrollY == 0; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      scrollY = double.parse(
         (await controller.runJavaScriptReturningResult('window.scrollY'))
             .toString(),
-      ),
-      greaterThan(0),
-    );
+      );
+    }
+    expect(scrollY, greaterThan(0));
     // Hydrated code blocks must get the same colors and copy actions as the
     // initial document, without relying on delayed full-document rescans.
     await controller.runJavaScript(r'''
@@ -165,7 +178,7 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
     final progress = (await container.read(historyProvider.future))
         .first
         .progress;
-    await tester.tap(find.byTooltip('Save bookmark'));
+    await tester.tap(findTooltip('Save bookmark'));
     await _waitFor(
       tester,
       () => container.read(bookmarksProvider.notifier).isBookmarked(_article),
@@ -177,13 +190,13 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
           container.read(webviewProvider(_article)).articleMeta?.title ==
           'Next article',
     );
-    await tester.tap(find.byTooltip('Save bookmark'));
+    await tester.tap(findTooltip('Save bookmark'));
     await _waitFor(
       tester,
       () =>
           container.read(bookmarksProvider.notifier).isBookmarked(_nextArticle),
     );
-    await tester.tap(find.byTooltip('Share article'));
+    await tester.tap(findTooltip('Share article'));
     await _waitFor(tester, () => shared != null);
     expect(shared.toString(), '$_mirror/$_nextArticle');
     await binding.handlePopRoute();
@@ -197,10 +210,10 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
     await _waitFor(tester, () => find.byType(WebViewWidget).evaluate().isEmpty);
     await _waitFor(
       tester,
-      () => find.byType(TextFormField).evaluate().isNotEmpty,
+      () => find.byType(M3ETextField).evaluate().isNotEmpty,
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField), _article);
+    await tester.enterText(find.byType(M3ETextField), _article);
     await tester.tap(find.text('Read Article'));
     await _waitFor(
       tester,
@@ -241,10 +254,10 @@ clearTimeout(window._freediumReadingProgressTimer);
 
     await _waitFor(
       tester,
-      () => find.byType(TextFormField).evaluate().isNotEmpty,
+      () => find.byType(M3ETextField).evaluate().isNotEmpty,
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField), _article);
+    await tester.enterText(find.byType(M3ETextField), _article);
     await tester.tap(find.text('Read Article'));
     await _waitFor(
       tester,

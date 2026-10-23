@@ -3,23 +3,22 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
-import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
 import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/continue_reading_section.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
-import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/core/routing/app_navigation.dart';
 
 class const HomeScreen({super.key}) extends ConsumerStatefulWidget {
@@ -32,7 +31,7 @@ class _HomeScreenState()
     with WidgetsBindingObserver {
   bool _isUpdateCardDismissed = false;
   late final TextEditingController _urlController;
-  final _formKey = GlobalKey<FormState>();
+  String? _urlError;
 
   @override
   void initState() {
@@ -71,13 +70,25 @@ class _HomeScreenState()
     _urlController.text = url;
   }
 
+  String? _validateUrl(String value) {
+    if (value.trim().isEmpty) {
+      return 'Please enter a URL';
+    }
+    if (extractArticleUrl(value) == null) {
+      return 'Please enter a valid URL';
+    }
+    return null;
+  }
+
   Future<void> _pasteFromClipboard() async {
     final text = await ref.read(homeProvider.notifier).pasteFromClipboard();
     if (!mounted) return;
     if (text == null) {
       HapticFeedback.heavyImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Could not paste from clipboard')),
+      M3ESnackbar.show(
+        context,
+        message: 'Could not paste from clipboard',
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -92,8 +103,11 @@ class _HomeScreenState()
     if (!mounted || launched) return;
 
     HapticFeedback.heavyImpact();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Could not open GitHub')));
+    M3ESnackbar.show(
+      context,
+      message: 'Could not open GitHub',
+      duration: const Duration(seconds: 4),
+    );
   }
 
   @override
@@ -103,6 +117,11 @@ class _HomeScreenState()
     final history =
         ref.watch(historyProvider).value ?? const <ReadingHistory>[];
     final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    // The toolbar hides behind the keyboard while editing, so only reserve
+    // room for it when the keyboard is closed.
+    final toolbarClearance = keyboardInset > 0
+        ? 0.0
+        : floatingToolbarClearance(context);
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
@@ -116,45 +135,6 @@ class _HomeScreenState()
           ),
         ),
         actions: [
-          ExpressiveIconButton(
-            icon: const Icon(Icons.bookmark_border),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const BookmarksScreen(),
-                ),
-              );
-            },
-            tooltip: 'Bookmarks',
-          ),
-          ExpressiveIconButton(
-            icon: const Icon(Icons.history),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const HistoryScreen(),
-                ),
-              );
-            },
-            tooltip: 'History',
-          ),
-          ExpressiveIconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute<void>(
-                  builder: (context) => const SettingsScreen(),
-                ),
-              );
-            },
-            tooltip: 'Settings',
-          ),
           ExpressiveIconButton(
             icon: const Icon(Icons.info),
             onPressed: () {
@@ -174,8 +154,14 @@ class _HomeScreenState()
           child: LayoutBuilder(
             builder: (context, constraints) => SingleChildScrollView(
               keyboardDismissBehavior: .onDrag,
+              padding: EdgeInsets.only(bottom: toolbarClearance),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                constraints: BoxConstraints(
+                  minHeight: math.max(
+                    0.0,
+                    constraints.maxHeight - toolbarClearance,
+                  ),
+                ),
                 child: Align(
                   child: Column(
                     spacing: 24,
@@ -202,39 +188,26 @@ class _HomeScreenState()
                         textAlign: .center,
                         style: TextStyle(fontSize: 32, fontWeight: .bold),
                       ),
-                      Form(
-                        key: _formKey,
-                        autovalidateMode: .onUserInteraction,
-                        child: TextFormField(
-                          controller: _urlController,
-                          decoration: InputDecoration(
-                            hintText: 'Article URL',
-                            prefixIcon: const Icon(Icons.link),
-                            border: const OutlineInputBorder(
-                              borderRadius: .all(.circular(24)),
-                            ),
-                            suffixIcon: ExpressiveIconButton(
-                              icon: const Icon(Icons.paste),
-                              onPressed: () {
-                                HapticFeedback.lightImpact();
-                                unawaited(_pasteFromClipboard());
-                              },
-                              tooltip: 'Paste from clipboard',
-                            ),
-                          ),
-                          keyboardType: .url,
-                          textInputAction: .done,
-                          scrollPadding: const .only(bottom: 120),
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return 'Please enter a URL';
-                            }
-                            if (extractArticleUrl(value) == null) {
-                              return 'Please enter a valid URL';
-                            }
-                            return null;
+                      M3ETextField(
+                        controller: _urlController,
+                        label: 'Article URL',
+                        leading: const Icon(Icons.link),
+                        trailing: ExpressiveIconButton(
+                          icon: const Icon(Icons.paste),
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            unawaited(_pasteFromClipboard());
                           },
+                          tooltip: 'Paste from clipboard',
                         ),
+                        keyboardType: .url,
+                        textInputAction: .done,
+                        errorText: _urlError,
+                        onChanged: (value) {
+                          if (_urlError != null) {
+                            setState(() => _urlError = _validateUrl(value));
+                          }
+                        },
                       ),
                       SizedBox(
                         width: .infinity,
@@ -251,14 +224,16 @@ class _HomeScreenState()
                           ),
                           onPressed: () {
                             HapticFeedback.mediumImpact();
-                            if (_formKey.currentState!.validate()) {
-                              final url = extractArticleUrl(
-                                _urlController.text,
-                              )!;
-                              _urlController.text = url;
-                              homeNotifier.setUrl(url);
-                              Navigator.of(context).push(webviewRoute(url));
+                            final url = extractArticleUrl(_urlController.text);
+                            if (url == null) {
+                              setState(() {
+                                _urlError = _validateUrl(_urlController.text);
+                              });
+                              return;
                             }
+                            _urlController.text = url;
+                            homeNotifier.setUrl(url);
+                            Navigator.of(context).push(webviewRoute(url));
                           },
                           child: const Text('Read Article'),
                         ),
