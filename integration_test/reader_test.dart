@@ -32,6 +32,34 @@ Future<void> _waitFor(WidgetTester tester, bool Function() condition) async {
   expect(condition(), isTrue, reason: 'Native reader did not become ready');
 }
 
+/// True when the floating reader actions have finished sliding back on screen.
+///
+/// The bookmark action deliberately changes its tooltip after saving, so probe
+/// the static font-size action instead.
+bool _readerActionsOnScreen(WidgetTester tester) {
+  final finder = findTooltip('Font size');
+  if (finder.evaluate().isEmpty) return false;
+  final rect = tester.getRect(finder);
+  final screenHeight =
+      tester.view.physicalSize.height / tester.view.devicePixelRatio;
+  return rect.top >= 0 && rect.bottom <= screenHeight;
+}
+
+/// Scroll events reach Dart asynchronously and the toolbar animates on a
+/// spring, so pump until the actions are actually tappable.
+Future<void> _waitForReaderActions(WidgetTester tester) async {
+  final clock = Stopwatch()..start();
+  while (!_readerActionsOnScreen(tester) &&
+      clock.elapsed < const Duration(seconds: 10)) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(
+    _readerActionsOnScreen(tester),
+    isTrue,
+    reason: 'Reader actions did not return on screen',
+  );
+}
+
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -178,6 +206,11 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
     final progress = (await container.read(historyProvider.future))
         .first
         .progress;
+    // The action bar hides while scrolling down; reveal it before using it.
+    await controller.runJavaScript(
+      'window.scrollTo(0, Math.max(0, window.scrollY - 120))',
+    );
+    await _waitForReaderActions(tester);
     await tester.tap(findTooltip('Save bookmark'));
     await _waitFor(
       tester,
@@ -190,12 +223,14 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
           container.read(webviewProvider(_article)).articleMeta?.title ==
           'Next article',
     );
+    await _waitForReaderActions(tester);
     await tester.tap(findTooltip('Save bookmark'));
     await _waitFor(
       tester,
       () =>
           container.read(bookmarksProvider.notifier).isBookmarked(_nextArticle),
     );
+    await _waitForReaderActions(tester);
     await tester.tap(findTooltip('Share article'));
     await _waitFor(tester, () => shared != null);
     expect(shared.toString(), '$_mirror/$_nextArticle');

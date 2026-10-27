@@ -54,9 +54,15 @@ class _WebviewScreenState()
   String get _articleUrl =>
       ref.read(webviewProvider(widget.url).notifier).articleUrl();
 
+  static const double _toolbarScrollThreshold = 16;
+
   bool _isVisible = true;
   WebViewWidget? _webViewWidget;
   ColorScheme? _prevColorScheme;
+  final M3EToolbarVisibilityController _toolbarVisibility =
+      M3EToolbarVisibilityController();
+  double? _lastScrollOffset;
+  double _scrollTravel = 0;
 
   @override
   void initState() {
@@ -84,6 +90,14 @@ class _WebviewScreenState()
     final controller = webviewNotifier.createController(
       baseUrl: initialMirrorUrl,
     );
+    unawaited(
+      controller
+          .setOnScrollPositionChange(_handleScrollPositionChange)
+          .catchError(
+            (Object error) =>
+                debugPrint('Reader scroll tracking unavailable: $error'),
+          ),
+    );
     final webViewWidget = await createReaderWebView(controller);
     if (!mounted) return;
     setState(() => _webViewWidget = webViewWidget);
@@ -103,7 +117,45 @@ class _WebviewScreenState()
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _toolbarVisibility.dispose();
     super.dispose();
+  }
+
+  /// Tucks the action bar away while the article moves down, and restores it
+  /// as soon as the reader scrolls back up.
+  void _handleScrollPositionChange(ScrollPositionChange change) {
+    final double offset = change.y;
+    final double? previous = _lastScrollOffset;
+    _lastScrollOffset = offset;
+
+    // Start from a clean baseline at the top of a document, and keep the
+    // actions reachable when the reader rubber-bands past the edge.
+    if (offset <= 0 || previous == null) {
+      _scrollTravel = 0;
+      _toolbarVisibility.show();
+      return;
+    }
+
+    final double delta = offset - previous;
+    if (delta == 0) return;
+    if (delta.sign != _scrollTravel.sign) {
+      _scrollTravel = 0;
+    }
+    _scrollTravel += delta;
+
+    if (_scrollTravel > _toolbarScrollThreshold) {
+      _scrollTravel = 0;
+      _toolbarVisibility.hide();
+    } else if (_scrollTravel < -_toolbarScrollThreshold) {
+      _scrollTravel = 0;
+      _toolbarVisibility.show();
+    }
+  }
+
+  void _resetToolbarVisibility() {
+    _lastScrollOffset = null;
+    _scrollTravel = 0;
+    _toolbarVisibility.show();
   }
 
   @override
@@ -154,6 +206,9 @@ class _WebviewScreenState()
 
     // Listen for one-shot user messages and display them as snackbars.
     ref.listen<WebviewState>(webviewProvider(widget.url), (previous, next) {
+      if (previous?.currentUrl != next.currentUrl) {
+        _resetToolbarVisibility();
+      }
       if (next.userMessage != null &&
           next.userMessage != previous?.userMessage) {
         M3ESnackbar.show(
@@ -358,6 +413,7 @@ class _WebviewScreenState()
     return M3EToolbar(
       alignment: Alignment.bottomCenter,
       semanticLabel: 'Reader actions',
+      visibilityController: _toolbarVisibility,
       actions: [
         M3EToolbarAction(
           icon: Icons.text_fields,
