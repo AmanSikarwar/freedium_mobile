@@ -14,8 +14,8 @@ All notable changes to this project will be documented in this file.
   long-press shortcut is dropped; move-to-folder remains available from
   the Bookmarks screen.
 - The reader action bar now slides away while you scroll down an article
-  and returns when you scroll back up. The end of the article can scroll
-  clear of the bar instead of staying hidden behind it.
+  and returns when you scroll back up or reach the end. The end of the
+  article can scroll clear of the bar instead of staying hidden behind it.
 
 ### Changed
 
