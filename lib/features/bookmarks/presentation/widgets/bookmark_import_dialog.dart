@@ -36,8 +36,8 @@ class _BookmarkImportDialogState() extends ConsumerState<BookmarkImportDialog> {
   }
 
   @override
-  Widget build(BuildContext context) => AlertDialog(
-    title: const Text('Import bookmarks'),
+  Widget build(BuildContext context) => M3EDialog(
+    title: 'Import bookmarks',
     content: SingleChildScrollView(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -49,14 +49,11 @@ class _BookmarkImportDialogState() extends ConsumerState<BookmarkImportDialog> {
             label: Text(_reading ? 'Reading backup...' : 'Choose backup file'),
           ),
           const SizedBox(height: 12),
-          TextField(
+          M3ETextField(
             controller: _controller,
-            maxLines: 6,
             minLines: 3,
-            decoration: const InputDecoration(
-              hintText: 'Or paste a bookmarks backup (JSON)',
-              border: OutlineInputBorder(),
-            ),
+            maxLines: 6,
+            label: 'Or paste a bookmarks backup (JSON)',
           ),
           if (_error != null) Text(_error!),
         ],

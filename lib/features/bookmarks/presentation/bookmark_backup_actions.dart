@@ -32,25 +32,29 @@ Future<void> exportBookmarkBackup(BuildContext context, WidgetRef ref) async {
     }
   } catch (_) {
     if (context.mounted) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not share backup')));
+        message: 'Could not share backup',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 }
 
 Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
-  final raw = await showDialog<String>(
-    context: context,
-    builder: (_) => const BookmarkImportDialog(),
+  final raw = await M3EDialog.show<String>(
+    context,
+    dialog: const BookmarkImportDialog(),
   );
   if (raw == null || !context.mounted) return;
   final BookmarkImport parsed;
   try {
     parsed = parseBookmarksJson(raw);
   } on FormatException {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Not a valid bookmarks backup')),
+    M3ESnackbar.show(
+      context,
+      message: 'Not a valid bookmarks backup',
+      duration: const Duration(seconds: 4),
     );
     return;
   }
@@ -62,10 +66,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
     final limitNote = parsed.bookmarks.length > Bookmarks.maxBookmarks
         ? '\nOnly the newest ${Bookmarks.maxBookmarks} articles will be restored.'
         : '';
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Restore unreadable bookmarks?'),
+    final confirmed = await M3EDialog.show<bool>(
+      context,
+      autofocusFirst: false,
+      dialog: M3EDialog(
+        title: 'Restore unreadable bookmarks?',
         content: Text(
           'Freedium could not read the saved bookmark library. Restoring this '
           'backup replaces the unreadable library. A local recovery copy of '
@@ -76,11 +81,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
         ),
         actions: [
           M3EButton.text(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           M3EButton.filled(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Restore backup'),
           ),
         ],
@@ -95,8 +100,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
         ? 'Could not restore bookmarks; saved data was preserved'
         : 'Restored $restored bookmark${restored == 1 ? '' : 's'}; '
               'unreadable data was kept on this device';
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(resultMessage)));
+    M3ESnackbar.show(
+      context,
+      message: resultMessage,
+      duration: const Duration(seconds: 4),
+    );
     return;
   }
   if (!context.mounted) return;
@@ -109,10 +117,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
     Bookmarks.maxBookmarks,
   );
   final retained = fresh.length.clamp(0, available);
-  final confirmed = await showDialog<bool>(
-    context: context,
-    builder: (dialogContext) => AlertDialog(
-      title: const Text('Restore bookmarks?'),
+  final confirmed = await M3EDialog.show<bool>(
+    context,
+    autofocusFirst: false,
+    dialog: M3EDialog(
+      title: 'Restore bookmarks?',
       content: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -129,11 +138,11 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
       ),
       actions: [
         M3EButton.text(
-          onPressed: () => Navigator.pop(dialogContext, false),
+          onPressed: () => Navigator.pop(context, false),
           child: const Text('Cancel'),
         ),
         M3EButton.filled(
-          onPressed: () => Navigator.pop(dialogContext, true),
+          onPressed: () => Navigator.pop(context, true),
           child: const Text('Restore'),
         ),
       ],
@@ -169,9 +178,9 @@ Future<void> importBookmarkBackup(BuildContext context, WidgetRef ref) async {
       : added > 0
       ? 'Imported $added bookmark${added == 1 ? '' : 's'}'
       : 'No new bookmarks';
-  ScaffoldMessenger.of(context).showSnackBar(
-    SnackBar(
-      content: Text('$resultMessage$skippedNote$folderNote$capacityNote'),
-    ),
+  M3ESnackbar.show(
+    context,
+    message: '$resultMessage$skippedNote$folderNote$capacityNote',
+    duration: const Duration(seconds: 4),
   );
 }

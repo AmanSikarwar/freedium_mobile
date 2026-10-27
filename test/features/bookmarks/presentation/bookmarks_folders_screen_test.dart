@@ -14,6 +14,7 @@ import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/widgets/manage_folders_sheet.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -161,8 +162,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
+          of: find.byType(M3EDialog),
+          matching: find.byType(M3ETextField),
         ),
         exportBookmarksJson([
           for (var i = 0; i < 2; i++)
@@ -204,8 +205,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
+          of: find.byType(M3EDialog),
+          matching: find.byType(M3ETextField),
         ),
         exportBookmarksJson([], ['Empty']),
       );
@@ -233,8 +234,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
+          of: find.byType(M3EDialog),
+          matching: find.byType(M3ETextField),
         ),
         exportBookmarksJson([
           BookmarkedArticle(
@@ -292,8 +293,8 @@ void main() {
       await tester.pumpAndSettle();
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
+          of: find.byType(M3EDialog),
+          matching: find.byType(M3ETextField),
         ),
         'Renamed imported',
       );
@@ -390,8 +391,8 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(BottomSheet),
-          matching: find.byType(TextField),
+          of: find.byType(MoveToFolderSheet),
+          matching: find.byType(M3ETextField),
         ),
         'Tech',
       );
@@ -423,8 +424,8 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(BottomSheet),
-          matching: find.byType(TextField),
+          of: find.byType(ManageFoldersSheet),
+          matching: find.byType(M3ETextField),
         ),
         'Reading',
       );
@@ -506,8 +507,8 @@ void main() {
       );
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
+          of: find.byType(M3EDialog),
+          matching: find.byType(M3ETextField),
         ),
         backup,
       );
@@ -541,8 +542,8 @@ void main() {
 
       await tester.enterText(
         find.descendant(
-          of: find.byType(AlertDialog),
-          matching: find.byType(TextField),
+          of: find.byType(M3EDialog),
+          matching: find.byType(M3ETextField),
         ),
         'not json',
       );

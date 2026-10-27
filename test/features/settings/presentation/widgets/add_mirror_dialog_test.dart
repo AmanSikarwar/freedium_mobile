@@ -15,9 +15,9 @@ void main() {
             return Scaffold(
               body: M3EButton(
                 onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (_) => AddMirrorDialog(
+                  M3EDialog.show<void>(
+                    context,
+                    dialog: AddMirrorDialog(
                       onAdd: (mirror) {
                         addedMirror = mirror;
                         return true;
@@ -36,9 +36,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextFormField).at(0), ' Custom ');
+    await tester.enterText(find.byType(M3ETextField).at(0), ' Custom ');
     await tester.enterText(
-      find.byType(TextFormField).at(1),
+      find.byType(M3ETextField).at(1),
       ' HTTPS://custom.example/// ',
     );
 
@@ -64,9 +64,9 @@ void main() {
             return Scaffold(
               body: M3EButton(
                 onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (_) => AddMirrorDialog(
+                  M3EDialog.show<void>(
+                    context,
+                    dialog: AddMirrorDialog(
                       onAdd: (mirror) {
                         submittedMirror = mirror;
                         return false;
@@ -85,9 +85,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'Duplicate');
+    await tester.enterText(find.byType(M3ETextField).at(0), 'Duplicate');
     await tester.enterText(
-      find.byType(TextFormField).at(1),
+      find.byType(M3ETextField).at(1),
       'https://freedium-mirror.cfd',
     );
 
@@ -112,9 +112,9 @@ void main() {
             return Scaffold(
               body: M3EButton(
                 onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (_) => AddMirrorDialog(
+                  M3EDialog.show<void>(
+                    context,
+                    dialog: AddMirrorDialog(
                       onAdd: (mirror) async {
                         throw Exception('preferences unavailable');
                       },
@@ -132,9 +132,9 @@ void main() {
     await tester.tap(find.text('Open'));
     await tester.pumpAndSettle();
 
-    await tester.enterText(find.byType(TextFormField).at(0), 'Custom');
+    await tester.enterText(find.byType(M3ETextField).at(0), 'Custom');
     await tester.enterText(
-      find.byType(TextFormField).at(1),
+      find.byType(M3ETextField).at(1),
       'https://custom.example',
     );
 

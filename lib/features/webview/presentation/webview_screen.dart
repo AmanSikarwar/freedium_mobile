@@ -1,4 +1,3 @@
-import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 
 import 'dart:async';
@@ -7,7 +6,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
-import 'package:freedium_mobile/features/bookmarks/presentation/widgets/move_to_folder_sheet.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
@@ -56,9 +54,15 @@ class _WebviewScreenState()
   String get _articleUrl =>
       ref.read(webviewProvider(widget.url).notifier).articleUrl();
 
+  static const double _toolbarScrollThreshold = 16;
+
   bool _isVisible = true;
   WebViewWidget? _webViewWidget;
   ColorScheme? _prevColorScheme;
+  final M3EToolbarVisibilityController _toolbarVisibility =
+      M3EToolbarVisibilityController();
+  double? _lastScrollOffset;
+  double _scrollTravel = 0;
 
   @override
   void initState() {
@@ -86,6 +90,14 @@ class _WebviewScreenState()
     final controller = webviewNotifier.createController(
       baseUrl: initialMirrorUrl,
     );
+    unawaited(
+      controller
+          .setOnScrollPositionChange(_handleScrollPositionChange)
+          .catchError(
+            (Object error) =>
+                debugPrint('Reader scroll tracking unavailable: $error'),
+          ),
+    );
     final webViewWidget = await createReaderWebView(controller);
     if (!mounted) return;
     setState(() => _webViewWidget = webViewWidget);
@@ -105,7 +117,45 @@ class _WebviewScreenState()
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
+    _toolbarVisibility.dispose();
     super.dispose();
+  }
+
+  /// Tucks the action bar away while the article moves down, and restores it
+  /// as soon as the reader scrolls back up.
+  void _handleScrollPositionChange(ScrollPositionChange change) {
+    final double offset = change.y;
+    final double? previous = _lastScrollOffset;
+    _lastScrollOffset = offset;
+
+    // Start from a clean baseline at the top of a document, and keep the
+    // actions reachable when the reader rubber-bands past the edge.
+    if (offset <= 0 || previous == null) {
+      _scrollTravel = 0;
+      _toolbarVisibility.show();
+      return;
+    }
+
+    final double delta = offset - previous;
+    if (delta == 0) return;
+    if (delta.sign != _scrollTravel.sign) {
+      _scrollTravel = 0;
+    }
+    _scrollTravel += delta;
+
+    if (_scrollTravel > _toolbarScrollThreshold) {
+      _scrollTravel = 0;
+      _toolbarVisibility.hide();
+    } else if (_scrollTravel < -_toolbarScrollThreshold) {
+      _scrollTravel = 0;
+      _toolbarVisibility.show();
+    }
+  }
+
+  void _resetToolbarVisibility() {
+    _lastScrollOffset = null;
+    _scrollTravel = 0;
+    _toolbarVisibility.show();
   }
 
   @override
@@ -128,42 +178,13 @@ class _WebviewScreenState()
     if (!mounted || didSave) return;
 
     HapticFeedback.heavyImpact();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          !wasBookmarked && bookmarksNotifier.isAtCapacity()
-              ? Bookmarks.limitMessage
-              : 'Failed to update bookmark',
-        ),
-      ),
+    M3ESnackbar.show(
+      context,
+      message: !wasBookmarked && bookmarksNotifier.isAtCapacity()
+          ? Bookmarks.limitMessage
+          : 'Failed to update bookmark',
+      duration: const Duration(seconds: 4),
     );
-  }
-
-  /// Long-press action: ensures the article is bookmarked, then opens the
-  /// move-to-folder sheet.
-  Future<void> _moveBookmarkToFolder(Bookmarks bookmarksNotifier) async {
-    final articleUrl = _articleUrl;
-    final title =
-        ref.read(webviewProvider(widget.url)).articleMeta?.title ?? '';
-    if (!bookmarksNotifier.isBookmarked(articleUrl)) {
-      final didSave = await bookmarksNotifier.addBookmark(articleUrl, title);
-      if (!mounted) return;
-      if (!didSave) {
-        HapticFeedback.heavyImpact();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              bookmarksNotifier.isAtCapacity()
-                  ? Bookmarks.limitMessage
-                  : 'Failed to update bookmark',
-            ),
-          ),
-        );
-        return;
-      }
-    }
-    if (!mounted) return;
-    await showMoveToFolderSheet(context, ref, url: articleUrl);
   }
 
   @override
@@ -183,15 +204,20 @@ class _WebviewScreenState()
     );
     final webviewNotifier = ref.read(webviewProvider(widget.url).notifier);
 
-    // Listen for one-shot user messages and display them as SnackBars.
+    // Listen for one-shot user messages and display them as snackbars.
     ref.listen<WebviewState>(webviewProvider(widget.url), (previous, next) {
+      if (previous?.currentUrl != next.currentUrl) {
+        _resetToolbarVisibility();
+      }
+      if (next.isAtReadingEnd && previous?.isAtReadingEnd != true) {
+        _toolbarVisibility.show();
+      }
       if (next.userMessage != null &&
           next.userMessage != previous?.userMessage) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(next.userMessage!),
-            duration: const Duration(seconds: 2),
-          ),
+        M3ESnackbar.show(
+          context,
+          message: next.userMessage!,
+          duration: const Duration(seconds: 2),
         );
         webviewNotifier.clearUserMessage();
       }
@@ -274,6 +300,7 @@ class _WebviewScreenState()
       backgroundColor: showWebView ? backgroundColor : null,
       body: SafeArea(
         child: Stack(
+          fit: StackFit.expand,
           children: [
             if (_webViewWidget != null && !webviewState.hasError)
               Visibility(
@@ -281,17 +308,28 @@ class _WebviewScreenState()
                 maintainState: true,
                 child: _webViewWidget!,
               ),
-            ReaderProgressIndicator(url: widget.url),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ReaderProgressIndicator(url: widget.url),
+            ),
             ReaderArticleShimmer(
               url: widget.url,
               hideWebView: hideThemedWebView,
             ),
             if (webviewState.hasError)
               _buildErrorWidget(webviewState, webviewNotifier),
+            if (showWebView)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildActionButtons(),
+              ),
           ],
         ),
       ),
-      floatingActionButton: showWebView ? _buildActionButtons() : null,
     );
   }
 
@@ -361,7 +399,6 @@ class _WebviewScreenState()
   }
 
   Widget _buildActionButtons() {
-    final theme = Theme.of(context);
     final fontSize = ref.watch(
       webviewProvider(widget.url).select((state) => state.fontSize),
     );
@@ -375,79 +412,38 @@ class _WebviewScreenState()
         ),
       ),
     );
-    final divider = Container(
-      width: 1,
-      height: 24,
-      color: theme.colorScheme.outlineVariant,
-    );
 
-    return Container(
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surfaceContainer,
-        borderRadius: BorderRadius.circular(30),
-        boxShadow: [
-          BoxShadow(
-            color: theme.colorScheme.shadow.withValues(alpha: 0.3),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          ExpressiveIconButton(
-            tooltip: 'Font size',
-            icon: const Icon(Icons.text_fields),
-            onPressed: () {
-              showModalBottomSheet<void>(
-                context: context,
-                isScrollControlled: true,
-                backgroundColor: Colors.transparent,
-                builder: (context) => FontSettingsSheet(
-                  initialFontSize: fontSize,
-                  onFontSizeChanged: webviewNotifier.updateFontSize,
-                ),
-              );
-            },
-          ),
-          divider,
-          Semantics(
-            container: true,
-            button: true,
-            enabled: true,
-            onLongPressHint: 'Move to folder',
-            child: M3EButton.text(
-              tooltip: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
-              semanticLabel: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
-              decoration: M3EButtonDecoration(
-                minimumSize: const Size(48, 48),
-                padding: EdgeInsets.zero,
-                foregroundColor: WidgetStatePropertyAll(
-                  theme.colorScheme.onSurfaceVariant,
-                ),
-              ),
-              child: Icon(
-                isBookmarked ? Icons.bookmark : Icons.bookmark_border,
-              ),
-              onPressed: () {
-                HapticFeedback.lightImpact();
-                unawaited(_toggleBookmark(bookmarksNotifier));
-              },
-              onLongPress: () {
-                HapticFeedback.mediumImpact();
-                unawaited(_moveBookmarkToFolder(bookmarksNotifier));
-              },
-            ),
-          ),
-          divider,
-          ExpressiveIconButton(
-            tooltip: 'Share article',
-            icon: const Icon(Icons.share),
-            onPressed: () => unawaited(webviewNotifier.shareArticle()),
-          ),
-        ],
-      ),
+    return M3EToolbar(
+      alignment: Alignment.bottomCenter,
+      semanticLabel: 'Reader actions',
+      visibilityController: _toolbarVisibility,
+      actions: [
+        M3EToolbarAction(
+          icon: Icons.text_fields,
+          tooltip: 'Font size',
+          onPressed: () {
+            showFontSettingsSheet(
+              context,
+              initialFontSize: fontSize,
+              onFontSizeChanged: webviewNotifier.updateFontSize,
+            );
+          },
+        ),
+        M3EToolbarAction(
+          icon: isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+          tooltip: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
+          semanticLabel: isBookmarked ? 'Remove bookmark' : 'Save bookmark',
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            unawaited(_toggleBookmark(bookmarksNotifier));
+          },
+        ),
+        M3EToolbarAction(
+          icon: Icons.share,
+          tooltip: 'Share article',
+          onPressed: () => unawaited(webviewNotifier.shareArticle()),
+        ),
+      ],
     );
   }
 }

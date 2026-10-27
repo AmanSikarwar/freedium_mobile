@@ -33,6 +33,7 @@ extension _WebviewLoading on Webview {
       activeBaseUrl: baseUrl ?? _readerState.activeBaseUrl,
       currentUrl: url,
       isThemeApplied: false,
+      isAtReadingEnd: false,
       useOriginalStyling: false,
       isPageLoaded: false,
       progress: 0,

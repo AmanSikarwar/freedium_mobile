@@ -11,11 +11,14 @@ import 'package:freedium_mobile/features/settings/application/settings_service.d
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:integration_test/integration_test.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
+
+import '../test/test_helpers.dart';
 
 const _article = 'https://medium.com/native-reader';
 const _nextArticle = 'https://medium.com/native-next';
@@ -27,6 +30,48 @@ Future<void> _waitFor(WidgetTester tester, bool Function() condition) async {
     await tester.pump(const Duration(milliseconds: 250));
   }
   expect(condition(), isTrue, reason: 'Native reader did not become ready');
+}
+
+/// True when the floating reader actions have finished sliding back on screen.
+///
+/// The bookmark action deliberately changes its tooltip after saving, so probe
+/// the static font-size action instead.
+bool _readerActionsOnScreen(WidgetTester tester) {
+  final finder = findTooltip('Font size');
+  if (finder.evaluate().isEmpty) return false;
+  final rect = tester.getRect(finder);
+  final screenHeight =
+      tester.view.physicalSize.height / tester.view.devicePixelRatio;
+  return rect.top >= 0 && rect.bottom <= screenHeight;
+}
+
+/// Scroll events reach Dart asynchronously and the toolbar animates on a
+/// spring, so pump until the actions are actually tappable.
+Future<void> _waitForReaderActions(WidgetTester tester) async {
+  final clock = Stopwatch()..start();
+  while (!_readerActionsOnScreen(tester) &&
+      clock.elapsed < const Duration(seconds: 10)) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(
+    _readerActionsOnScreen(tester),
+    isTrue,
+    reason: 'Reader actions did not return on screen',
+  );
+}
+
+/// Pump until downward scrolling has carried the actions off screen.
+Future<void> _waitForReaderActionsHidden(WidgetTester tester) async {
+  final clock = Stopwatch()..start();
+  while (_readerActionsOnScreen(tester) &&
+      clock.elapsed < const Duration(seconds: 5)) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(
+    _readerActionsOnScreen(tester),
+    isFalse,
+    reason: 'Reader actions did not hide while scrolling down',
+  );
 }
 
 void main() {
@@ -97,7 +142,7 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
     final container = ProviderScope.containerOf(
       tester.element(find.byType(HomeScreen)),
     );
-    await tester.enterText(find.byType(TextFormField), _article);
+    await tester.enterText(find.byType(M3ETextField), _article);
     await tester.tap(find.text('Read Article'));
     await _waitFor(
       tester,
@@ -119,16 +164,26 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
           'Native article',
     );
     // Exercise native touch dispatch through the composition mode, as well as
-    // the existing programmatic progress/navigation checks below.
-    await tester.fling(find.byType(WebViewWidget), const Offset(0, -500), 1200);
-    await tester.pump(const Duration(milliseconds: 500));
-    expect(
-      double.parse(
+    // the existing programmatic progress/navigation checks below. A stepped
+    // drag instead of a fling keeps this deterministic on emulators whose
+    // animations are disabled.
+    final thumb = await tester.startGesture(
+      tester.getCenter(find.byType(WebViewWidget)),
+    );
+    for (var i = 0; i < 10; i++) {
+      await thumb.moveBy(const Offset(0, -30));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await thumb.up();
+    var scrollY = 0.0;
+    for (var i = 0; i < 10 && scrollY == 0; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+      scrollY = double.parse(
         (await controller.runJavaScriptReturningResult('window.scrollY'))
             .toString(),
-      ),
-      greaterThan(0),
-    );
+      );
+    }
+    expect(scrollY, greaterThan(0));
     // Hydrated code blocks must get the same colors and copy actions as the
     // initial document, without relying on delayed full-document rescans.
     await controller.runJavaScript(r'''
@@ -165,7 +220,12 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
     final progress = (await container.read(historyProvider.future))
         .first
         .progress;
-    await tester.tap(find.byTooltip('Save bookmark'));
+    // The action bar hides while scrolling down; reveal it before using it.
+    await controller.runJavaScript(
+      'window.scrollTo(0, Math.max(0, window.scrollY - 120))',
+    );
+    await _waitForReaderActions(tester);
+    await tester.tap(findTooltip('Save bookmark'));
     await _waitFor(
       tester,
       () => container.read(bookmarksProvider.notifier).isBookmarked(_article),
@@ -177,13 +237,15 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
           container.read(webviewProvider(_article)).articleMeta?.title ==
           'Next article',
     );
-    await tester.tap(find.byTooltip('Save bookmark'));
+    await _waitForReaderActions(tester);
+    await tester.tap(findTooltip('Save bookmark'));
     await _waitFor(
       tester,
       () =>
           container.read(bookmarksProvider.notifier).isBookmarked(_nextArticle),
     );
-    await tester.tap(find.byTooltip('Share article'));
+    await _waitForReaderActions(tester);
+    await tester.tap(findTooltip('Share article'));
     await _waitFor(tester, () => shared != null);
     expect(shared.toString(), '$_mirror/$_nextArticle');
     await binding.handlePopRoute();
@@ -197,10 +259,10 @@ document.querySelector('article').insertAdjacentHTML('beforeend',
     await _waitFor(tester, () => find.byType(WebViewWidget).evaluate().isEmpty);
     await _waitFor(
       tester,
-      () => find.byType(TextFormField).evaluate().isNotEmpty,
+      () => find.byType(M3ETextField).evaluate().isNotEmpty,
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField), _article);
+    await tester.enterText(find.byType(M3ETextField), _article);
     await tester.tap(find.text('Read Article'));
     await _waitFor(
       tester,
@@ -241,10 +303,10 @@ clearTimeout(window._freediumReadingProgressTimer);
 
     await _waitFor(
       tester,
-      () => find.byType(TextFormField).evaluate().isNotEmpty,
+      () => find.byType(M3ETextField).evaluate().isNotEmpty,
     );
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextFormField), _article);
+    await tester.enterText(find.byType(M3ETextField), _article);
     await tester.tap(find.text('Read Article'));
     await _waitFor(
       tester,
@@ -262,6 +324,17 @@ clearTimeout(window._freediumReadingProgressTimer);
       )).toString(),
     );
     expect(quickRestored, closeTo(quickExitProgress, 0.06));
+
+    // Reaching the end brings the actions back without an upward scroll.
+    await quickReopened.runJavaScript(
+      'window.scrollTo(0, window.scrollY + 200)',
+    );
+    await _waitForReaderActionsHidden(tester);
+    await quickReopened.runJavaScript(
+      'window.scrollTo(0, document.documentElement.scrollHeight)',
+    );
+    await _waitForReaderActions(tester);
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 250));
   });

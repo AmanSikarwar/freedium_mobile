@@ -30,6 +30,9 @@ abstract class const WebviewState._() with _$WebviewState {
     @Default(0.0) double progress,
     @Default(false) bool isPageLoaded,
     @Default(false) bool isThemeApplied,
+    // True while the reader is scrolled to the end of the article. The screen
+    // uses it to restore the floating actions after hiding them on scroll.
+    @Default(false) bool isAtReadingEnd,
     @Default(false) bool useOriginalStyling,
     @Default(true) bool isInitialLoad,
     @Default(18.0) double fontSize,

@@ -4,6 +4,19 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Improved
+
+- Migrated the remaining app chrome to `material_3_expressive`: the M3E
+  theme scope now comes from `ExpressiveTheme`, and dividers, app bars,
+  dialogs, bottom sheets, overflow menus, snackbars, text fields, list
+  rows, radios, the library search bar, bookmark filter chips, and the
+  reader action bar all render M3E components. The reader bookmark
+  long-press shortcut is dropped; move-to-folder remains available from
+  the Bookmarks screen.
+- The reader action bar now slides away while you scroll down an article
+  and returns when you scroll back up or reach the end. The end of the
+  article can scroll clear of the bar instead of staying hidden behind it.
+
 ### Changed
 
 - Replaced `listen_sharing_intent` with `receive_intent` (pinned 0.2.8)
@@ -11,6 +24,24 @@ All notable changes to this project will be documented in this file.
   through `intentShareText`, with no media-file handling (unused) and no
   reset API (initial intents are consumed exactly once). This removes the
   last Kotlin Gradle Plugin build warning.
+- Text fields now use the expressive rounded container, so they match
+  the buttons and the search bar.
+- Home, Bookmarks, History, and Settings are now tabs of a floating bottom
+  toolbar: the selected destination expands to an icon and label while the
+  others stay icon-only. The toolbar floats over the content, which scrolls
+  behind it, and tab switches crossfade while keeping each tab's state.
+  About remains in the Home app bar.
+
+### Fixed
+
+- Home content is centered in the space above the floating toolbar and no
+  longer scrolls into empty space when the page is short.
+- Tab crossfades stay smooth when tapping through destinations quickly.
+- Status bar icons now update when the app switches between light and
+  dark themes; previously they could keep the last style a sheet or
+  dialog applied until an app restart.
+- Snackbars appear above the floating navigation and reader toolbars
+  instead of covering their actions.
 
 ## [0.13.0] - 2026-09-26
 
