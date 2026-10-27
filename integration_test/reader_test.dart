@@ -60,6 +60,20 @@ Future<void> _waitForReaderActions(WidgetTester tester) async {
   );
 }
 
+/// Pump until downward scrolling has carried the actions off screen.
+Future<void> _waitForReaderActionsHidden(WidgetTester tester) async {
+  final clock = Stopwatch()..start();
+  while (_readerActionsOnScreen(tester) &&
+      clock.elapsed < const Duration(seconds: 5)) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(
+    _readerActionsOnScreen(tester),
+    isFalse,
+    reason: 'Reader actions did not hide while scrolling down',
+  );
+}
+
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
@@ -310,6 +324,17 @@ clearTimeout(window._freediumReadingProgressTimer);
       )).toString(),
     );
     expect(quickRestored, closeTo(quickExitProgress, 0.06));
+
+    // Reaching the end brings the actions back without an upward scroll.
+    await quickReopened.runJavaScript(
+      'window.scrollTo(0, window.scrollY + 200)',
+    );
+    await _waitForReaderActionsHidden(tester);
+    await quickReopened.runJavaScript(
+      'window.scrollTo(0, document.documentElement.scrollHeight)',
+    );
+    await _waitForReaderActions(tester);
+
     await tester.pumpWidget(const SizedBox.shrink());
     await tester.pump(const Duration(milliseconds: 250));
   });

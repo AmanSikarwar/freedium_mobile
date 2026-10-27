@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -159,6 +161,72 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
     },
   );
+
+  testWidgets('reader toolbar returns when the article reaches the end', (
+    tester,
+  ) async {
+    final prefs = await mockPrefs({'auto_switch_mirror': false});
+    final platform = FakeWebviewPlatform();
+    WebViewPlatform.instance = platform;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith(
+            _ScreenFreediumUrlService.new,
+          ),
+          themeInjectorServiceProvider.overrideWithValue(FakeThemeInjector()),
+        ],
+        child: const MaterialApp(
+          home: WebviewScreen(url: TestFixtures.storyUrl),
+        ),
+      ),
+    );
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final page = platform.controller.requests.single.toString();
+    platform.delegate.start(page);
+    platform.delegate.finish(page);
+    platform.controller.channels['themeApplied']!.onMessageReceived(
+      const JavaScriptMessage(message: 'done'),
+    );
+    await tester.pumpAndSettle();
+
+    final scroll = platform.controller.onScrollPositionChange;
+    expect(scroll, isNotNull);
+    double actionY() => tester.getCenter(findTooltip('Font size')).dy;
+    scroll!(const ScrollPositionChange(0, 100));
+    scroll(const ScrollPositionChange(0, 130));
+    await tester.pumpAndSettle();
+    expect(actionY(), greaterThan(600));
+
+    void reportProgress(String progress) {
+      platform.controller.channels['ReadingProgress']!.onMessageReceived(
+        JavaScriptMessage(
+          message: jsonEncode({
+            'url': page,
+            // The initial controller setup and onPageStarted each prepare the
+            // document, so the first page carries token 2.
+            'pageToken': 2,
+            'progress': progress,
+          }),
+        ),
+      );
+    }
+
+    // Progress short of the end leaves the reading mode alone.
+    reportProgress('0.900');
+    await tester.pumpAndSettle();
+    expect(actionY(), greaterThan(600));
+
+    reportProgress('1.000');
+    await tester.pumpAndSettle();
+    expect(actionY(), lessThan(600));
+
+    // Let the deferred history write finish before the test tears down.
+    await tester.pump(const Duration(seconds: 1));
+  });
 
   testWidgets('load progress updates do not rebuild the WebView widget', (
     tester,

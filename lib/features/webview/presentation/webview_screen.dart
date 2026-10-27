@@ -209,6 +209,9 @@ class _WebviewScreenState()
       if (previous?.currentUrl != next.currentUrl) {
         _resetToolbarVisibility();
       }
+      if (next.isAtReadingEnd && previous?.isAtReadingEnd != true) {
+        _toolbarVisibility.show();
+      }
       if (next.userMessage != null &&
           next.userMessage != previous?.userMessage) {
         M3ESnackbar.show(

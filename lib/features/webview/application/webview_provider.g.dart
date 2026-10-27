@@ -151,7 +151,7 @@ final class ThemeInjectorServiceProvider
 }
 
 String _$themeInjectorServiceHash() =>
-    r'9d8b3b39c22b01af59f2fe322b8a22379f33ec6c';
+    r'f513ef0088b3a225060fcf8aa620e6bb5aae51c7';
 
 @ProviderFor(shareLauncher)
 final shareLauncherProvider = ShareLauncherProvider._();
