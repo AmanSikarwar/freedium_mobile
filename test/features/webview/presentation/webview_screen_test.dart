@@ -61,6 +61,53 @@ void main() {
     semantics.dispose();
   });
 
+  testWidgets('reader toolbar occupies only the bottom action strip', (
+    tester,
+  ) async {
+    final prefs = await mockPrefs({'auto_switch_mirror': false});
+    final platform = FakeWebviewPlatform();
+    WebViewPlatform.instance = platform;
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          freediumUrlServiceProvider.overrideWith(
+            _ScreenFreediumUrlService.new,
+          ),
+          themeInjectorServiceProvider.overrideWithValue(FakeThemeInjector()),
+        ],
+        child: const MaterialApp(
+          home: WebviewScreen(url: TestFixtures.storyUrl),
+        ),
+      ),
+    );
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    final page = platform.controller.requests.single.toString();
+    platform.delegate.start(page);
+    platform.delegate.finish(page);
+    platform.controller.channels['themeApplied']!.onMessageReceived(
+      const JavaScriptMessage(message: 'done'),
+    );
+    await tester.pumpAndSettle();
+
+    final toolbarRect = tester.getRect(find.byType(M3EToolbar));
+    expect(toolbarRect.left, 0);
+    expect(
+      toolbarRect.right,
+      tester.view.physicalSize.width / tester.view.devicePixelRatio,
+    );
+    expect(toolbarRect.bottom, 600);
+    expect(
+      toolbarRect.height,
+      M3EToolbarTokens.containerSize + M3EToolbarTokens.screenOffset * 2,
+    );
+
+    // Let the deferred history write finish before the test tears down.
+    await tester.pump(const Duration(seconds: 1));
+  });
+
   testWidgets('load progress updates do not rebuild the WebView widget', (
     tester,
   ) async {

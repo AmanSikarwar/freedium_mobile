@@ -242,6 +242,7 @@ class _WebviewScreenState()
       backgroundColor: showWebView ? backgroundColor : null,
       body: SafeArea(
         child: Stack(
+          fit: StackFit.expand,
           children: [
             if (_webViewWidget != null && !webviewState.hasError)
               Visibility(
@@ -249,14 +250,25 @@ class _WebviewScreenState()
                 maintainState: true,
                 child: _webViewWidget!,
               ),
-            ReaderProgressIndicator(url: widget.url),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ReaderProgressIndicator(url: widget.url),
+            ),
             ReaderArticleShimmer(
               url: widget.url,
               hideWebView: hideThemedWebView,
             ),
             if (webviewState.hasError)
               _buildErrorWidget(webviewState, webviewNotifier),
-            if (showWebView) _buildActionButtons(),
+            if (showWebView)
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: _buildActionButtons(),
+              ),
           ],
         ),
       ),
