@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/theme/expressive_theme.dart';
 
@@ -91,6 +92,26 @@ void main() {
     expect(overlayStyle().statusBarIconBrightness, Brightness.light);
     expect(overlayStyle().statusBarBrightness, Brightness.dark);
     expect(overlayStyle().systemStatusBarContrastEnforced, isFalse);
+  });
+
+  testWidgets('snackbars clear the floating toolbars', (tester) async {
+    late M3ESnackbarTheme snackbars;
+    final scheme = ColorScheme.fromSeed(seedColor: const Color(0xff006c4c));
+
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme(Typography.englishLike2021).theme(scheme),
+        builder: (context, child) => ExpressiveTheme(child: child!),
+        home: Builder(
+          builder: (context) {
+            snackbars = M3ETheme.of(context).snackBarTheme;
+            return const Scaffold();
+          },
+        ),
+      ),
+    );
+
+    expect(snackbars.overlayBottomInset, floatingToolbarContentInset());
   });
 
   testWidgets('filled text fields use the expressive rounded shape', (
