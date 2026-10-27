@@ -40,6 +40,8 @@ All notable changes to this project will be documented in this file.
 - Status bar icons now update when the app switches between light and
   dark themes; previously they could keep the last style a sheet or
   dialog applied until an app restart.
+- Snackbars appear above the floating navigation and reader toolbars
+  instead of covering their actions.
 
 ## [0.13.0] - 2026-09-26
 
