@@ -53,12 +53,10 @@ class _OnboardingScreenState() extends ConsumerState<OnboardingScreen> {
         .completeOnboarding();
     if (!mounted) return;
     if (!didComplete) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Could not save onboarding progress. Please try again.',
-          ),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: 'Could not save onboarding progress. Please try again.',
+        duration: const Duration(seconds: 4),
       );
       return;
     }

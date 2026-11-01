@@ -264,10 +264,7 @@ void main() {
       await tester.tap(find.widgetWithText(M3EButton, 'Save'));
       await tester.pumpAndSettle();
 
-      expect(
-        find.widgetWithText(AlertDialog, 'Mirror Timeout'),
-        findsOneWidget,
-      );
+      expect(find.widgetWithText(M3EDialog, 'Mirror Timeout'), findsOneWidget);
       expect(find.text('Failed to save mirror timeout'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
@@ -329,7 +326,8 @@ void main() {
 
       final mirrorRadio = find.byWidgetPredicate(
         (widget) =>
-            widget is Radio<String> && widget.value == 'https://custom.example',
+            widget is M3ERadio<String> &&
+            widget.value == 'https://custom.example',
       );
       await tester.scrollUntilVisible(mirrorRadio, 300);
       await tester.pumpAndSettle();
@@ -400,7 +398,7 @@ void main() {
       await tester.tap(
         find.descendant(
           of: customMirrorCard,
-          matching: find.byType(PopupMenuButton<String>),
+          matching: findTooltip('Mirror options'),
         ),
       );
       await tester.pumpAndSettle();
@@ -409,7 +407,7 @@ void main() {
       await tester.tap(find.widgetWithText(M3EButton, 'Delete'));
       await tester.pumpAndSettle();
 
-      expect(find.widgetWithText(AlertDialog, 'Delete Mirror'), findsOneWidget);
+      expect(find.widgetWithText(M3EDialog, 'Delete Mirror'), findsOneWidget);
       expect(find.text('Failed to remove mirror'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

@@ -7,6 +7,7 @@ import 'package:material_ui/material_ui.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show trimTrailingSlash;
@@ -212,7 +213,8 @@ class Webview() extends _$Webview {
 }
 
 @Riverpod(keepAlive: true)
-ThemeInjectorService themeInjectorService(Ref ref) => ThemeInjectorService();
+ThemeInjectorService themeInjectorService(Ref ref) =>
+    ThemeInjectorService(contentBottomInset: floatingToolbarContentInset());
 
 @Riverpod(keepAlive: true)
 ShareLauncher shareLauncher(Ref ref) => SharePlus.instance.share;

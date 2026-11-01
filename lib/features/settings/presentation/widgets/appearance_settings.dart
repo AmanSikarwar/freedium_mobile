@@ -1,3 +1,4 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -26,10 +27,10 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return ListTile(
+    return M3EListItem(
+      headline: 'Theme',
+      supportingText: _getThemeModeName(settings.themeMode),
       leading: const Icon(Icons.brightness_6),
-      title: const Text('Theme'),
-      subtitle: Text(_getThemeModeName(settings.themeMode)),
       onTap: () => showThemeChooserBottomSheet(context),
     );
   }
@@ -47,20 +48,21 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return ListTile(
+    return M3EListItem(
+      headline: 'Default Font Size',
+      supportingText: '${settings.defaultFontSize.toInt()}px',
       leading: const Icon(Icons.text_fields),
-      title: const Text('Default Font Size'),
-      subtitle: Text('${settings.defaultFontSize.toInt()}px'),
       onTap: () => showFontSettingsSheet(
         context,
         initialFontSize: settings.defaultFontSize,
         onFontSizeChanged: (newSize) async {
-          final scaffoldMessenger = ScaffoldMessenger.of(context);
           final didSave = await notifier.setDefaultFontSize(newSize);
           if (!context.mounted) return;
           if (!didSave) {
-            scaffoldMessenger.showSnackBar(
-              const SnackBar(content: Text('Failed to save default font size')),
+            M3ESnackbar.show(
+              context,
+              message: 'Failed to save default font size',
+              duration: const Duration(seconds: 4),
             );
           }
         },
@@ -75,16 +77,17 @@ class const AppearanceSettings({super.key}) extends ConsumerWidget {
   ) {
     return ExpressiveSwitchTile(
       leading: const Icon(Icons.notifications_outlined),
-      title: const Text('Freedium Popups'),
-      subtitle: const Text('Show site announcements and notifications'),
+      title: 'Freedium Popups',
+      subtitle: 'Show site announcements and notifications',
       value: settings.showSitePopups,
       onChanged: (value) async {
         HapticFeedback.lightImpact();
-        final scaffoldMessenger = ScaffoldMessenger.of(context);
         final didSave = await notifier.setShowSitePopups(value);
         if (!context.mounted || didSave) return;
-        scaffoldMessenger.showSnackBar(
-          const SnackBar(content: Text('Failed to save site popup setting')),
+        M3ESnackbar.show(
+          context,
+          message: 'Failed to save site popup setting',
+          duration: const Duration(seconds: 4),
         );
       },
     );

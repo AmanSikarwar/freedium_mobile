@@ -1,6 +1,8 @@
 body {
   background-color: var(--app-surface) !important;
   color: var(--app-on-surface) !important;
+  /* Let the end of the article scroll clear of the floating reader actions. */
+  padding-bottom: var(--app-content-bottom-inset, 0px) !important;
 }
 html {
   background-color: var(--app-surface) !important;

@@ -11,16 +11,16 @@ class const ExpressiveSwitchTile({
 }) extends StatelessWidget {
   final bool value;
   final ValueChanged<bool> onChanged;
-  final Widget title;
-  final Widget subtitle;
+  final String title;
+  final String subtitle;
   final Widget leading;
 
   @override
   Widget build(BuildContext context) => MergeSemantics(
-    child: ListTile(
+    child: M3EListItem(
+      headline: title,
+      supportingText: subtitle,
       leading: leading,
-      title: title,
-      subtitle: subtitle,
       onTap: () => onChanged(!value),
       trailing: ExcludeFocus(
         child: M3ESwitch(value: value, onChanged: onChanged),

@@ -37,6 +37,8 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
   Widget build(BuildContext context) {
     final historyAsync = ref.watch(historyProvider);
     final history = historyAsync.value ?? const <ReadingHistory>[];
+    final historyLimit =
+        ref.watch(historyLimitProvider).value ?? HistoryService.defaultLimit;
     final lowercaseQuery = _query.toLowerCase();
 
     final filtered = _query.isEmpty
@@ -56,46 +58,39 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
     );
 
     return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('History'),
-            if (history.isNotEmpty)
-              Text(
-                '${history.length} ${history.length == 1 ? 'article' : 'articles'}',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-          ],
-        ),
+      appBar: M3EAppBar.top(
+        automaticallyImplyLeading: true,
+        titleText: 'History',
+        subtitleText: history.isNotEmpty
+            ? '${history.length} ${history.length == 1 ? 'article' : 'articles'}'
+            : null,
         actions: [
           if (history.isNotEmpty) ...[
-            PopupMenuButton<String>(
-              tooltip: 'History options',
-              onSelected: (value) => _onOption(context, value),
-              itemBuilder: (context) {
-                final limit =
-                    ref.watch(historyLimitProvider).value ??
-                    HistoryService.defaultLimit;
-                return [
-                  for (final option in HistoryService.allowedLimits)
-                    CheckedPopupMenuItem(
-                      value: 'keep_$option',
-                      checked: limit == option,
-                      child: Text('Keep last $option'),
-                    ),
-                  const PopupMenuItem(
-                    value: 'prune_30d',
-                    child: Text('Clear older than 30 days'),
+            M3EMenu(
+              anchorBuilder: (context, open) => ExpressiveIconButton(
+                icon: const Icon(Icons.more_vert),
+                tooltip: 'History options',
+                onPressed: open,
+              ),
+              position: M3EMenuAnchorPosition.bottomEnd,
+              onSelected: (value) => _onOption(context, value! as String),
+              children: [
+                for (final option in HistoryService.allowedLimits)
+                  M3EMenuSelectable(
+                    label: 'Keep last $option',
+                    value: 'keep_$option',
+                    selected: historyLimit == option,
                   ),
-                  const PopupMenuItem(
-                    value: 'clear',
-                    child: Text('Clear history'),
-                  ),
-                ];
-              },
+                const M3EMenuEntry(
+                  label: 'Clear older than 30 days',
+                  value: 'prune_30d',
+                ),
+                const M3EMenuEntry(
+                  label: 'Clear history',
+                  value: 'clear',
+                  isDestructive: true,
+                ),
+              ],
             ),
             ExpressiveIconButton(
               icon: const Icon(Icons.delete_sweep),
@@ -104,67 +99,83 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
             ),
           ],
         ],
-        bottom: history.isNotEmpty
-            ? LibrarySearchHeader(
-                controller: _searchController,
-                hintText: 'Search history…',
-                query: _query,
-                onChanged: (v) => setState(() => _query = v),
-                onClear: _clearSearch,
-              )
-            : null,
       ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: libraryContentMaxWidth),
-          child: historyAsync.when(
-            data: (_) => filtered.isEmpty
-                ? LibraryEmptyState(
-                    icon: _query.isNotEmpty ? Icons.search_off : Icons.history,
-                    title: _query.isNotEmpty
-                        ? 'No results for "$_query"'
-                        : 'No reading history yet.',
-                    message: _query.isNotEmpty ? 'Try another title or URL.' : 'Articles you open will appear here with their reading progress.',
-                    actionLabel: _query.isNotEmpty ? 'Clear search' : null,
-                    onAction: _query.isNotEmpty ? _clearSearch : null,
-                  )
-                : LibraryListView<ReadingHistory>(
-                    grouped: grouped,
-                    keyFor: (item) =>
-                        '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
-                    titleFor: (item) => item.title,
-                    subtitleFor: (item) {
-                      final relativeTime = du.relativeTime(item.timestamp);
-                      final readingStatus = item.isFinished
-                          ? 'Finished'
-                          : item.progress > 0
-                          ? '${(item.progress * 100).round()}% read'
-                          : null;
-                      return readingStatus == null
-                          ? relativeTime
-                          : '$readingStatus • $relativeTime';
-                    },
-                    urlFor: (item) => item.url,
-                    progressFor: (item) =>
-                        item.progress > 0 ? item.progress : null,
-                    trailingFor: (_) => null,
-                    onRemove: (item) =>
-                        ref.read(historyProvider.notifier).removeHistory(item),
-                    removeFailMessage: 'Failed to remove history entry',
-                    onTap: (item) =>
-                        Navigator.push(context, webviewRoute(item.url)),
+      body: Column(
+        children: [
+          if (history.isNotEmpty)
+            LibrarySearchHeader(
+              controller: _searchController,
+              hintText: 'Search history…',
+              query: _query,
+              onChanged: (v) => setState(() => _query = v),
+              onClear: _clearSearch,
+            ),
+          Expanded(
+            child: Center(
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  maxWidth: libraryContentMaxWidth,
+                ),
+                child: historyAsync.when(
+                  data: (_) => filtered.isEmpty
+                      ? LibraryEmptyState(
+                          icon: _query.isNotEmpty
+                              ? Icons.search_off
+                              : Icons.history,
+                          title: _query.isNotEmpty
+                              ? 'No results for "$_query"'
+                              : 'No reading history yet.',
+                          message: _query.isNotEmpty
+                              ? 'Try another title or URL.'
+                              : 'Articles you open will appear here with their reading progress.',
+                          actionLabel: _query.isNotEmpty
+                              ? 'Clear search'
+                              : null,
+                          onAction: _query.isNotEmpty ? _clearSearch : null,
+                        )
+                      : LibraryListView<ReadingHistory>(
+                          grouped: grouped,
+                          keyFor: (item) =>
+                              '${item.url}_${item.timestamp.millisecondsSinceEpoch}',
+                          titleFor: (item) => item.title,
+                          subtitleFor: (item) {
+                            final relativeTime = du.relativeTime(
+                              item.timestamp,
+                            );
+                            final readingStatus = item.isFinished
+                                ? 'Finished'
+                                : item.progress > 0
+                                ? '${(item.progress * 100).round()}% read'
+                                : null;
+                            return readingStatus == null
+                                ? relativeTime
+                                : '$readingStatus • $relativeTime';
+                          },
+                          urlFor: (item) => item.url,
+                          progressFor: (item) =>
+                              item.progress > 0 ? item.progress : null,
+                          trailingFor: (_) => null,
+                          onRemove: (item) => ref
+                              .read(historyProvider.notifier)
+                              .removeHistory(item),
+                          removeFailMessage: 'Failed to remove history entry',
+                          onTap: (item) =>
+                              Navigator.push(context, webviewRoute(item.url)),
+                        ),
+                  loading: () =>
+                      const Center(child: M3EProgressIndicator.circularWavy()),
+                  error: (error, _) => LibraryEmptyState(
+                    icon: Icons.error_outline,
+                    title: 'Something went wrong.',
+                    message: 'Could not load reading history.',
+                    actionLabel: 'Retry',
+                    onAction: () => ref.invalidate(historyProvider),
                   ),
-            loading: () =>
-                const Center(child: M3EProgressIndicator.circularWavy()),
-            error: (error, _) => LibraryEmptyState(
-              icon: Icons.error_outline,
-              title: 'Something went wrong.',
-              message: 'Could not load reading history.',
-              actionLabel: 'Retry',
-              onAction: () => ref.invalidate(historyProvider),
+                ),
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -177,14 +188,12 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
           .read(historyLimitProvider.notifier)
           .setLimit(limit);
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            didApply
-                ? 'Keeping last $limit articles'
-                : 'Could not update history limit',
-          ),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: didApply
+            ? 'Keeping last $limit articles'
+            : 'Could not update history limit',
+        duration: const Duration(seconds: 4),
       );
       return;
     }
@@ -193,16 +202,14 @@ class _HistoryScreenState() extends ConsumerState<HistoryScreen> {
           .read(historyProvider.notifier)
           .clearOlderThan(const Duration(days: 30));
       if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            removed < 0
-                ? 'Could not clear old history'
-                : removed == 0
-                ? 'No articles older than 30 days'
-                : 'Cleared $removed article${removed == 1 ? '' : 's'}',
-          ),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: removed < 0
+            ? 'Could not clear old history'
+            : removed == 0
+            ? 'No articles older than 30 days'
+            : 'Cleared $removed article${removed == 1 ? '' : 's'}',
+        duration: const Duration(seconds: 4),
       );
       return;
     }

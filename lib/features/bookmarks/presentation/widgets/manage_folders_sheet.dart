@@ -7,10 +7,8 @@ import 'package:freedium_mobile/features/bookmarks/presentation/widgets/rename_b
 
 /// Shows the manage-folders bottom sheet (create, rename, delete).
 Future<void> showManageFoldersSheet(BuildContext context) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
-    isScrollControlled: true,
+  return M3EBottomSheet.show<void>(
+    context,
     builder: (_) => const ManageFoldersSheet(),
   );
 }
@@ -43,18 +41,18 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
     if (didCreate) {
       _createController.clear();
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Could not create folder (duplicate or limit)'),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: 'Could not create folder (duplicate or limit)',
+        duration: const Duration(seconds: 4),
       );
     }
   }
 
   Future<void> _rename(String folder) async {
-    final newName = await showDialog<String>(
-      context: context,
-      builder: (_) => RenameBookmarkFolderDialog(folder: folder),
+    final newName = await M3EDialog.show<String>(
+      context,
+      dialog: RenameBookmarkFolderDialog(folder: folder),
     );
     if (newName == null || !mounted) return;
     final didRename = await ref
@@ -62,27 +60,30 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
         .renameFolder(folder, newName);
     if (!mounted) return;
     if (!didRename) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not rename folder')));
+        message: 'Could not rename folder',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 
   Future<void> _delete(String folder) async {
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete folder?'),
+    final confirmed = await M3EDialog.show<bool>(
+      context,
+      autofocusFirst: false,
+      dialog: M3EDialog(
+        title: 'Delete folder?',
         content: Text(
           '"$folder" will be removed. Its articles stay bookmarked as Unsorted.',
         ),
         actions: [
           M3EButton.text(
-            onPressed: () => Navigator.pop(dialogContext, false),
+            onPressed: () => Navigator.pop(context, false),
             child: const Text('Cancel'),
           ),
           M3EButton.filled(
-            onPressed: () => Navigator.pop(dialogContext, true),
+            onPressed: () => Navigator.pop(context, true),
             child: const Text('Delete'),
           ),
         ],
@@ -94,9 +95,11 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
         .deleteFolder(folder);
     if (!mounted) return;
     if (!didDelete) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not delete folder')));
+        message: 'Could not delete folder',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 
@@ -115,165 +118,154 @@ class _ManageFoldersSheetState() extends ConsumerState<ManageFoldersSheet> {
       }
     }
 
-    return SafeArea(
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(
-          16,
-          8,
-          16,
-          24 + MediaQuery.viewInsetsOf(context).bottom,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    'Manage folders',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                Text(
-                  '${foldersAsync.value?.length ?? 0}/$maxBookmarkFolders '
-                  'saved · ${folders.length} total',
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: theme.colorScheme.onSurfaceVariant,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _createController,
-                    decoration: const InputDecoration(
-                      hintText: 'New folder name',
-                      prefixIcon: Icon(Icons.create_new_folder_outlined),
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      counterText: '',
-                    ),
-                    maxLength: maxBookmarkFolderNameLength,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _create(),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: ValueListenableBuilder(
-                    valueListenable: _createController,
-                    builder: (context, value, _) {
-                      final hasText = value.text.trim().isNotEmpty;
-                      return M3EButton.tonal(
-                        onPressed: _saving || !hasText ? null : _create,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add'),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Flexible(
-              child: foldersAsync.when(
-                data: (_) => folders.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.create_new_folder_outlined,
-                              size: 40,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'No folders yet. Create one above to organize your bookmarks.',
-                              textAlign: TextAlign.center,
-                              style: theme.textTheme.bodyMedium?.copyWith(
-                                color: theme.colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                          ],
-                        ),
-                      )
-                    : ListView.separated(
-                        shrinkWrap: true,
-                        itemCount: folders.length,
-                        separatorBuilder: (_, _) => const Divider(height: 1),
-                        itemBuilder: (context, index) {
-                          final folder = folders[index];
-                          final count = counts[folder.toLowerCase()] ?? 0;
-                          return ListTile(
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 4,
-                            ),
-                            leading: Container(
-                              width: 40,
-                              height: 40,
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primaryContainer,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Icon(
-                                Icons.folder,
-                                color: theme.colorScheme.onPrimaryContainer,
-                              ),
-                            ),
-                            title: Text(folder),
-                            subtitle: Text(
-                              count == 0
-                                  ? 'Empty'
-                                  : '$count article${count == 1 ? '' : 's'}',
-                            ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                ExpressiveIconButton(
-                                  icon: const Icon(Icons.edit_outlined),
-                                  tooltip: 'Rename',
-                                  onPressed: () => _rename(folder),
-                                ),
-                                ExpressiveIconButton(
-                                  icon: Icon(
-                                    Icons.delete_outline,
-                                    color: theme.colorScheme.error,
-                                  ),
-                                  tooltip: 'Delete',
-                                  onPressed: () => _delete(folder),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(16),
-                    child: M3EProgressIndicator.circularWavy(),
-                  ),
-                ),
-                error: (_, _) => const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16),
-                  child: Text(
-                    'Could not load folders.',
-                    textAlign: TextAlign.center,
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        24 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Manage folders',
+                  style: theme.textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
+              Text(
+                '${foldersAsync.value?.length ?? 0}/$maxBookmarkFolders '
+                'saved · ${folders.length} total',
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: M3ETextField(
+                  controller: _createController,
+                  leading: const Icon(Icons.create_new_folder_outlined),
+                  label: 'New folder name',
+                  maxLength: maxBookmarkFolderNameLength,
+                  showCounter: false,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _create(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: ValueListenableBuilder(
+                  valueListenable: _createController,
+                  builder: (context, value, _) {
+                    final hasText = value.text.trim().isNotEmpty;
+                    return M3EButton.tonal(
+                      onPressed: _saving || !hasText ? null : _create,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Add'),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Flexible(
+            child: foldersAsync.when(
+              data: (_) => folders.isEmpty
+                  ? Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.create_new_folder_outlined,
+                            size: 40,
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'No folders yet. Create one above to organize your bookmarks.',
+                            textAlign: TextAlign.center,
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: theme.colorScheme.onSurfaceVariant,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.separated(
+                      shrinkWrap: true,
+                      itemCount: folders.length,
+                      separatorBuilder: (_, _) => const M3EDivider(),
+                      itemBuilder: (context, index) {
+                        final folder = folders[index];
+                        final count = counts[folder.toLowerCase()] ?? 0;
+                        return M3EListItem(
+                          headline: folder,
+                          supportingText: count == 0
+                              ? 'Empty'
+                              : '$count article${count == 1 ? '' : 's'}',
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primaryContainer,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.folder,
+                              color: theme.colorScheme.onPrimaryContainer,
+                            ),
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              ExpressiveIconButton(
+                                icon: const Icon(Icons.edit_outlined),
+                                tooltip: 'Rename',
+                                onPressed: () => _rename(folder),
+                              ),
+                              ExpressiveIconButton(
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  color: theme.colorScheme.error,
+                                ),
+                                tooltip: 'Delete',
+                                onPressed: () => _delete(folder),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+              loading: () => const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: M3EProgressIndicator.circularWavy(),
+                ),
+              ),
+              error: (_, _) => const Padding(
+                padding: EdgeInsets.symmetric(vertical: 16),
+                child: Text(
+                  'Could not load folders.',
+                  textAlign: TextAlign.center,
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

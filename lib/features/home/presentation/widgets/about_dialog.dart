@@ -9,45 +9,80 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
 void showAppAboutDialog(BuildContext context, WidgetRef ref) {
-  showAboutDialog(
-    context: context,
-    applicationIcon: Image.asset('assets/icon/icon.png', width: 48, height: 48),
-    applicationName: AppConstants.appName,
-    applicationVersion: AppConstants.appVersion,
-    children: [
-      const Text(
-        'Freedium supports Medium, NYT, WaPo, Bloomberg, Reuters, '
-        'The Economist, and Financial Times articles.\n\n'
-        'Just paste the URL of the article you want to read and '
-        'Freedium will take care of the rest!\n\n',
-      ),
-      Wrap(
-        children: [
-          const Text('Source code available on '),
-          GestureDetector(
-            onTap: () =>
-                unawaited(_launchUrl(context, ref, AppConstants.appSourceUrl)),
-            child: Text(
-              'GitHub',
-              style: TextStyle(color: Theme.of(context).colorScheme.primary),
-            ),
-          ),
-        ],
-      ),
-      Row(
-        mainAxisAlignment: .center,
+  M3EDialog.show<void>(
+    context,
+    autofocusFirst: false,
+    dialog: M3EDialog(
+      icon: Image.asset('assets/icon/icon.png', width: 48, height: 48),
+      title: AppConstants.appName,
+      subhead: AppConstants.appVersion,
+      content: Column(
         mainAxisSize: .min,
+        crossAxisAlignment: .start,
         children: [
-          const Text('Made with ❤️ by', style: TextStyle(fontSize: 12)),
-          M3EButton.text(
-            onPressed: () => unawaited(
-              _launchUrl(context, ref, 'https://github.com/amansikarwar'),
-            ),
-            child: const Text('Aman Sikarwar', style: TextStyle(fontSize: 12)),
+          const Text(
+            'Freedium supports Medium, NYT, WaPo, Bloomberg, Reuters, '
+            'The Economist, and Financial Times articles.\n\n'
+            'Just paste the URL of the article you want to read and '
+            'Freedium will take care of the rest!\n\n',
+          ),
+          Wrap(
+            children: [
+              const Text('Source code available on '),
+              GestureDetector(
+                onTap: () => unawaited(
+                  _launchUrl(context, ref, AppConstants.appSourceUrl),
+                ),
+                child: Text(
+                  'GitHub',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          Row(
+            mainAxisAlignment: .center,
+            mainAxisSize: .min,
+            children: [
+              const Text('Made with ❤️ by', style: TextStyle(fontSize: 12)),
+              M3EButton.text(
+                onPressed: () => unawaited(
+                  _launchUrl(context, ref, 'https://github.com/amansikarwar'),
+                ),
+                child: const Text(
+                  'Aman Sikarwar',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
           ),
         ],
       ),
-    ],
+      actions: [
+        M3EButton.text(
+          onPressed: () {
+            Navigator.pop(context);
+            showLicensePage(
+              context: context,
+              applicationName: AppConstants.appName,
+              applicationVersion: AppConstants.appVersion,
+              applicationIcon: Image.asset(
+                'assets/icon/icon.png',
+                width: 48,
+                height: 48,
+              ),
+            );
+          },
+          child: const Text('View licenses'),
+        ),
+        M3EButton.text(
+          onPressed: () => Navigator.pop(context),
+          child: const Text('Close'),
+        ),
+      ],
+    ),
   );
 }
 
@@ -56,6 +91,9 @@ Future<void> _launchUrl(BuildContext context, WidgetRef ref, String url) async {
   if (!context.mounted || launched) return;
 
   HapticFeedback.heavyImpact();
-  ScaffoldMessenger.of(context)
-      .showSnackBar(const SnackBar(content: Text('Could not open link')));
+  M3ESnackbar.show(
+    context,
+    message: 'Could not open link',
+    duration: const Duration(seconds: 4),
+  );
 }

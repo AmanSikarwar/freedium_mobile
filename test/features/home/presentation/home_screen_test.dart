@@ -77,9 +77,9 @@ void main() {
       await tester.tap(findTooltip('Paste from clipboard'));
       await tester.pumpAndSettle();
 
-      final snackBar = find.byType(SnackBar);
-      final surface = tester.widget<Material>(
-        find.descendant(of: snackBar, matching: find.byType(Material)).first,
+      final snackBar = find.byType(M3ESnackbar);
+      final container = tester.widget<Container>(
+        find.descendant(of: snackBar, matching: find.byType(Container)).first,
       );
       final message = tester.widget<RichText>(
         find.descendant(
@@ -87,7 +87,10 @@ void main() {
           matching: find.byType(RichText),
         ),
       );
-      expect(surface.color, scheme.inverseSurface);
+      expect(
+        (container.decoration! as BoxDecoration).color,
+        scheme.inverseSurface,
+      );
       expect(message.text.style?.color, scheme.onInverseSurface);
     });
   }
@@ -109,6 +112,33 @@ void main() {
       expect(find.text('Read Article'), findsOneWidget);
       expect(find.text('Article URL'), findsOneWidget);
       expect(find.text('Get Article'), findsNothing);
+    });
+
+    testWidgets('does not scroll into empty space above the toolbar', (
+      tester,
+    ) async {
+      final clipboard = FakeClipboardService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final scrollable = find
+          .descendant(
+            of: find.byType(SingleChildScrollView),
+            matching: find.byType(Scrollable),
+          )
+          .first;
+      expect(
+        tester.state<ScrollableState>(scrollable).position.maxScrollExtent,
+        0,
+      );
     });
 
     testWidgets('paste button exposes an accessible label', (tester) async {
@@ -254,7 +284,7 @@ void main() {
       await tester.pumpAndSettle();
 
       await tester.enterText(
-        find.byType(TextFormField),
+        find.byType(M3ETextField),
         'https://medium.com/manual/story',
       );
       clipboard.text = 'https://medium.com/clipboard/story';
@@ -266,6 +296,96 @@ void main() {
         find.byType(EditableText),
       );
       expect(editableText.controller.text, 'https://medium.com/manual/story');
+    });
+
+    testWidgets('clears a stale validation error when a valid URL is pasted', (
+      tester,
+    ) async {
+      final clipboard = FakeClipboardService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(M3ETextField), 'not a url');
+      await tester.tap(find.text('Read Article'));
+      await tester.pumpAndSettle();
+      expect(find.text('Please enter a valid URL'), findsOneWidget);
+
+      clipboard.text = 'https://medium.com/example/story';
+      await tester.tap(find.byIcon(Icons.paste));
+      await tester.pumpAndSettle();
+
+      final editableText = tester.widget<EditableText>(
+        find.byType(EditableText),
+      );
+      expect(editableText.controller.text, 'https://medium.com/example/story');
+      expect(find.text('Please enter a valid URL'), findsNothing);
+    });
+
+    testWidgets('keeps the validation error when the pasted text is invalid', (
+      tester,
+    ) async {
+      final clipboard = FakeClipboardService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(M3ETextField), 'not a url');
+      await tester.tap(find.text('Read Article'));
+      await tester.pumpAndSettle();
+
+      clipboard.text = 'still not a url';
+      await tester.tap(find.byIcon(Icons.paste));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Please enter a valid URL'), findsOneWidget);
+    });
+
+    testWidgets('clears a stale validation error when auto-fill succeeds', (
+      tester,
+    ) async {
+      final clipboard = FakeClipboardService();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Read Article'));
+      await tester.pumpAndSettle();
+      expect(find.text('Please enter a URL'), findsOneWidget);
+
+      clipboard.text = 'https://medium.com/clipboard/story';
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+
+      final editableText = tester.widget<EditableText>(
+        find.byType(EditableText),
+      );
+      expect(
+        editableText.controller.text,
+        'https://medium.com/clipboard/story',
+      );
+      expect(find.text('Please enter a URL'), findsNothing);
     });
 
     testWidgets('ignores paste completion after the screen is disposed', (

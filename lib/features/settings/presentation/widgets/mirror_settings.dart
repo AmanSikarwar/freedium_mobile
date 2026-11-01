@@ -14,11 +14,25 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final settings = ref.watch(settingsProvider).requireValue;
     final settingsNotifier = ref.read(settingsProvider.notifier);
+
+    Future<void> selectMirror(String url) async {
+      HapticFeedback.selectionClick();
+      final didSave = await settingsNotifier.setSelectedMirror(url);
+      if (!context.mounted) return;
+      if (!didSave) {
+        M3ESnackbar.show(
+          context,
+          message: 'Failed to save selected mirror',
+          duration: const Duration(seconds: 4),
+        );
+      }
+    }
+
     return Column(
       children: [
         _buildAutoSwitchTile(context, settings, settingsNotifier),
         _buildMirrorTimeoutTile(context, settings, settingsNotifier),
-        const Divider(height: 1),
+        const M3EDivider(),
         Padding(
           padding: const .symmetric(horizontal: 16, vertical: 8),
           child: Text(
@@ -27,29 +41,17 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
                 ?.copyWith(color: Theme.of(context).colorScheme.primary),
           ),
         ),
-        RadioGroup<String>(
+        M3ERadioGroup<String>(
           groupValue: settings.selectedMirrorUrl,
-          onChanged: (url) async {
-            if (url != null) {
-              HapticFeedback.selectionClick();
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
-              final didSave = await settingsNotifier.setSelectedMirror(url);
-              if (!context.mounted) return;
-              if (!didSave) {
-                scaffoldMessenger.showSnackBar(
-                  const SnackBar(
-                    content: Text('Failed to save selected mirror'),
-                  ),
-                );
-              }
-            }
-          },
+          groupLabel: 'Available Mirrors',
+          onChanged: selectMirror,
           child: Column(
             children: settings.mirrors
                 .map(
                   (mirror) => MirrorListTile(
                     mirror: mirror,
-                    isSelected: mirror.url == settings.selectedMirrorUrl,
+                    selectedMirrorUrl: settings.selectedMirrorUrl,
+                    onSelect: selectMirror,
                     onEdit: mirror.isCustom
                         ? () => showEditMirrorDialog(context, ref, mirror)
                         : null,
@@ -83,17 +85,18 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
   ) {
     return ExpressiveSwitchTile(
       leading: const Icon(Icons.swap_horiz),
-      title: const Text('Auto-Switch Mirror'),
-      subtitle: const Text('Automatically use working mirror'),
+      title: 'Auto-Switch Mirror',
+      subtitle: 'Automatically use working mirror',
       value: settings.autoSwitchMirror,
       onChanged: (value) async {
         HapticFeedback.lightImpact();
-        final scaffoldMessenger = ScaffoldMessenger.of(context);
         final didSave = await notifier.setAutoSwitchMirror(value);
         if (!context.mounted) return;
         if (!didSave) {
-          scaffoldMessenger.showSnackBar(
-            const SnackBar(content: Text('Failed to save auto-switch mirror')),
+          M3ESnackbar.show(
+            context,
+            message: 'Failed to save auto-switch mirror',
+            duration: const Duration(seconds: 4),
           );
         }
       },
@@ -105,10 +108,10 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
     SettingsState settings,
     Settings notifier,
   ) {
-    return ListTile(
+    return M3EListItem(
+      headline: 'Mirror Timeout',
+      supportingText: '${settings.mirrorTimeout} seconds',
       leading: const Icon(Icons.timer),
-      title: const Text('Mirror Timeout'),
-      subtitle: Text('${settings.mirrorTimeout} seconds'),
       onTap: () => _showTimeoutDialog(context, settings, notifier),
     );
   }
@@ -120,11 +123,11 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
   ) {
     int timeout = SettingsState.normalizeMirrorTimeout(settings.mirrorTimeout);
 
-    showDialog<void>(
-      context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: const Text('Mirror Timeout'),
+    M3EDialog.show<void>(
+      context,
+      dialog: StatefulBuilder(
+        builder: (context, setState) => M3EDialog(
+          title: 'Mirror Timeout',
           content: Column(
             mainAxisSize: .min,
             children: [
@@ -158,17 +161,16 @@ class const MirrorSettings({super.key}) extends ConsumerWidget {
             M3EButton.filled(
               onPressed: () async {
                 HapticFeedback.lightImpact();
-                final scaffoldMessenger = ScaffoldMessenger.of(context);
                 final navigator = Navigator.of(context);
                 final didSave = await notifier.setMirrorTimeout(timeout);
                 if (!context.mounted) return;
                 if (didSave) {
                   navigator.pop();
                 } else {
-                  scaffoldMessenger.showSnackBar(
-                    const SnackBar(
-                      content: Text('Failed to save mirror timeout'),
-                    ),
+                  M3ESnackbar.show(
+                    context,
+                    message: 'Failed to save mirror timeout',
+                    duration: const Duration(seconds: 4),
                   );
                 }
               },

@@ -106,6 +106,24 @@ void main() {
       expect(script, contains('--app-secondary'));
     });
 
+    test(
+      'reserves space for the floating reader actions at page end',
+      () async {
+        final service = ThemeInjectorService(contentBottomInset: 88);
+        final script = await service.getThemeInjectionScript(
+          ColorScheme.fromSeed(seedColor: Colors.teal),
+        );
+
+        expect(script, contains('--app-content-bottom-inset: 88.0px;'));
+        expect(
+          script,
+          contains(
+            'padding-bottom: var(--app-content-bottom-inset, 0px) !important;',
+          ),
+        );
+      },
+    );
+
     test('pre-theme script primes mode-watcher and Freedium tokens', () {
       final service = ThemeInjectorService();
       final script = service.getPreThemeScript(

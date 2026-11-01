@@ -118,7 +118,10 @@ class const UpdateCard({
     if (!context.mounted || launched) return;
 
     HapticFeedback.heavyImpact();
-    ScaffoldMessenger.of(context)
-        .showSnackBar(const SnackBar(content: Text('Could not open link')));
+    M3ESnackbar.show(
+      context,
+      message: 'Could not open link',
+      duration: const Duration(seconds: 4),
+    );
   }
 }

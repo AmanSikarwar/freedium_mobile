@@ -1,4 +1,7 @@
 import 'package:material_3_expressive/material_3_expressive.dart';
+
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -113,6 +116,125 @@ void main() {
 
       expect(launchedUrls, [releaseNoteUrl]);
       expect(find.text('What\'s New'), findsOneWidget);
+      expect(find.text('Could not open link'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('ignores repeat taps on Update Now while a launch is pending', (
+      tester,
+    ) async {
+      final completer = Completer<bool>();
+      final launchedUrls = <String?>[];
+      const releaseUrl = 'https://github.com/example/app/releases/tag/v1.2.3';
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            externalUrlLauncherProvider.overrideWith(
+              (ref) => (url) {
+                launchedUrls.add(url);
+                return completer.future;
+              },
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  return Center(
+                    child: M3EButton(
+                      onPressed: () {
+                        showChangelogBottomSheet(
+                          context,
+                          const UpdateInfo(
+                            latestVersion: 'v1.2.3',
+                            releaseUrl: releaseUrl,
+                            releaseNotes: 'Release notes',
+                          ),
+                        );
+                      },
+                      child: const Text('Show changelog'),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Show changelog'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(M3EButton, 'Update Now'));
+      await tester.pump();
+      await tester.tap(find.widgetWithText(M3EButton, 'Update Now'));
+      await tester.pump();
+
+      expect(launchedUrls, [releaseUrl]);
+
+      completer.complete(true);
+      await tester.pumpAndSettle();
+
+      expect(find.text('What\'s New'), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('keeps the route below when dismissed during a launch', (
+      tester,
+    ) async {
+      final completer = Completer<bool>();
+      const releaseUrl = 'https://github.com/example/app/releases/tag/v1.2.3';
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            externalUrlLauncherProvider.overrideWith(
+              (ref) =>
+                  (url) => completer.future,
+            ),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Builder(
+                builder: (context) {
+                  return Center(
+                    child: M3EButton(
+                      onPressed: () {
+                        showChangelogBottomSheet(
+                          context,
+                          const UpdateInfo(
+                            latestVersion: 'v1.2.3',
+                            releaseUrl: releaseUrl,
+                            releaseNotes: 'Release notes',
+                          ),
+                        );
+                      },
+                      child: const Text('Show changelog'),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Show changelog'));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.widgetWithText(M3EButton, 'Update Now'));
+      await tester.pump();
+
+      // Dismiss the sheet while the launch is still pending.
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pump(const Duration(milliseconds: 50));
+
+      completer.complete(false);
+      await tester.pumpAndSettle();
+
+      expect(find.text('What\'s New'), findsNothing);
+      expect(find.text('Show changelog'), findsOneWidget);
       expect(find.text('Could not open link'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });

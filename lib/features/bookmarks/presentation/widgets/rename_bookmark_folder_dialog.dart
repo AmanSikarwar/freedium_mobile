@@ -30,16 +30,13 @@ class _RenameBookmarkFolderDialogState()
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: const Text('Rename folder'),
-      content: TextField(
+    return M3EDialog(
+      title: 'Rename folder',
+      content: M3ETextField(
         controller: _controller,
         autofocus: true,
         maxLength: maxBookmarkFolderNameLength,
-        decoration: const InputDecoration(
-          hintText: 'Folder name',
-          border: OutlineInputBorder(),
-        ),
+        label: 'Folder name',
       ),
       actions: [
         M3EButton.text(

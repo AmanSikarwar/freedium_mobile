@@ -9,9 +9,8 @@ Future<void> showMoveToFolderSheet(
   WidgetRef ref, {
   required String url,
 }) {
-  return showModalBottomSheet<void>(
-    context: context,
-    showDragHandle: true,
+  return M3EBottomSheet.show<void>(
+    context,
     builder: (_) => MoveToFolderSheet(url: url),
   );
 }
@@ -50,9 +49,11 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
     if (!mounted) return;
     Navigator.pop(context);
     if (!didMove) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to move bookmark')));
+        message: 'Failed to move bookmark',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 
@@ -65,9 +66,11 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
     final didCreate = await folders.createFolder(name);
     if (!didCreate && mounted) {
       setState(() => _saving = false);
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Could not create folder')));
+        message: 'Could not create folder',
+        duration: const Duration(seconds: 4),
+      );
       return;
     }
     final normalized = normalizeBookmarkFolderName(name);
@@ -77,9 +80,11 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
     if (!mounted) return;
     Navigator.pop(context);
     if (!didMove) {
-      ScaffoldMessenger.of(
+      M3ESnackbar.show(
         context,
-      ).showSnackBar(const SnackBar(content: Text('Failed to move bookmark')));
+        message: 'Failed to move bookmark',
+        duration: const Duration(seconds: 4),
+      );
     }
   }
 
@@ -101,80 +106,79 @@ class _MoveToFolderSheetState() extends ConsumerState<MoveToFolderSheet> {
       }
     }
 
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              'Move to folder',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        16,
+        8,
+        16,
+        24 + MediaQuery.viewInsetsOf(context).bottom,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Move to folder',
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.bold,
             ),
-            const SizedBox(height: 12),
-            Flexible(
-              child: ListView(
-                shrinkWrap: true,
-                children: [
-                  _FolderOption(
-                    label: 'Unsorted',
-                    subtitle: '$unsortedCount here',
-                    icon: Icons.folder_outlined,
-                    selected: current == null,
-                    onTap: () => _move(null),
-                  ),
-                  for (final folder in folders)
-                    _FolderOption(
-                      label: folder,
-                      subtitle: '${counts[folder.toLowerCase()] ?? 0} here',
-                      icon: Icons.folder,
-                      selected: current?.toLowerCase() == folder.toLowerCase(),
-                      onTap: () => _move(folder),
-                    ),
-                ],
-              ),
-            ),
-            const Divider(),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ),
+          const SizedBox(height: 12),
+          Flexible(
+            child: ListView(
+              shrinkWrap: true,
               children: [
-                Expanded(
-                  child: TextField(
-                    controller: _newFolderController,
-                    decoration: const InputDecoration(
-                      hintText: 'New folder name',
-                      prefixIcon: Icon(Icons.create_new_folder_outlined),
-                      border: OutlineInputBorder(),
-                      isDense: true,
-                      counterText: '',
-                    ),
-                    maxLength: maxBookmarkFolderNameLength,
-                    textInputAction: TextInputAction.done,
-                    onSubmitted: (_) => _createAndMove(),
-                  ),
+                _FolderOption(
+                  label: 'Unsorted',
+                  subtitle: '$unsortedCount here',
+                  icon: Icons.folder_outlined,
+                  selected: current == null,
+                  onTap: () => _move(null),
                 ),
-                const SizedBox(width: 8),
-                Padding(
-                  padding: const EdgeInsets.only(top: 4),
-                  child: ValueListenableBuilder(
-                    valueListenable: _newFolderController,
-                    builder: (context, value, _) {
-                      final hasText = value.text.trim().isNotEmpty;
-                      return M3EButton.tonal(
-                        onPressed: _saving || !hasText ? null : _createAndMove,
-                        icon: const Icon(Icons.create_new_folder_outlined),
-                        label: const Text('Create'),
-                      );
-                    },
+                for (final folder in folders)
+                  _FolderOption(
+                    label: folder,
+                    subtitle: '${counts[folder.toLowerCase()] ?? 0} here',
+                    icon: Icons.folder,
+                    selected: current?.toLowerCase() == folder.toLowerCase(),
+                    onTap: () => _move(folder),
                   ),
-                ),
               ],
             ),
-          ],
-        ),
+          ),
+          const M3EDivider(),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: M3ETextField(
+                  controller: _newFolderController,
+                  leading: const Icon(Icons.create_new_folder_outlined),
+                  label: 'New folder name',
+                  maxLength: maxBookmarkFolderNameLength,
+                  showCounter: false,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _createAndMove(),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: ValueListenableBuilder(
+                  valueListenable: _newFolderController,
+                  builder: (context, value, _) {
+                    final hasText = value.text.trim().isNotEmpty;
+                    return M3EButton.tonal(
+                      onPressed: _saving || !hasText ? null : _createAndMove,
+                      icon: const Icon(Icons.create_new_folder_outlined),
+                      label: const Text('Create'),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -196,7 +200,9 @@ class const _FolderOption({
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    return ListTile(
+    return M3EListItem(
+      headline: label,
+      supportingText: subtitle,
       leading: Container(
         width: 40,
         height: 40,
@@ -213,13 +219,10 @@ class const _FolderOption({
               : theme.colorScheme.onSurfaceVariant,
         ),
       ),
-      title: Text(label),
-      subtitle: Text(subtitle),
       trailing: selected
           ? Icon(Icons.check, color: theme.colorScheme.primary)
           : null,
       onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
     );
   }
 }

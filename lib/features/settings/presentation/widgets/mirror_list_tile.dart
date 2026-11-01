@@ -4,16 +4,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
 
 class const MirrorListTile({
   super.key,
   required this.mirror,
-  required this.isSelected,
+  required this.selectedMirrorUrl,
+  required this.onSelect,
   this.onEdit,
   this.onDelete,
 }) extends ConsumerStatefulWidget {
   final FreediumMirror mirror;
-  final bool isSelected;
+  final String? selectedMirrorUrl;
+  final ValueChanged<String> onSelect;
   final VoidCallback? onEdit;
   final VoidCallback? onDelete;
 
@@ -39,7 +42,11 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
           children: [
             Row(
               children: [
-                Radio<String>(value: widget.mirror.url),
+                M3ERadio<String>(
+                  value: widget.mirror.url,
+                  groupValue: widget.selectedMirrorUrl,
+                  onChanged: widget.onSelect,
+                ),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: .start,
@@ -117,7 +124,13 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
                       size: 20,
                     ),
                   ),
-                PopupMenuButton<String>(
+                M3EMenu.entries(
+                  anchorBuilder: (context, open) => ExpressiveIconButton(
+                    icon: const Icon(Icons.more_vert),
+                    tooltip: 'Mirror options',
+                    onPressed: open,
+                  ),
+                  position: M3EMenuAnchorPosition.bottomEnd,
                   onSelected: (value) {
                     switch (value) {
                       case 'test':
@@ -134,38 +147,24 @@ class _MirrorListTileState() extends ConsumerState<MirrorListTile> {
                         break;
                     }
                   },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(
+                  entries: [
+                    const M3EMenuEntry(
+                      label: 'Test',
                       value: 'test',
-                      child: Row(
-                        children: [
-                          Icon(Icons.speed),
-                          SizedBox(width: 8),
-                          Text('Test'),
-                        ],
-                      ),
+                      leading: Icon(Icons.speed),
                     ),
                     if (widget.onEdit != null)
-                      const PopupMenuItem(
+                      const M3EMenuEntry(
+                        label: 'Edit',
                         value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
+                        leading: Icon(Icons.edit),
                       ),
                     if (widget.onDelete != null)
-                      const PopupMenuItem(
+                      const M3EMenuEntry(
+                        label: 'Delete',
                         value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete),
-                            SizedBox(width: 8),
-                            Text('Delete'),
-                          ],
-                        ),
+                        leading: Icon(Icons.delete),
+                        isDestructive: true,
                       ),
                   ],
                 ),

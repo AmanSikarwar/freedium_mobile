@@ -11,6 +11,11 @@ const _readingProgressSnapshotScript = r'''(() => {
   return Math.min(1, Math.max(0, window.scrollY / scrollable));
 })()''';
 
+/// Reading progress at or above this fraction counts as the end of the
+/// article. The page reports three decimals, so this also catches the final
+/// pixel row when the viewport does not divide the scroll extent evenly.
+const _readingEndProgress = 0.999;
+
 extension _WebviewHistory on Webview {
   Future<void> _recordHistoryWhenReady(String currentUrl) async {
     final controller = _controller;
@@ -100,6 +105,11 @@ extension _WebviewHistory on Webview {
         ? rawProgress.toDouble()
         : double.tryParse(rawProgress?.toString() ?? '');
     if (progress == null) return;
+
+    final atEnd = progress >= _readingEndProgress;
+    if (_readerState.isAtReadingEnd != atEnd) {
+      _readerState = _readerState.copyWith(isAtReadingEnd: atEnd);
+    }
 
     final historyNotifier = _readerRef.read(historyProvider.notifier);
     final articleUrl = _extractOriginalUrl(currentUrl);

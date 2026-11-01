@@ -44,7 +44,11 @@ String _freediumThemeTokenAssignments(ColorScheme colorScheme) {
   return buffer.toString();
 }
 
-class ThemeInjectorService() {
+class ThemeInjectorService({this.contentBottomInset = 0}) {
+  /// Space reserved at the end of the page so the last lines and controls can
+  /// scroll above the floating reader actions.
+  final double contentBottomInset;
+
   Future<String> getThemeInjectionScript(
     ColorScheme colorScheme, {
     double fontSize = 18.0,
@@ -91,6 +95,7 @@ class ThemeInjectorService() {
         --app-inverse-primary: ${_colorToHex(colorScheme.inversePrimary)};
         --app-surface-tint: ${_colorToHex(colorScheme.surfaceTint)};
         --app-font-size: ${fontSize}px;
+        --app-content-bottom-inset: ${contentBottomInset}px;
       }
     ''';
 

@@ -34,6 +34,7 @@ class FakeWebviewController(super.params) extends PlatformWebViewController {
   Completer<Object>? readingProgressCompleter;
   final returningJavaScript = <String>[];
   final channels = <String, JavaScriptChannelParams>{};
+  void Function(ScrollPositionChange change)? onScrollPositionChange;
   @override
   Future<void> setJavaScriptMode(JavaScriptMode mode) async {}
   @override
@@ -52,6 +53,14 @@ class FakeWebviewController(super.params) extends PlatformWebViewController {
   Future<void> setPlatformNavigationDelegate(
     PlatformNavigationDelegate delegate,
   ) async {}
+
+  @override
+  Future<void> setOnScrollPositionChange(
+    void Function(ScrollPositionChange change)? callback,
+  ) async {
+    onScrollPositionChange = callback;
+  }
+
   @override
   Future<void> loadRequest(LoadRequestParams params) async {
     requests.add(params.uri);

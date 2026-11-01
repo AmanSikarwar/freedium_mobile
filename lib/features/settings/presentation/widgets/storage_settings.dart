@@ -17,19 +17,19 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return Column(
       children: [
-        ListTile(
+        M3EListItem(
+          headline: 'Clear Cache',
+          supportingText: 'Clear WebView cache and local storage',
           leading: const Icon(Icons.delete_outline),
-          title: const Text('Clear Cache'),
-          subtitle: const Text('Clear WebView cache and local storage'),
           onTap: () => _clearCache(context, ref),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Check for Updates',
+          supportingText: 'Check if a new version is available',
           leading: const Icon(Icons.update),
-          title: const Text('Check for Updates'),
-          subtitle: const Text('Check if a new version is available'),
           onTap: () => checkForUpdates(context, ref),
         ),
-        const Divider(),
+        const M3EDivider(),
 
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
@@ -44,23 +44,23 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
             ),
           ),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Version',
+          supportingText: AppConstants.appVersion,
           leading: const Icon(Icons.info_outline),
-          title: const Text('Version'),
-          subtitle: Text(AppConstants.appVersion),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Source Code',
+          supportingText: 'View on GitHub',
           leading: const Icon(Icons.code),
-          title: const Text('Source Code'),
-          subtitle: const Text('View on GitHub'),
           onTap: () => unawaited(
             launchSettingsUrl(context, ref, AppConstants.appSourceUrl),
           ),
         ),
-        ListTile(
+        M3EListItem(
+          headline: 'Reset to Defaults',
+          supportingText: 'Reset all settings to default values',
           leading: const Icon(Icons.restore),
-          title: const Text('Reset to Defaults'),
-          subtitle: const Text('Reset all settings to default values'),
           onTap: () => _confirmResetDefaults(context, ref),
         ),
       ],
@@ -68,10 +68,11 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
   }
 
   void _confirmResetDefaults(BuildContext context, WidgetRef ref) {
-    showDialog<void>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Reset to Defaults'),
+    M3EDialog.show<void>(
+      context,
+      autofocusFirst: false,
+      dialog: M3EDialog(
+        title: 'Reset to Defaults',
         content: const Text(
           'This will reset all settings to their default values. Continue?',
         ),
@@ -83,21 +84,18 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
           M3EButton.filled(
             onPressed: () async {
               HapticFeedback.mediumImpact();
-              final scaffoldMessenger = ScaffoldMessenger.of(context);
               final navigator = Navigator.of(context);
               final didReset = await ref
                   .read(settingsProvider.notifier)
                   .resetToDefaults();
               if (!context.mounted) return;
               navigator.pop();
-              scaffoldMessenger.showSnackBar(
-                SnackBar(
-                  content: Text(
-                    didReset
-                        ? 'Settings reset to defaults'
-                        : 'Failed to reset settings',
-                  ),
-                ),
+              M3ESnackbar.show(
+                context,
+                message: didReset
+                    ? 'Settings reset to defaults'
+                    : 'Failed to reset settings',
+                duration: const Duration(seconds: 4),
               );
             },
             child: const Text('Reset'),
@@ -118,12 +116,12 @@ class const StorageSettings({super.key}) extends ConsumerWidget {
       } else {
         HapticFeedback.heavyImpact();
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            success ? 'Cache cleared successfully' : 'Failed to clear cache',
-          ),
-        ),
+      M3ESnackbar.show(
+        context,
+        message: success
+            ? 'Cache cleared successfully'
+            : 'Failed to clear cache',
+        duration: const Duration(seconds: 4),
       );
     }
   }

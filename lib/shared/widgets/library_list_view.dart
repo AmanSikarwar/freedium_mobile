@@ -1,5 +1,7 @@
+import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 
 /// Grouped, dismissible article list shared by the history and bookmarks
@@ -43,7 +45,10 @@ class const LibraryListView<T extends Object>({
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: const EdgeInsets.only(top: 4, bottom: 24),
+      padding: EdgeInsets.only(
+        top: 4,
+        bottom: 24 + floatingToolbarClearance(context),
+      ),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       itemCount: grouped.length,
       itemBuilder: (context, index) {
@@ -63,8 +68,11 @@ class const LibraryListView<T extends Object>({
                 if (!context.mounted) return false;
 
                 if (!didRemove) {
-                  ScaffoldMessenger.of(context)
-                      .showSnackBar(SnackBar(content: Text(removeFailMessage)));
+                  M3ESnackbar.show(
+                    context,
+                    message: removeFailMessage,
+                    duration: const Duration(seconds: 4),
+                  );
                 }
 
                 return didRemove;
