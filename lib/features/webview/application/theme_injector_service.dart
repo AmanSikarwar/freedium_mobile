@@ -34,6 +34,13 @@ Map<String, String> _freediumThemeTokenValues(ColorScheme colorScheme) {
   };
 }
 
+/// Escapes [value] for embedding in a JavaScript template literal.
+@visibleForTesting
+String escapeJsTemplateLiteral(String value) => value
+    .replaceAll(r'\', r'\\')
+    .replaceAll('`', r'\`')
+    .replaceAll(r'${', r'\${');
+
 String _freediumThemeTokenAssignments(ColorScheme colorScheme) {
   final buffer = StringBuffer();
   for (final entry in _freediumThemeTokenValues(colorScheme).entries) {
@@ -124,13 +131,10 @@ class ThemeInjectorService({this.contentBottomInset = 0}) {
     return scriptTemplate
         .replaceFirst('%IS_DARK_MODE%', isDark.toString())
         .replaceFirst('%SHOW_SITE_POPUPS%', showSitePopups.toString())
-        .replaceFirst(
-          '%CSS_VARS%',
-          cssVars.replaceAll("'", r"\'").replaceAll("\n", r'\n'),
-        )
+        .replaceFirst('%CSS_VARS%', escapeJsTemplateLiteral(cssVars))
         .replaceFirst(
           '%CUSTOM_CSS_CONTENT%',
-          customCSSContent.replaceAll("'", r"\'").replaceAll("\n", r'\n'),
+          escapeJsTemplateLiteral(customCSSContent),
         );
   }
 

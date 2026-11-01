@@ -42,6 +42,9 @@ All notable changes to this project will be documented in this file.
   dialog applied until an app restart.
 - Snackbars appear above the floating navigation and reader toolbars
   instead of covering their actions.
+- Article styling now reaches text inputs, code blocks, gray panels, and
+  button hover states; seven injected style rules were being discarded
+  because their escaped selectors were mangled during injection.
 
 ## [0.13.0] - 2026-09-26
 
