@@ -1,9 +1,9 @@
 // Native callbacks are simulated; these helpers do not exercise a device.
 import 'dart:async';
 
+import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
 
 class FakeWebviewPlatform() extends WebViewPlatform {
   late FakeWebviewController controller;

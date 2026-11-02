@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/core/theme/dynamic_color_scheme.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<({ColorScheme light, ColorScheme dark})?>
 loadAndroidColorSchemes() async {

@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/app.dart';
@@ -11,6 +10,7 @@ import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:shared_preferences/shared_preferences.dart';
 

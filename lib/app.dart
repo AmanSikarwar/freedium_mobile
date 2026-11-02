@@ -1,6 +1,23 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/routing/app_navigation.dart'
+    show
+        currentRouteNameObserver,
+        navigateToWebview,
+        navigatorKey,
+        shouldSkipIncomingWebviewNavigation;
+import 'package:freedium_mobile/core/services/intent_service.dart';
+import 'package:freedium_mobile/core/theme/expressive_theme.dart';
+import 'package:freedium_mobile/core/theme/theme_provider.dart';
+import 'package:freedium_mobile/core/utils/article_url_parser.dart';
+import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
+import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 export 'core/routing/app_navigation.dart'
     show
@@ -10,24 +27,6 @@ export 'core/routing/app_navigation.dart'
         navigateToWebview,
         navigatorKey,
         shouldSkipIncomingWebviewNavigation;
-
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:freedium_mobile/core/constants/app_constants.dart';
-import 'package:freedium_mobile/core/routing/app_navigation.dart'
-    show
-        currentRouteNameObserver,
-        navigateToWebview,
-        navigatorKey,
-        shouldSkipIncomingWebviewNavigation;
-import 'package:freedium_mobile/core/services/intent_service.dart';
-import 'package:freedium_mobile/core/theme/theme_provider.dart';
-import 'package:freedium_mobile/core/theme/expressive_theme.dart';
-import 'package:freedium_mobile/core/utils/article_url_parser.dart';
-import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
-import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
-import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 
 part 'app.g.dart';
 

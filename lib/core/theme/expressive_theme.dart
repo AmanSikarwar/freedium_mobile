@@ -1,8 +1,7 @@
 import 'package:flutter/services.dart';
+import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
-
-import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 
 class const ExpressiveTheme({required this.child, super.key})
     extends StatelessWidget {

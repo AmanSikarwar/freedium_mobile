@@ -1,13 +1,12 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
-
-import 'mirror_list_tile.dart';
-import 'mirror_settings_dialogs.dart';
+import 'package:freedium_mobile/features/settings/presentation/widgets/mirror_list_tile.dart';
+import 'package:freedium_mobile/features/settings/presentation/widgets/mirror_settings_dialogs.dart';
+import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const MirrorSettings({super.key}) extends ConsumerWidget {
   @override

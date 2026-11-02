@@ -1,12 +1,12 @@
 import 'package:dynamic_color/dynamic_color.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
-import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/theme/android_color_schemes.dart';
+import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/theme/dynamic_color_scheme.dart';
 import 'package:freedium_mobile/core/theme/util.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'theme_provider.g.dart';
 

@@ -2,15 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
-
-import '../webview_test_helpers.dart';
 
 import '../../../test_helpers.dart';
+import '../webview_test_helpers.dart';
 
 void main() {
   group('WebviewNotifier shareArticle', () {

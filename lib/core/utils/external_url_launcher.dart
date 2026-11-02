@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show isHttpUri;
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 part 'external_url_launcher.g.dart';

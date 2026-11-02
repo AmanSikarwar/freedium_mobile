@@ -1,12 +1,11 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 void showAppAboutDialog(BuildContext context, WidgetRef ref) {
   M3EDialog.show<void>(

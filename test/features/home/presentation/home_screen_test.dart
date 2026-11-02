@@ -1,17 +1,16 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:async';
 import 'dart:ui' show SemanticsAction, Tristate;
 
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
+import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
-import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../test_helpers.dart';
 

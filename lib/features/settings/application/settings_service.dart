@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeMirrorUrl;
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService(this._prefs) {
   static const String _snapshotKey = 'settings_snapshot';

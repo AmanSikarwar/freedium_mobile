@@ -1,12 +1,12 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
-import 'package:freedium_mobile/features/home/presentation/widgets/theme_chooser_bottom_sheet.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const AppearanceSettings({super.key}) extends ConsumerWidget {
   @override

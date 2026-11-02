@@ -1,6 +1,6 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const ContinueReadingSection({
   required this.history,

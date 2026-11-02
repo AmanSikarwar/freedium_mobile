@@ -1,13 +1,12 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
-
-import 'widgets/appearance_settings.dart';
-import 'widgets/mirror_settings.dart';
-import 'widgets/storage_settings.dart';
-import 'widgets/privacy_settings.dart';
+import 'package:freedium_mobile/features/settings/presentation/widgets/appearance_settings.dart';
+import 'package:freedium_mobile/features/settings/presentation/widgets/mirror_settings.dart';
+import 'package:freedium_mobile/features/settings/presentation/widgets/privacy_settings.dart';
+import 'package:freedium_mobile/features/settings/presentation/widgets/storage_settings.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const SettingsScreen({super.key}) extends ConsumerWidget {
   @override

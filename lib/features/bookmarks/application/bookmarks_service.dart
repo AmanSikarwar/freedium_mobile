@@ -2,9 +2,9 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class BookmarksService(this._prefs) {
   static const String _snapshotKey = 'bookmark_library';

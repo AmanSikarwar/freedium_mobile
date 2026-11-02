@@ -1,17 +1,17 @@
 import 'dart:convert';
 
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
+import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
-import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
-import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
-import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
+import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 import '../webview_test_helpers.dart';

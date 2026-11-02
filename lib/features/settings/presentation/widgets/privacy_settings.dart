@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const PrivacySettings({super.key}) extends ConsumerWidget {
   @override

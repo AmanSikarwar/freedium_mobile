@@ -1,12 +1,11 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:freedium_mobile/core/utils/url.dart'
     show normalizeMirrorUrl, trimTrailingSlash;
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const AddMirrorDialog({
   super.key,

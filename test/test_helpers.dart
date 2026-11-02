@@ -1,10 +1,10 @@
-import 'package:material_ui/material_ui.dart';
-import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';

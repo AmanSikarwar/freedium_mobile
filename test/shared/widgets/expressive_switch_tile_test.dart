@@ -1,8 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:freedium_mobile/shared/widgets/expressive_switch_tile.dart';
 
 void main() {
   testWidgets('toggles once from the label, switch, drag, and keyboard', (

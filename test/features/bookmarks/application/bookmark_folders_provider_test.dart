@@ -1,9 +1,9 @@
 import 'dart:convert';
 
-import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
+import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';

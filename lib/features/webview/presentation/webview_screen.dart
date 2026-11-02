@@ -1,20 +1,19 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
+import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
+import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
+import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
+import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/font_settings_sheet.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/reader_loading_overlays.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/reader_webview.dart';
-import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
-import 'package:freedium_mobile/features/webview/application/initial_mirror_resolver.dart';
-import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
-import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 @visibleForTesting

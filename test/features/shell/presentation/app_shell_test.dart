@@ -1,14 +1,14 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
-import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
+import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../test_helpers.dart';
 

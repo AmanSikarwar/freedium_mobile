@@ -1,6 +1,6 @@
+import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:material_ui/material_ui.dart' show ThemeMode;
-import 'package:freedium_mobile/core/constants/app_constants.dart';
 
 part 'settings_state.freezed.dart';
 part 'settings_state.g.dart';

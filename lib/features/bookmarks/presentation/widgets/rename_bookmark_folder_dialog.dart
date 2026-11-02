@@ -1,6 +1,6 @@
+import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 
 /// Provides a rename dialog whose text controller follows the dialog lifecycle.
 class const RenameBookmarkFolderDialog({required this.folder, super.key})

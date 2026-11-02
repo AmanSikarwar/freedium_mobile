@@ -1,23 +1,23 @@
 import 'dart:async';
 
-import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 export 'package:freedium_mobile/features/bookmarks/domain/bookmark_folder.dart';
 export 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 
 part 'bookmarks_provider.g.dart';
-part 'bookmarks_provider/bookmarks_mutations.dart';
-part 'bookmarks_provider/bookmark_folder_mutations.dart';
 part 'bookmarks_provider/bookmark_backup_mutations.dart';
+part 'bookmarks_provider/bookmark_folder_mutations.dart';
 part 'bookmarks_provider/bookmark_folders_mutations.dart';
+part 'bookmarks_provider/bookmarks_mutations.dart';
 
 final bookmarkWritesProvider = Provider((ref) => SerialTaskQueue());
 

@@ -1,12 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
-import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
+import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:http/http.dart' as http;
 import 'package:pub_semver/pub_semver.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'update_service.freezed.dart';
 part 'update_service.g.dart';

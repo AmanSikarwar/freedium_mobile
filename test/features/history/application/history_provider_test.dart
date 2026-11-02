@@ -1,7 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
