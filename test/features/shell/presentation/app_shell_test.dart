@@ -128,7 +128,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    await tester.drag(find.byType(ListView), const Offset(0, -4000));
+    await tester.scrollUntilVisible(find.text('Reset to Defaults'), 200);
     await tester.pumpAndSettle();
 
     final lastItem = find.text('Reset to Defaults');
