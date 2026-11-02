@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Improved
 
+- Android builds use built-in Kotlin and platform window themes; unused native
+  Material dependencies and broad keep rules are removed.
+- Reading progress saves per article without rewriting history metadata.
+
 - Migrated the remaining app chrome to `material_3_expressive`: the M3E
   theme scope now comes from `ExpressiveTheme`, and dividers, app bars,
   dialogs, bottom sheets, overflow menus, snackbars, text fields, list
@@ -17,7 +21,18 @@ All notable changes to this project will be documented in this file.
   and returns when you scroll back up or reach the end. The end of the
   article can scroll clear of the bar instead of staying hidden behind it.
 
+- Ships the post-0.12.0 modernization pile-up: Riverpod `@Riverpod`
+  codegen, Freezed models with JSON serialization, unified URL/date/mirror
+  helpers, shared library list widgets, strict analyzer lints, and expanded
+  test coverage.
+- CI and release both run on Flutter stable with locked dependencies.
+
 ### Changed
+
+- Preferences migrate once to the cached async backend while retaining the
+  legacy store for recovery.
+- Automatic clipboard detection reads only Android-classified URLs and can be
+  disabled in Settings; manual paste remains available.
 
 - Replaced `listen_sharing_intent` with `receive_intent` (pinned 0.2.8)
   for share-to-app intents: VIEW data URIs and SEND extra text are mapped
@@ -46,19 +61,22 @@ All notable changes to this project will be documented in this file.
   button hover states; seven injected style rules were being discarded
   because their escaped selectors were mangled during injection.
 
-## [0.13.0] - 2026-09-26
+- Corrected the fallback app version reported by local/debug builds without
+  `--dart-define=APP_VERSION`.
+- Aligned ModeWatcher localStorage keys (`mode-watcher-theme`) with the
+  current Freedium page.
+- Repaired the `theme.js` injection flow (restored reading-progress
+  tracking during the Shiki recoloring work).
 
 ### Added
 
 - Bookmark folders: single-level labels with filter chips, an Unsorted view,
-  a move-to-folder sheet (also via long-press on the WebView bookmark
-  button), and a manage-folders sheet (create, rename, delete). Deleting a
-  folder keeps its articles as Unsorted.
+  a move-to-folder sheet, and a manage-folders sheet (create, rename, delete).
+  Deleting a folder keeps its articles as Unsorted.
 - Bookmark export/import: shareable versioned JSON backups with validation,
   duplicate merging, and an imported/skipped report.
 - History retention controls: keep the last 30, 100, or 500 articles plus
   clearing entries older than 30 days, from the History options menu.
-- Finished stories section on Home for re-reading completed articles.
 - Full-page article theming: component token aliases (`--primary`,
   `--accent`, `--muted`, `--card`, `--popover`, `--border`, `--ring`),
   Table of Contents, footer, brand lockup, tables, blockquotes, embeds,
@@ -66,23 +84,6 @@ All notable changes to this project will be documented in this file.
 - Full Shiki code-token recoloring: canonical github-light/github-dark
   palettes remapped to the app palette (JS remap with CSS fallbacks),
   verified against the live Freedium DOM in light and dark modes.
-
-### Improved
-
-- Ships the post-0.12.0 modernization pile-up: Riverpod `@Riverpod`
-  codegen, Freezed models with JSON serialization, unified URL/date/mirror
-  helpers, shared library list widgets, strict analyzer lints, and expanded
-  test coverage (217 tests, analyzer clean).
-- CI and release both run on Flutter stable with locked dependencies.
-
-### Fixed
-
-- Corrected the fallback app version reported by local/debug builds without
-  `--dart-define=APP_VERSION`.
-- Aligned ModeWatcher localStorage keys (`mode-watcher-theme`) with the
-  current Freedium page.
-- Repaired the `theme.js` injection flow (restored reading-progress
-  tracking during the Shiki recoloring work).
 
 ### Notes
 

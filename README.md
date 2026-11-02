@@ -51,8 +51,8 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 
 - **Seven Supported Sources** - Read articles from Medium, NYT, WaPo, Bloomberg, Reuters, The Economist, and Financial Times
 - **Share and Open With** - Share or open supported links directly in Freedium from Android browsers and apps
-- **Clipboard Detection** - Automatically detects article URLs in your clipboard for quick access
-- **Continue Reading** - Resume unfinished articles from the home screen at your saved reading position, plus finished stories for re-reading
+- **Clipboard Detection** - Autofill links classified as URLs on Android 12 or later; disable detection in Settings → Privacy or paste manually
+- **Continue Reading** - Resume unfinished articles from the home screen at your saved reading position
 - **Bookmarks** - Save articles locally, organize them into folders, and search or manage them from the Bookmarks screen
 - **Bookmark Export/Import** - Share versioned JSON backups and restore them on any device
 - **Reading History** - Track article progress, completion state, and recently opened stories locally, with configurable retention
@@ -82,7 +82,7 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 
 1. Copy a supported article URL
 2. Open Freedium Mobile
-3. The URL will be auto-detected in the input field
+3. If Android classifies the copied text as a URL and detection is enabled, the input field fills automatically; otherwise tap the paste button
 4. Tap **"Read Article"**
 
 </details>
@@ -112,7 +112,7 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 
 ### Prerequisites
 
-- **Flutter SDK** 3.47.5 or higher; CI and releases use the version in [`.fvmrc`](.fvmrc) (3.47.9)
+- **Flutter SDK** 3.47.5 or higher; CI and releases use the version in [`.fvmrc`](.fvmrc)
 - **Dart SDK** 3.13.0 or higher (included with Flutter)
 - Android Studio or VS Code with Flutter extensions
 - Git
@@ -140,7 +140,7 @@ flutter run
 flutter build apk --release
 
 # Release APK with obfuscation (recommended for production)
-flutter build apk --release --obfuscate --split-debug-info=obfuscate
+bash tool/build_release_apks.sh
 
 # Format code
 dart format .
@@ -151,13 +151,18 @@ flutter analyze
 
 > **Output location:** `build/app/outputs/flutter-apk/`
 
+The release helper requires signing configuration in `android/key.properties`
+and keeps debug symbols under `build/debug-info/`.
+
 ### Project Structure
 
 ```
 lib/
-├── app.dart                          # App widget, intent handling, global navigator
+├── app.dart                          # App widget and intent delivery
 ├── main.dart                         # Entry point
 ├── core/
+│   ├── layout/                       # Shared floating-toolbar clearance
+│   ├── routing/                      # Navigator, route observer, article routes
 │   ├── constants/
 │   │   └── app_constants.dart        # App metadata, package name, default mirrors
 │   ├── services/
@@ -174,6 +179,7 @@ lib/
 │       ├── external_url_launcher.dart
 │       └── http_url_normalizer.dart
 ├── features/
+│   ├── shell/presentation/            # Home, Bookmarks, History, Settings tabs
 │   ├── bookmarks/
 │   │   ├── application/
 │   │   │   ├── bookmarks_provider.dart   # Bookmarks + BookmarkFolders + import
@@ -238,7 +244,7 @@ lib/
 
 The app follows a **feature-based architecture** with **Riverpod 3.0** for state management:
 
-- **Features** - Organized by functionality (`bookmarks`, `history`, `home`, `onboarding`, `settings`, `webview`)
+- **Features** - Organized by functionality (`bookmarks`, `history`, `home`, `onboarding`, `settings`, `shell`, `webview`)
 - **Application** - Riverpod Notifiers and business logic
 - **Presentation** - UI screens and widgets
 - **Domain** - State classes with `copyWith()`
