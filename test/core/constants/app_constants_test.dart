@@ -1,9 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 
 void main() {
   group('AppConstants', () {
+    test('fallback app version matches pubspec', () {
+      final version = RegExp(
+        r'^version:\s*([^\s+]+)',
+        multiLine: true,
+      ).firstMatch(File('pubspec.yaml').readAsStringSync())!.group(1);
+      expect(AppConstants.appVersion, version);
+    });
+
     test('points user-facing source links to the release repository', () {
       expect(
         AppConstants.appSourceUrl,
