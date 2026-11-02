@@ -134,6 +134,79 @@ void main() {
   });
 
   group('app onboarding routing', () {
+    testWidgets('uses the static theme when dynamic colors fail', (
+      tester,
+    ) async {
+      final prefs = await mockPrefs({'has_seen_onboarding': true});
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            dynamicThemeProvider.overrideWith(
+              (ref) =>
+                  Future<AppThemeProvider>.error(StateError('color failure')),
+            ),
+            updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
+            clipboardServiceProvider.overrideWith(
+              (ref) => FakeClipboardService(),
+            ),
+            intentServiceProvider.overrideWith((ref) => FakeIntentService()),
+            intentStreamProvider.overrideWith(
+              (ref) => const Stream<String>.empty(),
+            ),
+          ],
+          child: const App(),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(HomeScreen), findsOneWidget);
+      expect(find.textContaining('color failure'), findsNothing);
+      expect(tester.takeException(), isNull);
+      await tester.pump(const Duration(milliseconds: 500));
+    });
+
+    testWidgets('keeps the navigator when dynamic colors finish loading', (
+      tester,
+    ) async {
+      final prefs = await mockPrefs({'has_seen_onboarding': true});
+      final theme = Completer<AppThemeProvider>();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            dynamicThemeProvider.overrideWith((ref) => theme.future),
+            updateServiceProvider.overrideWith((ref) => _FakeUpdateService()),
+            clipboardServiceProvider.overrideWith(
+              (ref) => FakeClipboardService(),
+            ),
+            intentServiceProvider.overrideWith((ref) => FakeIntentService()),
+            intentStreamProvider.overrideWith(
+              (ref) => const Stream<String>.empty(),
+            ),
+          ],
+          child: const App(),
+        ),
+      );
+      await tester.pump();
+      final navigator = navigatorKey.currentState!;
+      unawaited(
+        navigator.push<void>(
+          MaterialPageRoute(
+            builder: (_) => const Scaffold(body: Text('Open route')),
+          ),
+        ),
+      );
+      await tester.pump(const Duration(seconds: 1));
+      final container = ProviderScope.containerOf(
+        tester.element(find.byType(App)),
+      );
+      theme.complete(container.read(themeProvider));
+      await tester.pumpAndSettle();
+      expect(navigatorKey.currentState, same(navigator));
+      expect(find.text('Open route'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('retains launch intent while the dynamic theme is loading', (
       tester,
     ) async {
@@ -167,7 +240,7 @@ void main() {
         tester.element(find.byType(App)),
       );
       expect(container.read(pendingIntentUrlProvider), TestFixtures.storyUrl);
-      expect(navigatorKey.currentState, isNull);
+      expect(navigatorKey.currentState, isNotNull);
       final fallbackTheme = container.read(themeProvider);
       await tester.pumpWidget(const SizedBox.shrink());
       theme.complete(fallbackTheme);

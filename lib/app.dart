@@ -93,7 +93,7 @@ class const App({super.key}) extends ConsumerWidget {
     final pendingUrl = ref.watch(pendingIntentUrlProvider);
 
     if (pendingUrl != null &&
-        themeAsync.hasValue &&
+        !themeAsync.isLoading &&
         !onboarding.isLoading &&
         hasSeenOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -125,39 +125,24 @@ class const App({super.key}) extends ConsumerWidget {
       });
     }
 
-    return themeAsync.when(
-      data: (theme) => MaterialApp(
-        navigatorKey: navigatorKey,
-        title: AppConstants.appName,
-        theme: theme.lightTheme,
-        darkTheme: theme.darkTheme,
-        themeMode: themeMode,
-        navigatorObservers: [currentRouteNameObserver],
-        builder: (context, child) {
-          return ExpressiveTheme(child: child!);
-        },
-        home: onboarding.isLoading
-            ? const Scaffold(
-                body: Center(child: M3EProgressIndicator.circularWavy()),
-              )
-            : hasSeenOnboarding
-            ? const AppShell()
-            : const OnboardingScreen(),
-      ),
-      loading: () => MaterialApp(
-        builder: (context, child) {
-          return ExpressiveTheme(child: child!);
-        },
-        home: const Scaffold(
-          body: Center(child: M3EProgressIndicator.circularWavy()),
-        ),
-      ),
-      error: (err, stack) => MaterialApp(
-        builder: (context, child) {
-          return ExpressiveTheme(child: child!);
-        },
-        home: Scaffold(body: Center(child: Text('Error: $err'))),
-      ),
+    final AppThemeProvider theme = themeAsync.value ?? ref.watch(themeProvider);
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: AppConstants.appName,
+      theme: theme.lightTheme,
+      darkTheme: theme.darkTheme,
+      themeMode: themeMode,
+      navigatorObservers: [currentRouteNameObserver],
+      builder: (context, child) {
+        return ExpressiveTheme(child: child!);
+      },
+      home: themeAsync.isLoading || onboarding.isLoading
+          ? const Scaffold(
+              body: Center(child: M3EProgressIndicator.circularWavy()),
+            )
+          : hasSeenOnboarding
+          ? const AppShell()
+          : const OnboardingScreen(),
     );
   }
 }
