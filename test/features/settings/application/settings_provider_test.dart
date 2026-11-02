@@ -81,6 +81,26 @@ void main() {
   });
 
   group('SettingsNotifier', () {
+    test('persists the clipboard detection opt-out', () async {
+      final prefs = await mockPrefs();
+      final container = prefsContainer(prefs);
+      addTearDown(container.dispose);
+      expect(
+        await container
+            .read(settingsProvider.notifier)
+            .setAutoDetectClipboard(false),
+        isTrue,
+      );
+      expect(
+        container.read(settingsProvider).requireValue.autoDetectClipboard,
+        isFalse,
+      );
+      expect(
+        SettingsService(prefs).loadAllSettings().autoDetectClipboard,
+        isFalse,
+      );
+    });
+
     test('rejects re-adding the retired mirror', () async {
       final container = prefsContainer(await mockPrefs());
       addTearDown(container.dispose);

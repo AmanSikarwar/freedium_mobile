@@ -10,6 +10,7 @@ import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/theme/app_theme.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
+import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
 
 import '../../../test_helpers.dart';
@@ -17,6 +18,9 @@ import '../../../test_helpers.dart';
 class _DelayedPasteClipboardService() extends ClipboardService {
   final pasteCompleter = Completer<String?>();
   int pasteCount = 0;
+
+  @override
+  Future<String?> detectUrl() => paste();
 
   @override
   Future<String?> paste() {
@@ -29,6 +33,9 @@ class _DelayedPasteClipboardService() extends ClipboardService {
 }
 
 void main() {
+  setUp(() async {
+    await mockPrefs();
+  });
   for (final brightness in Brightness.values) {
     testWidgets('uses surface and inverse colors in ${brightness.name} mode', (
       tester,
@@ -96,6 +103,37 @@ void main() {
   }
 
   group('HomeScreen clipboard detection', () {
+    testWidgets('opt-out stops automatic reads and keeps manual paste', (
+      tester,
+    ) async {
+      final prefs = await mockPrefs({'auto_detect_clipboard': false});
+      final clipboard = FakeClipboardService(TestFixtures.storyUrl);
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWith((ref) async => prefs),
+            clipboardServiceProvider.overrideWith((ref) => clipboard),
+          ],
+          child: const MaterialApp(home: HomeScreen()),
+        ),
+      );
+      await tester.pumpAndSettle();
+      expect(clipboard.pasteCount, 0);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.hidden);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.inactive);
+      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
+      await tester.pumpAndSettle();
+      expect(clipboard.pasteCount, 0);
+      await tester.tap(findTooltip('Paste from clipboard'));
+      await tester.pumpAndSettle();
+      expect(clipboard.pasteCount, 1);
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).controller.text,
+        TestFixtures.storyUrl,
+      );
+    });
+
     testWidgets('renders the documented primary action', (tester) async {
       final clipboard = FakeClipboardService();
 

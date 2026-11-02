@@ -28,6 +28,7 @@ abstract class const SettingsState._() with _$SettingsState {
     @Default(true) bool autoSwitchMirror,
     @Default(SettingsState.defaultMirrorTimeout) int mirrorTimeout,
     @Default(true) bool showSitePopups,
+    @Default(true) bool autoDetectClipboard,
   }) = _SettingsState;
 
   static const double minDefaultFontSize = 14.0;

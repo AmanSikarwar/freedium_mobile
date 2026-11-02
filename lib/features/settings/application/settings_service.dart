@@ -16,6 +16,7 @@ class SettingsService(this._prefs) {
   static const String _autoSwitchMirrorKey = 'auto_switch_mirror';
   static const String _mirrorTimeoutKey = 'mirror_timeout';
   static const String _showSitePopupsKey = 'show_site_popups';
+  static const String _autoDetectClipboardKey = 'auto_detect_clipboard';
 
   final SharedPreferences _prefs;
 
@@ -162,6 +163,7 @@ class SettingsService(this._prefs) {
       _autoSwitchMirrorKey: settings.autoSwitchMirror,
       _mirrorTimeoutKey: settings.mirrorTimeout,
       _showSitePopupsKey: settings.showSitePopups,
+      _autoDetectClipboardKey: settings.autoDetectClipboard,
     };
     try {
       await _savePreference(
@@ -195,6 +197,7 @@ class SettingsService(this._prefs) {
       autoSwitchMirror: loadAutoSwitchMirror(),
       mirrorTimeout: loadMirrorTimeout(),
       showSitePopups: loadShowSitePopups(),
+      autoDetectClipboard: _get<bool>(_autoDetectClipboardKey) ?? true,
     );
   }
 }

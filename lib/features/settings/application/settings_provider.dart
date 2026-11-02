@@ -48,6 +48,16 @@ class Settings() extends _$Settings {
   Future<bool> setShowSitePopups(bool show) =>
       _writes.run(() => SettingsAppearance(this)._setShowSitePopups(show));
 
+  Future<bool> setAutoDetectClipboard(bool enabled) => _writes.run(() async {
+    final service = await _service();
+    if (service == null) return false;
+    return _saveAndApply(
+      service: service,
+      nextState: _current.copyWith(autoDetectClipboard: enabled),
+      failureMessage: 'Failed to save clipboard setting',
+    );
+  });
+
   Future<bool> addMirror(FreediumMirror mirror) =>
       _writes.run(() => SettingsMirrorMutations(this)._addMirror(mirror));
 

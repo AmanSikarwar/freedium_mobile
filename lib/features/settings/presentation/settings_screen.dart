@@ -7,6 +7,7 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'widgets/appearance_settings.dart';
 import 'widgets/mirror_settings.dart';
 import 'widgets/storage_settings.dart';
+import 'widgets/privacy_settings.dart';
 
 class const SettingsScreen({super.key}) extends ConsumerWidget {
   @override
@@ -24,6 +25,9 @@ class const SettingsScreen({super.key}) extends ConsumerWidget {
           children: [
             _buildSectionHeader(context, 'Appearance'),
             const AppearanceSettings(),
+            const M3EDivider(),
+            _buildSectionHeader(context, 'Privacy'),
+            const PrivacySettings(),
             const M3EDivider(),
             _buildSectionHeader(context, 'Freedium Mirrors'),
             const MirrorSettings(),

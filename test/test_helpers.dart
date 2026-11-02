@@ -119,6 +119,9 @@ class FakeClipboardService([this.text]) extends ClipboardService {
   int pasteCount = 0;
 
   @override
+  Future<String?> detectUrl() => paste();
+
+  @override
   Future<String?> paste() async {
     pasteCount++;
     return text;
