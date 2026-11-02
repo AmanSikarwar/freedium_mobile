@@ -122,7 +122,7 @@ class History() extends _$History {
     newList[index] = newList[index].copyWith(progress: normalizedProgress);
 
     try {
-      await service.saveHistory(newList);
+      await service.saveReadingProgress(current[index], normalizedProgress);
       state = AsyncData(newList);
     } catch (e) {
       debugPrint('Failed to save reading progress: $e');

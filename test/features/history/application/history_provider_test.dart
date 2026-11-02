@@ -83,6 +83,46 @@ void main() {
       );
     });
 
+    test(
+      'progress writes leave history metadata intact and survive reload',
+      () async {
+        final notifier = container.read(historyProvider.notifier);
+        await notifier.addHistory(TestFixtures.storyUrl, 'Story');
+        final prefs = await container.read(sharedPreferencesProvider.future);
+        final metadata = prefs.getStringList('reading_history');
+        await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.6);
+        expect(prefs.getStringList('reading_history'), metadata);
+        container.invalidate(historyProvider);
+        expect(
+          (await container.read(historyProvider.future)).single.progress,
+          0.6,
+        );
+      },
+    );
+
+    test(
+      'deleting an article removes its separately stored progress',
+      () async {
+        final notifier = container.read(historyProvider.notifier);
+        await notifier.addHistory(TestFixtures.storyUrl, 'Story');
+        await notifier.updateReadingProgress(TestFixtures.storyUrl, 0.6);
+        final prefs = await container.read(sharedPreferencesProvider.future);
+        expect(
+          prefs.keys.any((key) => key.startsWith('reading_progress_v1:')),
+          isTrue,
+        );
+        await notifier.removeHistory(
+          container.read(historyProvider).requireValue.single,
+        );
+        expect(
+          prefs.keys.any((key) => key.startsWith('reading_progress_v1:')),
+          isFalse,
+        );
+        await notifier.addHistory(TestFixtures.storyUrl, 'Story again');
+        expect(await notifier.readingProgressFor(TestFixtures.storyUrl), 0);
+      },
+    );
+
     test('normalizes reading progress thresholds', () async {
       final notifier = container.read(historyProvider.notifier);
       await notifier.addHistory(TestFixtures.storyUrl, 'Story');
@@ -122,6 +162,35 @@ void main() {
       expect(didRemove, isFalse);
       expect(container.read(historyProvider).requireValue, hasLength(1));
     });
+
+    test(
+      'failed progress writes retain the saved position after reload',
+      () async {
+        container.dispose();
+        final item = ReadingHistory(
+          url: TestFixtures.storyUrl,
+          timestamp: TestFixtures.seedDate,
+          progress: 0.2,
+        );
+        SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
+          'reading_history': [jsonEncode(item.toJson())],
+        });
+        container = prefsContainer(await testPrefs());
+        await container.read(historyProvider.future);
+        await container
+            .read(historyProvider.notifier)
+            .updateReadingProgress(item.url, 0.6);
+        expect(
+          container.read(historyProvider).requireValue.single.progress,
+          0.2,
+        );
+        container.invalidate(historyProvider);
+        expect(
+          (await container.read(historyProvider.future)).single.progress,
+          0.2,
+        );
+      },
+    );
 
     test('reports failure and preserves history when clearing fails', () async {
       container.dispose();

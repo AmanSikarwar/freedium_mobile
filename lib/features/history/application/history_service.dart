@@ -8,6 +8,7 @@ import 'package:freedium_mobile/features/history/domain/reading_history.dart';
 class HistoryService(this._prefs) {
   static const String _historyKey = 'reading_history';
   static const String _historyLimitKey = 'history_limit';
+  static const String _progressPrefix = 'reading_progress_v1:';
 
   /// Allowed retention sizes (newest entries kept).
   static const List<int> allowedLimits = [30, 100, 500];
@@ -31,12 +32,15 @@ class HistoryService(this._prefs) {
           continue;
         }
         final title = item.title.trim();
+        final progress = _prefs.get(_progressKey(url, item.timestamp));
         history.add(
           ReadingHistory(
             url: url,
             title: title.isNotEmpty ? title : url,
             timestamp: item.timestamp,
-            progress: item.progress,
+            progress: progress is num
+                ? normalizeReadingProgress(progress.toDouble())
+                : item.progress,
           ),
         );
       } catch (e) {
@@ -56,6 +60,39 @@ class HistoryService(this._prefs) {
       debugPrint('Failed to save history to "$_historyKey": $e');
       rethrow;
     }
+    await _pruneProgress(history);
+  }
+
+  String _progressKey(String url, DateTime timestamp) =>
+      '$_progressPrefix${timestamp.microsecondsSinceEpoch}:$url';
+
+  Future<void> saveReadingProgress(ReadingHistory item, double progress) async {
+    try {
+      await _prefs.setDouble(
+        _progressKey(item.url, item.timestamp),
+        normalizeReadingProgress(progress),
+      );
+    } catch (_) {
+      await _prefs.reloadCache();
+      rethrow;
+    }
+  }
+
+  Future<void> _pruneProgress(List<ReadingHistory> history) async {
+    final retained = history
+        .map((item) => _progressKey(item.url, item.timestamp))
+        .toSet();
+    for (final key in _prefs.keys.where(
+      (key) => key.startsWith(_progressPrefix),
+    )) {
+      if (retained.contains(key)) continue;
+      try {
+        await _prefs.remove(key);
+      } catch (e) {
+        // Visit-specific keys make failed cleanup safe to retry.
+        debugPrint('Failed to remove old reading progress: $e');
+      }
+    }
   }
 
   Future<void> clearHistory() async {
@@ -65,6 +102,7 @@ class HistoryService(this._prefs) {
       debugPrint('Failed to clear history key "$_historyKey": $e');
       rethrow;
     }
+    await _pruneProgress(const []);
   }
 
   /// Reads the retention size, falling back to [defaultLimit] for missing
