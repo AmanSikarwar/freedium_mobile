@@ -1,13 +1,15 @@
-import 'package:material_ui/material_ui.dart';
-import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/clipboard_service.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/services/intent_service.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:receive_intent/receive_intent.dart' as platform;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/types.dart';
 
 Finder findTooltip(String message) => find.byWidgetPredicate(
   (widget) =>
@@ -21,22 +23,23 @@ Finder findTooltip(String message) => find.byWidgetPredicate(
 // parameter type from user code. Call sites needing extra overrides keep
 // their inline `overrides: [...]` list and use [mockPrefs] for setup.
 
-/// Creates mock [SharedPreferences] preloaded with [initialValues].
-///
-/// Replaces the repeated two-line idiom:
-/// ```dart
-/// SharedPreferences.setMockInitialValues(initialValues);
-/// final prefs = await SharedPreferences.getInstance();
-/// ```
-Future<SharedPreferences> mockPrefs([
+/// Creates cached preferences backed by an in-memory platform store.
+Future<SharedPreferencesWithCache> mockPrefs([
   Map<String, Object> initialValues = const {},
 ]) async {
-  SharedPreferences.setMockInitialValues(initialValues);
-  return SharedPreferences.getInstance();
+  SharedPreferences.setMockInitialValues({});
+  SharedPreferencesAsyncPlatform.instance =
+      InMemorySharedPreferencesAsync.withData(initialValues);
+  return testPrefs();
 }
 
+Future<SharedPreferencesWithCache> testPrefs() =>
+    SharedPreferencesWithCache.create(
+      cacheOptions: const SharedPreferencesWithCacheOptions(),
+    );
+
 /// Creates a [ProviderContainer] serving mock [prefs].
-ProviderContainer prefsContainer(SharedPreferences prefs) {
+ProviderContainer prefsContainer(SharedPreferencesWithCache prefs) {
   return ProviderContainer(
     overrides: [sharedPreferencesProvider.overrideWith((ref) async => prefs)],
   );
@@ -56,7 +59,7 @@ ProviderContainer prefsContainer(SharedPreferences prefs) {
 /// );
 /// await tester.pumpAndSettle();
 /// ```
-Future<SharedPreferences> pumpApp(
+Future<SharedPreferencesWithCache> pumpApp(
   WidgetTester tester, {
   required Widget child,
   Map<String, Object> initialPrefs = const {},
@@ -84,29 +87,50 @@ abstract final class TestFixtures() {
   static final groupDate = DateTime.utc(2026, 8, 10);
 }
 
-/// [SharedPreferencesStorePlatform] whose writes always fail, for testing
-/// save/remove/clear failure paths. Reads serve [initialValues].
-///
-/// Unifies the five identical `_FailingSharedPreferencesStore` copies (plus
-/// three no-arg variants) previously scattered across test files.
-class FailingPrefsStore([Map<String, Object>? initialValues])
-    extends SharedPreferencesStorePlatform {
-  this : _values = Map.of(initialValues ?? {});
-
-  final Map<String, Object> _values;
+/// Reads fixtures but fails every write, preserving failure-path coverage.
+base class FailingPrefsStore([Map<String, Object>? initialValues])
+    extends InMemorySharedPreferencesAsync {
+  this
+    : super.withData({
+        for (final entry in (initialValues ?? <String, Object>{}).entries)
+          entry.key.replaceFirst(RegExp(r'^flutter\.'), ''): entry.value,
+      });
 
   @override
-  Future<bool> clear() async => false;
-
+  Future<bool> clear(
+    ClearPreferencesParameters parameters,
+    SharedPreferencesOptions options,
+  ) async => throw Exception('Failed to remove preferences');
   @override
-  Future<Map<String, Object>> getAll() async => Map.of(_values);
-
+  Future<bool> setString(
+    String key,
+    String value,
+    SharedPreferencesOptions options,
+  ) async => throw Exception('Failed to save $key');
   @override
-  Future<bool> remove(String key) async => false;
-
+  Future<bool> setStringList(
+    String key,
+    List<String> value,
+    SharedPreferencesOptions options,
+  ) async => throw Exception('Failed to save $key');
   @override
-  Future<bool> setValue(String valueType, String key, Object value) async =>
-      false;
+  Future<bool> setInt(
+    String key,
+    int value,
+    SharedPreferencesOptions options,
+  ) async => throw Exception('Failed to save $key');
+  @override
+  Future<bool> setDouble(
+    String key,
+    double value,
+    SharedPreferencesOptions options,
+  ) async => throw Exception('Failed to save $key');
+  @override
+  Future<bool> setBool(
+    String key,
+    bool value,
+    SharedPreferencesOptions options,
+  ) async => throw Exception('Failed to save $key');
 }
 
 /// Configurable [ClipboardService] fake tracking paste calls.
@@ -117,6 +141,9 @@ class FailingPrefsStore([Map<String, Object>? initialValues])
 class FakeClipboardService([this.text]) extends ClipboardService {
   String? text;
   int pasteCount = 0;
+
+  @override
+  Future<String?> detectUrl() => paste();
 
   @override
   Future<String?> paste() async {

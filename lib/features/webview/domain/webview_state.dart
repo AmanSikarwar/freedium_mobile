@@ -1,5 +1,5 @@
-import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freezed_annotation/freezed_annotation.dart';
 
 part 'webview_state.freezed.dart';
 

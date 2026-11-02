@@ -1,9 +1,8 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../../test_helpers.dart';
 
@@ -56,7 +55,7 @@ void main() {
       tester,
     ) async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final observer = _RecordingNavigatorObserver();
 
       await tester.pumpWidget(

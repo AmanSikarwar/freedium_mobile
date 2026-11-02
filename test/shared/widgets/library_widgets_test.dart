@@ -1,14 +1,14 @@
-import '../../test_helpers.dart';
-
 import 'dart:async';
 
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
 import 'package:freedium_mobile/shared/widgets/library_clear_dialog.dart';
 import 'package:freedium_mobile/shared/widgets/library_list_view.dart';
 import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
+
+import '../../test_helpers.dart';
 
 void main() {
   group('LibrarySearchHeader', () {

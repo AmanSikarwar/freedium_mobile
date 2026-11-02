@@ -1,11 +1,10 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
-
-import 'add_mirror_dialog.dart';
+import 'package:freedium_mobile/features/settings/presentation/widgets/add_mirror_dialog.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 void showAddMirrorDialog(BuildContext context, WidgetRef ref) {
   M3EDialog.show<void>(

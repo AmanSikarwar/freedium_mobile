@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
-import 'package:material_ui/material_ui.dart' show ColorScheme, Colors;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
@@ -25,6 +23,8 @@ import 'package:freedium_mobile/features/webview/application/webview_navigation_
         buildReadingProgressRestoreScript,
         resolveWebviewNavigationAction;
 import 'package:freedium_mobile/features/webview/domain/webview_state.dart';
+import 'package:material_ui/material_ui.dart' show ColorScheme, Colors;
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -36,12 +36,12 @@ export 'webview_navigation_policy.dart'
         buildReadingProgressRestoreScript,
         resolveWebviewNavigationAction;
 
-part 'webview_provider.g.dart';
-part 'webview_controller.dart';
-part 'webview_loading.dart';
-part 'webview_history.dart';
-part 'webview_styling.dart';
 part 'webview_actions.dart';
+part 'webview_controller.dart';
+part 'webview_history.dart';
+part 'webview_loading.dart';
+part 'webview_provider.g.dart';
+part 'webview_styling.dart';
 
 typedef ShareLauncher = Future<ShareResult> Function(ShareParams params);
 

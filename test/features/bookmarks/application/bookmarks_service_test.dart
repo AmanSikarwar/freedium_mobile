@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../test_helpers.dart';
 
@@ -42,7 +41,7 @@ void main() {
         ],
       });
 
-      final service = BookmarksService(await SharedPreferences.getInstance());
+      final service = BookmarksService(await testPrefs());
 
       expect(service.getBookmarks(), [bookmark]);
     });
@@ -59,7 +58,7 @@ void main() {
         ],
       });
 
-      final service = BookmarksService(await SharedPreferences.getInstance());
+      final service = BookmarksService(await testPrefs());
 
       final bookmarks = service.getBookmarks();
       expect(bookmarks, hasLength(1));

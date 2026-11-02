@@ -1,6 +1,23 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:async';
+
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:freedium_mobile/core/constants/app_constants.dart';
+import 'package:freedium_mobile/core/routing/app_navigation.dart'
+    show
+        currentRouteNameObserver,
+        navigateToWebview,
+        navigatorKey,
+        shouldSkipIncomingWebviewNavigation;
+import 'package:freedium_mobile/core/services/intent_service.dart';
+import 'package:freedium_mobile/core/theme/expressive_theme.dart';
+import 'package:freedium_mobile/core/theme/theme_provider.dart';
+import 'package:freedium_mobile/core/utils/article_url_parser.dart';
+import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
+import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
+import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 export 'core/routing/app_navigation.dart'
     show
@@ -10,24 +27,6 @@ export 'core/routing/app_navigation.dart'
         navigateToWebview,
         navigatorKey,
         shouldSkipIncomingWebviewNavigation;
-
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:freedium_mobile/core/constants/app_constants.dart';
-import 'package:freedium_mobile/core/routing/app_navigation.dart'
-    show
-        currentRouteNameObserver,
-        navigateToWebview,
-        navigatorKey,
-        shouldSkipIncomingWebviewNavigation;
-import 'package:freedium_mobile/core/services/intent_service.dart';
-import 'package:freedium_mobile/core/theme/theme_provider.dart';
-import 'package:freedium_mobile/core/theme/expressive_theme.dart';
-import 'package:freedium_mobile/core/utils/article_url_parser.dart';
-import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
-import 'package:freedium_mobile/features/onboarding/application/onboarding_provider.dart';
-import 'package:freedium_mobile/features/onboarding/presentation/onboarding_screen.dart';
 
 part 'app.g.dart';
 
@@ -93,7 +92,7 @@ class const App({super.key}) extends ConsumerWidget {
     final pendingUrl = ref.watch(pendingIntentUrlProvider);
 
     if (pendingUrl != null &&
-        themeAsync.hasValue &&
+        !themeAsync.isLoading &&
         !onboarding.isLoading &&
         hasSeenOnboarding) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -125,39 +124,24 @@ class const App({super.key}) extends ConsumerWidget {
       });
     }
 
-    return themeAsync.when(
-      data: (theme) => MaterialApp(
-        navigatorKey: navigatorKey,
-        title: AppConstants.appName,
-        theme: theme.lightTheme,
-        darkTheme: theme.darkTheme,
-        themeMode: themeMode,
-        navigatorObservers: [currentRouteNameObserver],
-        builder: (context, child) {
-          return ExpressiveTheme(child: child!);
-        },
-        home: onboarding.isLoading
-            ? const Scaffold(
-                body: Center(child: M3EProgressIndicator.circularWavy()),
-              )
-            : hasSeenOnboarding
-            ? const AppShell()
-            : const OnboardingScreen(),
-      ),
-      loading: () => MaterialApp(
-        builder: (context, child) {
-          return ExpressiveTheme(child: child!);
-        },
-        home: const Scaffold(
-          body: Center(child: M3EProgressIndicator.circularWavy()),
-        ),
-      ),
-      error: (err, stack) => MaterialApp(
-        builder: (context, child) {
-          return ExpressiveTheme(child: child!);
-        },
-        home: Scaffold(body: Center(child: Text('Error: $err'))),
-      ),
+    final AppThemeProvider theme = themeAsync.value ?? ref.watch(themeProvider);
+    return MaterialApp(
+      navigatorKey: navigatorKey,
+      title: AppConstants.appName,
+      theme: theme.lightTheme,
+      darkTheme: theme.darkTheme,
+      themeMode: themeMode,
+      navigatorObservers: [currentRouteNameObserver],
+      builder: (context, child) {
+        return ExpressiveTheme(child: child!);
+      },
+      home: themeAsync.isLoading || onboarding.isLoading
+          ? const Scaffold(
+              body: Center(child: M3EProgressIndicator.circularWavy()),
+            )
+          : hasSeenOnboarding
+          ? const AppShell()
+          : const OnboardingScreen(),
     );
   }
 }

@@ -1,6 +1,6 @@
+import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:material_ui/material_ui.dart' show ThemeMode;
-import 'package:freedium_mobile/core/constants/app_constants.dart';
 
 part 'settings_state.freezed.dart';
 part 'settings_state.g.dart';
@@ -28,6 +28,7 @@ abstract class const SettingsState._() with _$SettingsState {
     @Default(true) bool autoSwitchMirror,
     @Default(SettingsState.defaultMirrorTimeout) int mirrorTimeout,
     @Default(true) bool showSitePopups,
+    @Default(true) bool autoDetectClipboard,
   }) = _SettingsState;
 
   static const double minDefaultFontSize = 14.0;

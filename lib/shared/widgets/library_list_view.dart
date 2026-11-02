@@ -1,8 +1,8 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
 import 'package:freedium_mobile/shared/widgets/article_card.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Grouped, dismissible article list shared by the history and bookmarks
 /// screens.

@@ -2,6 +2,8 @@ include: package:flutter_lints/flutter.yaml
 
 linter:
   rules:
+    - directives_ordering
+    - always_use_package_imports
     - use_super_parameters
     - prefer_const_declarations
     - unnecessary_lambdas

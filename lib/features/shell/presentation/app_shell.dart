@@ -1,11 +1,10 @@
+import 'package:flutter/services.dart';
+import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
+import 'package:freedium_mobile/features/history/presentation/history_screen.dart';
+import 'package:freedium_mobile/features/home/presentation/home_screen.dart';
+import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
-
-import '../../bookmarks/presentation/bookmarks_screen.dart';
-import '../../home/presentation/home_screen.dart';
-import '../../history/presentation/history_screen.dart';
-import '../../settings/presentation/settings_screen.dart';
 
 /// Root shell hosting the home, bookmarks, history, and settings tabs behind a
 /// floating Material 3 Expressive navigation toolbar.

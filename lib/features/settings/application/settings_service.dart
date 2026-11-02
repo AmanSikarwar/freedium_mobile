@@ -1,10 +1,10 @@
 import 'dart:convert';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeMirrorUrl;
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SettingsService(this._prefs) {
   static const String _snapshotKey = 'settings_snapshot';
@@ -16,8 +16,9 @@ class SettingsService(this._prefs) {
   static const String _autoSwitchMirrorKey = 'auto_switch_mirror';
   static const String _mirrorTimeoutKey = 'mirror_timeout';
   static const String _showSitePopupsKey = 'show_site_popups';
+  static const String _autoDetectClipboardKey = 'auto_detect_clipboard';
 
-  final SharedPreferences _prefs;
+  final SharedPreferencesWithCache _prefs;
 
   Future<void> saveThemeMode(ThemeMode themeMode) =>
       saveAllSettings(loadAllSettings().copyWith(themeMode: themeMode));
@@ -139,11 +140,9 @@ class SettingsService(this._prefs) {
       if (existing == raw) return;
       if (existing == null) {
         try {
-          if (!await _prefs.setString(key, raw)) {
-            throw StateError('Failed to preserve settings snapshot');
-          }
+          await _prefs.setString(key, raw);
         } catch (_) {
-          await _prefs.reload();
+          await _prefs.reloadCache();
           rethrow;
         }
         return;
@@ -162,19 +161,16 @@ class SettingsService(this._prefs) {
       _autoSwitchMirrorKey: settings.autoSwitchMirror,
       _mirrorTimeoutKey: settings.mirrorTimeout,
       _showSitePopupsKey: settings.showSitePopups,
+      _autoDetectClipboardKey: settings.autoDetectClipboard,
     };
     try {
-      await _savePreference(
-        () => _prefs.setString(
-          _snapshotKey,
-          jsonEncode({'version': 1, 'values': values}),
-        ),
-        methodName: 'setString',
-        key: _snapshotKey,
+      await _prefs.setString(
+        _snapshotKey,
+        jsonEncode({'version': 1, 'values': values}),
       );
     } catch (_) {
-      // A failed legacy SharedPreferences write still changes its cache.
-      await _prefs.reload();
+      // Failed writes still change the local cache.
+      await _prefs.reloadCache();
       rethrow;
     }
   }
@@ -195,22 +191,7 @@ class SettingsService(this._prefs) {
       autoSwitchMirror: loadAutoSwitchMirror(),
       mirrorTimeout: loadMirrorTimeout(),
       showSitePopups: loadShowSitePopups(),
+      autoDetectClipboard: _get<bool>(_autoDetectClipboardKey) ?? true,
     );
-  }
-}
-
-Future<void> _savePreference(
-  Future<bool> Function() save, {
-  required String methodName,
-  required String key,
-}) async {
-  try {
-    final success = await save();
-    if (!success) {
-      throw Exception('$methodName returned false for key "$key"');
-    }
-  } catch (e) {
-    debugPrint('Failed to save setting "$key": $e');
-    rethrow;
   }
 }

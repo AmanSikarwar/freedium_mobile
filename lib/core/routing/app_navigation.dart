@@ -1,5 +1,5 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:freedium_mobile/features/webview/presentation/webview_screen.dart';
+import 'package:material_ui/material_ui.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 

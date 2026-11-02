@@ -3,7 +3,7 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     id("com.android.application")
-    // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
+    // The Flutter Gradle Plugin must be applied after the Android Gradle plugin.
     id("dev.flutter.flutter-gradle-plugin")
 }
 
@@ -29,9 +29,10 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
-        // The app ships English-only; strip translated strings bundled by
-        // libraries (material, webview, androidx) to shrink resources.arsc.
-        resourceConfigurations.add("en")
+    }
+
+    androidResources {
+        localeFilters += "en"
     }
 
     signingConfigs {
@@ -59,14 +60,10 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 
 flutter {
     source = "../.."
-}
-
-dependencies {
-    implementation("com.google.android.material:material:1.14.0")
 }

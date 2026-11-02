@@ -1,19 +1,16 @@
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:convert';
 
-import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
-
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
 import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dart';
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
-import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 
@@ -119,12 +116,12 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -192,12 +189,12 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(

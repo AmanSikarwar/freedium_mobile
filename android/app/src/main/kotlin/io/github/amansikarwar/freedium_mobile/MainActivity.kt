@@ -2,7 +2,10 @@ package io.github.amansikarwar.freedium_mobile
 
 import android.app.Activity
 import android.content.Intent
+import android.content.ClipboardManager
+import android.content.ClipDescription
 import android.os.Build
+import android.view.textclassifier.TextClassifier
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
@@ -15,6 +18,18 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "freedium/clipboard")
+            .setMethodCallHandler { call, result ->
+                if (call.method != "readUrl") {
+                    result.notImplemented()
+                } else {
+                    try {
+                        result.success(readClipboardUrl())
+                    } catch (error: Exception) {
+                        result.success(null)
+                    }
+                }
+            }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "freedium/theme")
             .setMethodCallHandler { call, result ->
                 if (call.method != "getColorSchemes") {
@@ -57,6 +72,16 @@ class MainActivity : FlutterActivity() {
                     }
                 }
             }
+    }
+
+    private fun readClipboardUrl(): String? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return null
+        val clipboard = getSystemService(ClipboardManager::class.java)
+        val description = clipboard.primaryClipDescription ?: return null
+        if (description.extras?.getBoolean("android.content.extra.IS_SENSITIVE") == true ||
+            description.classificationStatus != ClipDescription.CLASSIFICATION_COMPLETE ||
+            description.getConfidenceScore(TextClassifier.TYPE_URL) < 0.5f) return null
+        return clipboard.primaryClip?.getItemAt(0)?.text?.toString()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

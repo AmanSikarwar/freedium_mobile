@@ -1,13 +1,12 @@
 import 'dart:async';
 
-import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
-
 import 'package:flutter/foundation.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
 import 'package:freedium_mobile/core/utils/url.dart' show normalizeHttpUrl;
 import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
+import 'package:riverpod_annotation/riverpod_annotation.dart';
 
 part 'history_provider.g.dart';
 
@@ -122,7 +121,7 @@ class History() extends _$History {
     newList[index] = newList[index].copyWith(progress: normalizedProgress);
 
     try {
-      await service.saveHistory(newList);
+      await service.saveReadingProgress(current[index], normalizedProgress);
       state = AsyncData(newList);
     } catch (e) {
       debugPrint('Failed to save reading progress: $e');

@@ -1,6 +1,6 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/webview/application/theme_injector_service.dart';
+import 'package:material_ui/material_ui.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -157,6 +157,19 @@ void main() {
       expect(script, contains('console.error("Pre-theme script error:", e)'));
     });
 
+    test('keeps CSS selector escapes in the embedded stylesheet', () async {
+      final service = ThemeInjectorService();
+      final script = await service.getThemeInjectionScript(
+        ColorScheme.fromSeed(seedColor: Colors.teal),
+      );
+
+      // The stylesheet is embedded in a JavaScript template literal, where
+      // `\:` would collapse to `:` and invalidate the whole rule.
+      expect(script, contains(r'.hover\\:bg-green-600:hover'));
+      expect(script, contains(r'input.focus\\:outline-none'));
+      expect(script, contains(r'.p-2.bg-gray-100.dark\\:bg-gray-900'));
+    });
+
     test('can hide Freedium notification popups', () async {
       final service = ThemeInjectorService();
       final script = await service.getThemeInjectionScript(
@@ -168,6 +181,15 @@ void main() {
       expect(script, contains('data-freedium-hide-site-popups'));
       expect(script, contains('section[aria-label^="Notifications"]'));
       expect(script, isNot(contains('%SHOW_SITE_POPUPS%')));
+    });
+  });
+
+  group('escapeJsTemplateLiteral', () {
+    test('escapes backslashes, backticks, and substitutions', () {
+      expect(
+        escapeJsTemplateLiteral(r'a\:b `c` ${d} $e'),
+        r'a\\:b \`c\` \${d} $e',
+      );
     });
   });
 }

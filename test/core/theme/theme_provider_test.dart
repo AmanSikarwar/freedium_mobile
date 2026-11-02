@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:freedium_mobile/core/theme/theme_provider.dart';
 import 'package:material_color_utilities/material_color_utilities.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:freedium_mobile/core/theme/theme_provider.dart';
 
 void main() {
   group('dynamicThemeProvider', () {

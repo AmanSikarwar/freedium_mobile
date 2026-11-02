@@ -294,7 +294,7 @@ as bool,
 /// @nodoc
 mixin _$SettingsState {
 
- ThemeMode get themeMode; double get defaultFontSize; List<FreediumMirror> get mirrors; String get selectedMirrorUrl; bool get autoSwitchMirror; int get mirrorTimeout; bool get showSitePopups;
+ ThemeMode get themeMode; double get defaultFontSize; List<FreediumMirror> get mirrors; String get selectedMirrorUrl; bool get autoSwitchMirror; int get mirrorTimeout; bool get showSitePopups; bool get autoDetectClipboard;
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
 @JsonKey(includeFromJson: false, includeToJson: false)
@@ -306,20 +306,20 @@ $SettingsStateCopyWith<SettingsState> get copyWith => _$SettingsStateCopyWithImp
 @override
 bool operator ==(Object other) {
   final _this = this as SettingsState;
-  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.defaultFontSize, _this.defaultFontSize) || other.defaultFontSize == _this.defaultFontSize)&&const DeepCollectionEquality().equals(other.mirrors, _this.mirrors)&&(identical(other.selectedMirrorUrl, _this.selectedMirrorUrl) || other.selectedMirrorUrl == _this.selectedMirrorUrl)&&(identical(other.autoSwitchMirror, _this.autoSwitchMirror) || other.autoSwitchMirror == _this.autoSwitchMirror)&&(identical(other.mirrorTimeout, _this.mirrorTimeout) || other.mirrorTimeout == _this.mirrorTimeout)&&(identical(other.showSitePopups, _this.showSitePopups) || other.showSitePopups == _this.showSitePopups));
+  return identical(this, other) || (other.runtimeType == runtimeType&&other is SettingsState&&(identical(other.themeMode, _this.themeMode) || other.themeMode == _this.themeMode)&&(identical(other.defaultFontSize, _this.defaultFontSize) || other.defaultFontSize == _this.defaultFontSize)&&const DeepCollectionEquality().equals(other.mirrors, _this.mirrors)&&(identical(other.selectedMirrorUrl, _this.selectedMirrorUrl) || other.selectedMirrorUrl == _this.selectedMirrorUrl)&&(identical(other.autoSwitchMirror, _this.autoSwitchMirror) || other.autoSwitchMirror == _this.autoSwitchMirror)&&(identical(other.mirrorTimeout, _this.mirrorTimeout) || other.mirrorTimeout == _this.mirrorTimeout)&&(identical(other.showSitePopups, _this.showSitePopups) || other.showSitePopups == _this.showSitePopups)&&(identical(other.autoDetectClipboard, _this.autoDetectClipboard) || other.autoDetectClipboard == _this.autoDetectClipboard));
 }
 
 
 @override
 int get hashCode {
   final _this = this as SettingsState;
-  return Object.hash(runtimeType,_this.themeMode,_this.defaultFontSize,const DeepCollectionEquality().hash(_this.mirrors),_this.selectedMirrorUrl,_this.autoSwitchMirror,_this.mirrorTimeout,_this.showSitePopups);
+  return Object.hash(runtimeType,_this.themeMode,_this.defaultFontSize,const DeepCollectionEquality().hash(_this.mirrors),_this.selectedMirrorUrl,_this.autoSwitchMirror,_this.mirrorTimeout,_this.showSitePopups,_this.autoDetectClipboard);
 }
 
 @override
 String toString() {
   final _this = this as SettingsState;
-  return 'SettingsState(themeMode: ${_this.themeMode}, defaultFontSize: ${_this.defaultFontSize}, mirrors: ${_this.mirrors}, selectedMirrorUrl: ${_this.selectedMirrorUrl}, autoSwitchMirror: ${_this.autoSwitchMirror}, mirrorTimeout: ${_this.mirrorTimeout}, showSitePopups: ${_this.showSitePopups})';
+  return 'SettingsState(themeMode: ${_this.themeMode}, defaultFontSize: ${_this.defaultFontSize}, mirrors: ${_this.mirrors}, selectedMirrorUrl: ${_this.selectedMirrorUrl}, autoSwitchMirror: ${_this.autoSwitchMirror}, mirrorTimeout: ${_this.mirrorTimeout}, showSitePopups: ${_this.showSitePopups}, autoDetectClipboard: ${_this.autoDetectClipboard})';
 }
 
 
@@ -330,7 +330,7 @@ abstract mixin class $SettingsStateCopyWith<$Res>  {
   factory $SettingsStateCopyWith(SettingsState value, $Res Function(SettingsState) _then) = _$SettingsStateCopyWithImpl;
 @useResult
 $Res call({
- ThemeMode themeMode, double defaultFontSize, List<FreediumMirror> mirrors, String selectedMirrorUrl, bool autoSwitchMirror, int mirrorTimeout, bool showSitePopups
+ ThemeMode themeMode, double defaultFontSize, List<FreediumMirror> mirrors, String selectedMirrorUrl, bool autoSwitchMirror, int mirrorTimeout, bool showSitePopups, bool autoDetectClipboard
 });
 
 
@@ -347,7 +347,7 @@ class _$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? defaultFontSize = null,Object? mirrors = null,Object? selectedMirrorUrl = null,Object? autoSwitchMirror = null,Object? mirrorTimeout = null,Object? showSitePopups = null,}) {
+@pragma('vm:prefer-inline') @override $Res call({Object? themeMode = null,Object? defaultFontSize = null,Object? mirrors = null,Object? selectedMirrorUrl = null,Object? autoSwitchMirror = null,Object? mirrorTimeout = null,Object? showSitePopups = null,Object? autoDetectClipboard = null,}) {
   return _then(SettingsState(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,defaultFontSize: null == defaultFontSize ? _self.defaultFontSize : defaultFontSize // ignore: cast_nullable_to_non_nullable
@@ -356,6 +356,7 @@ as List<FreediumMirror>,selectedMirrorUrl: null == selectedMirrorUrl ? _self.sel
 as String,autoSwitchMirror: null == autoSwitchMirror ? _self.autoSwitchMirror : autoSwitchMirror // ignore: cast_nullable_to_non_nullable
 as bool,mirrorTimeout: null == mirrorTimeout ? _self.mirrorTimeout : mirrorTimeout // ignore: cast_nullable_to_non_nullable
 as int,showSitePopups: null == showSitePopups ? _self.showSitePopups : showSitePopups // ignore: cast_nullable_to_non_nullable
+as bool,autoDetectClipboard: null == autoDetectClipboard ? _self.autoDetectClipboard : autoDetectClipboard // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }
@@ -441,10 +442,10 @@ return $default(_that);case _:
 /// }
 /// ```
 
-@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ThemeMode themeMode,  double defaultFontSize,  List<FreediumMirror> mirrors,  String selectedMirrorUrl,  bool autoSwitchMirror,  int mirrorTimeout,  bool showSitePopups)?  $default,{required TResult orElse(),}) {final _that = this;
+@optionalTypeArgs TResult maybeWhen<TResult extends Object?>(TResult Function( ThemeMode themeMode,  double defaultFontSize,  List<FreediumMirror> mirrors,  String selectedMirrorUrl,  bool autoSwitchMirror,  int mirrorTimeout,  bool showSitePopups,  bool autoDetectClipboard)?  $default,{required TResult orElse(),}) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.selectedMirrorUrl,_that.autoSwitchMirror,_that.mirrorTimeout,_that.showSitePopups);case _:
+return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.selectedMirrorUrl,_that.autoSwitchMirror,_that.mirrorTimeout,_that.showSitePopups,_that.autoDetectClipboard);case _:
   return orElse();
 
 }
@@ -462,10 +463,10 @@ return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.select
 /// }
 /// ```
 
-@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ThemeMode themeMode,  double defaultFontSize,  List<FreediumMirror> mirrors,  String selectedMirrorUrl,  bool autoSwitchMirror,  int mirrorTimeout,  bool showSitePopups)  $default,) {final _that = this;
+@optionalTypeArgs TResult when<TResult extends Object?>(TResult Function( ThemeMode themeMode,  double defaultFontSize,  List<FreediumMirror> mirrors,  String selectedMirrorUrl,  bool autoSwitchMirror,  int mirrorTimeout,  bool showSitePopups,  bool autoDetectClipboard)  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState():
-return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.selectedMirrorUrl,_that.autoSwitchMirror,_that.mirrorTimeout,_that.showSitePopups);case _:
+return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.selectedMirrorUrl,_that.autoSwitchMirror,_that.mirrorTimeout,_that.showSitePopups,_that.autoDetectClipboard);case _:
   throw StateError('Unexpected subclass');
 
 }
@@ -482,10 +483,10 @@ return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.select
 /// }
 /// ```
 
-@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ThemeMode themeMode,  double defaultFontSize,  List<FreediumMirror> mirrors,  String selectedMirrorUrl,  bool autoSwitchMirror,  int mirrorTimeout,  bool showSitePopups)?  $default,) {final _that = this;
+@optionalTypeArgs TResult? whenOrNull<TResult extends Object?>(TResult? Function( ThemeMode themeMode,  double defaultFontSize,  List<FreediumMirror> mirrors,  String selectedMirrorUrl,  bool autoSwitchMirror,  int mirrorTimeout,  bool showSitePopups,  bool autoDetectClipboard)?  $default,) {final _that = this;
 switch (_that) {
 case _SettingsState() when $default != null:
-return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.selectedMirrorUrl,_that.autoSwitchMirror,_that.mirrorTimeout,_that.showSitePopups);case _:
+return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.selectedMirrorUrl,_that.autoSwitchMirror,_that.mirrorTimeout,_that.showSitePopups,_that.autoDetectClipboard);case _:
   return null;
 
 }
@@ -497,7 +498,7 @@ return $default(_that.themeMode,_that.defaultFontSize,_that.mirrors,_that.select
 
 
 class _SettingsState extends SettingsState {
-  const _SettingsState({this.themeMode = ThemeMode.system, this.defaultFontSize = SettingsState.defaultDefaultFontSize,  List<FreediumMirror> mirrors = const [], this.selectedMirrorUrl = AppConstants.freediumMirrorUrl, this.autoSwitchMirror = true, this.mirrorTimeout = SettingsState.defaultMirrorTimeout, this.showSitePopups = true}): _mirrors = mirrors,super._();
+  const _SettingsState({this.themeMode = ThemeMode.system, this.defaultFontSize = SettingsState.defaultDefaultFontSize,  List<FreediumMirror> mirrors = const [], this.selectedMirrorUrl = AppConstants.freediumMirrorUrl, this.autoSwitchMirror = true, this.mirrorTimeout = SettingsState.defaultMirrorTimeout, this.showSitePopups = true, this.autoDetectClipboard = true}): _mirrors = mirrors,super._();
   
 
 @override@JsonKey() final  ThemeMode themeMode;
@@ -513,6 +514,7 @@ class _SettingsState extends SettingsState {
 @override@JsonKey() final  bool autoSwitchMirror;
 @override@JsonKey() final  int mirrorTimeout;
 @override@JsonKey() final  bool showSitePopups;
+@override@JsonKey() final  bool autoDetectClipboard;
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
@@ -524,18 +526,18 @@ _$SettingsStateCopyWith<_SettingsState> get copyWith => __$SettingsStateCopyWith
 
 @override
 bool operator ==(Object other) {
-    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.defaultFontSize, defaultFontSize) || other.defaultFontSize == defaultFontSize)&&const DeepCollectionEquality().equals(other.mirrors, _mirrors)&&(identical(other.selectedMirrorUrl, selectedMirrorUrl) || other.selectedMirrorUrl == selectedMirrorUrl)&&(identical(other.autoSwitchMirror, autoSwitchMirror) || other.autoSwitchMirror == autoSwitchMirror)&&(identical(other.mirrorTimeout, mirrorTimeout) || other.mirrorTimeout == mirrorTimeout)&&(identical(other.showSitePopups, showSitePopups) || other.showSitePopups == showSitePopups));
+    return identical(this, other) || (other.runtimeType == runtimeType&&other is _SettingsState&&(identical(other.themeMode, themeMode) || other.themeMode == themeMode)&&(identical(other.defaultFontSize, defaultFontSize) || other.defaultFontSize == defaultFontSize)&&const DeepCollectionEquality().equals(other.mirrors, _mirrors)&&(identical(other.selectedMirrorUrl, selectedMirrorUrl) || other.selectedMirrorUrl == selectedMirrorUrl)&&(identical(other.autoSwitchMirror, autoSwitchMirror) || other.autoSwitchMirror == autoSwitchMirror)&&(identical(other.mirrorTimeout, mirrorTimeout) || other.mirrorTimeout == mirrorTimeout)&&(identical(other.showSitePopups, showSitePopups) || other.showSitePopups == showSitePopups)&&(identical(other.autoDetectClipboard, autoDetectClipboard) || other.autoDetectClipboard == autoDetectClipboard));
 }
 
 
 @override
 int get hashCode {
-    return Object.hash(runtimeType,themeMode,defaultFontSize,const DeepCollectionEquality().hash(_mirrors),selectedMirrorUrl,autoSwitchMirror,mirrorTimeout,showSitePopups);
+    return Object.hash(runtimeType,themeMode,defaultFontSize,const DeepCollectionEquality().hash(_mirrors),selectedMirrorUrl,autoSwitchMirror,mirrorTimeout,showSitePopups,autoDetectClipboard);
 }
 
 @override
 String toString() {
-    return 'SettingsState(themeMode: $themeMode, defaultFontSize: $defaultFontSize, mirrors: $mirrors, selectedMirrorUrl: $selectedMirrorUrl, autoSwitchMirror: $autoSwitchMirror, mirrorTimeout: $mirrorTimeout, showSitePopups: $showSitePopups)';
+    return 'SettingsState(themeMode: $themeMode, defaultFontSize: $defaultFontSize, mirrors: $mirrors, selectedMirrorUrl: $selectedMirrorUrl, autoSwitchMirror: $autoSwitchMirror, mirrorTimeout: $mirrorTimeout, showSitePopups: $showSitePopups, autoDetectClipboard: $autoDetectClipboard)';
 }
 
 
@@ -546,7 +548,7 @@ abstract mixin class _$SettingsStateCopyWith<$Res> implements $SettingsStateCopy
   factory _$SettingsStateCopyWith(_SettingsState value, $Res Function(_SettingsState) _then) = __$SettingsStateCopyWithImpl;
 @override @useResult
 $Res call({
- ThemeMode themeMode, double defaultFontSize, List<FreediumMirror> mirrors, String selectedMirrorUrl, bool autoSwitchMirror, int mirrorTimeout, bool showSitePopups
+ ThemeMode themeMode, double defaultFontSize, List<FreediumMirror> mirrors, String selectedMirrorUrl, bool autoSwitchMirror, int mirrorTimeout, bool showSitePopups, bool autoDetectClipboard
 });
 
 
@@ -563,7 +565,7 @@ class __$SettingsStateCopyWithImpl<$Res>
 
 /// Create a copy of SettingsState
 /// with the given fields replaced by the non-null parameter values.
-@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? defaultFontSize = null,Object? mirrors = null,Object? selectedMirrorUrl = null,Object? autoSwitchMirror = null,Object? mirrorTimeout = null,Object? showSitePopups = null,}) {
+@override @pragma('vm:prefer-inline') $Res call({Object? themeMode = null,Object? defaultFontSize = null,Object? mirrors = null,Object? selectedMirrorUrl = null,Object? autoSwitchMirror = null,Object? mirrorTimeout = null,Object? showSitePopups = null,Object? autoDetectClipboard = null,}) {
   return _then(_SettingsState(
 themeMode: null == themeMode ? _self.themeMode : themeMode // ignore: cast_nullable_to_non_nullable
 as ThemeMode,defaultFontSize: null == defaultFontSize ? _self.defaultFontSize : defaultFontSize // ignore: cast_nullable_to_non_nullable
@@ -572,6 +574,7 @@ as List<FreediumMirror>,selectedMirrorUrl: null == selectedMirrorUrl ? _self.sel
 as String,autoSwitchMirror: null == autoSwitchMirror ? _self.autoSwitchMirror : autoSwitchMirror // ignore: cast_nullable_to_non_nullable
 as bool,mirrorTimeout: null == mirrorTimeout ? _self.mirrorTimeout : mirrorTimeout // ignore: cast_nullable_to_non_nullable
 as int,showSitePopups: null == showSitePopups ? _self.showSitePopups : showSitePopups // ignore: cast_nullable_to_non_nullable
+as bool,autoDetectClipboard: null == autoDetectClipboard ? _self.autoDetectClipboard : autoDetectClipboard // ignore: cast_nullable_to_non_nullable
 as bool,
   ));
 }

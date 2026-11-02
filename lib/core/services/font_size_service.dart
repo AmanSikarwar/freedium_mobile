@@ -1,11 +1,19 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences/util/legacy_to_async_migration_util.dart';
 
 part 'font_size_service.g.dart';
 
 @Riverpod(keepAlive: true)
-Future<SharedPreferences> sharedPreferences(Ref ref) {
-  return SharedPreferences.getInstance();
+Future<SharedPreferencesWithCache> sharedPreferences(Ref ref) async {
+  await migrateLegacySharedPreferencesToSharedPreferencesAsyncIfNecessary(
+    legacySharedPreferencesInstance: await SharedPreferences.getInstance(),
+    sharedPreferencesAsyncOptions: const SharedPreferencesOptions(),
+    migrationCompletedKey: 'preferences_migrated_v1',
+  );
+  return SharedPreferencesWithCache.create(
+    cacheOptions: const SharedPreferencesWithCacheOptions(),
+  );
 }
 
 class FontSizeService(this._prefs) {
@@ -14,16 +22,10 @@ class FontSizeService(this._prefs) {
   static const double minFontSize = 14.0;
   static const double maxFontSize = 28.0;
   static const double defaultFontSize = 18.0;
-  final SharedPreferences _prefs;
+  final SharedPreferencesWithCache _prefs;
 
   Future<void> saveFontSize(double fontSize) async {
-    final success = await _prefs.setDouble(
-      _fontSizeKey,
-      normalizeFontSize(fontSize),
-    );
-    if (!success) {
-      throw Exception('setDouble returned false for key "$_fontSizeKey"');
-    }
+    await _prefs.setDouble(_fontSizeKey, normalizeFontSize(fontSize));
   }
 
   double loadFontSize() {
@@ -47,9 +49,6 @@ class FontSizeService(this._prefs) {
   Future<void> _removeIfPresent(String key) async {
     if (!_prefs.containsKey(key)) return;
 
-    final success = await _prefs.remove(key);
-    if (!success) {
-      throw Exception('remove returned false for key "$key"');
-    }
+    await _prefs.remove(key);
   }
 }

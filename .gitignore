@@ -43,6 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/.kotlin/
 keystore.base64
 android/build/reports/problems/problems-report.html
 

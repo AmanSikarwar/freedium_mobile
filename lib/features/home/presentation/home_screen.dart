@@ -1,15 +1,12 @@
-import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
-import 'package:material_3_expressive/material_3_expressive.dart';
-
 import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/constants/app_constants.dart';
 import 'package:freedium_mobile/core/layout/floating_toolbar.dart';
+import 'package:freedium_mobile/core/routing/app_navigation.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/core/utils/article_url_parser.dart';
 import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
@@ -19,7 +16,9 @@ import 'package:freedium_mobile/features/home/application/home_provider.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/about_dialog.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/continue_reading_section.dart';
 import 'package:freedium_mobile/features/home/presentation/widgets/update_card.dart';
-import 'package:freedium_mobile/core/routing/app_navigation.dart';
+import 'package:freedium_mobile/shared/widgets/expressive_icon_button.dart';
+import 'package:material_3_expressive/material_3_expressive.dart';
+import 'package:material_ui/material_ui.dart';
 
 class const HomeScreen({super.key}) extends ConsumerStatefulWidget {
   @override
