@@ -15,8 +15,7 @@ import 'package:freedium_mobile/core/utils/external_url_launcher.dart';
 import 'package:freedium_mobile/features/settings/presentation/settings_screen.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 
@@ -60,7 +59,7 @@ void main() {
 
     testWidgets('toggles Freedium site popups', (tester) async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -86,7 +85,7 @@ void main() {
       tester,
     ) async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final updateService = UpdateService(
         client: MockClient(
           (_) async => http.Response(
@@ -128,10 +127,10 @@ void main() {
     testWidgets('shows reset failure when defaults cannot be saved', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -160,7 +159,7 @@ void main() {
       tester,
     ) async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final launchedUrls = <String?>[];
       const releaseUrl =
           'https://github.com/AmanSikarwar/freedium_mobile/releases/tag/v0.14.0';
@@ -212,7 +211,7 @@ void main() {
       tester,
     ) async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final updateService = UpdateService(
         client: MockClient((_) async => http.Response('rate limited', 403)),
       );
@@ -241,10 +240,10 @@ void main() {
     });
 
     testWidgets('keeps timeout dialog open when saving fails', (tester) async {
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -272,10 +271,10 @@ void main() {
     testWidgets('shows default font size failure when saving fails', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -299,7 +298,7 @@ void main() {
     testWidgets('shows selected mirror failure when saving fails', (
       tester,
     ) async {
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.freedium_mirrors': [
           jsonEncode(SettingsState.defaultMirrors.single.toJson()),
           jsonEncode(
@@ -310,9 +309,9 @@ void main() {
           ),
         ],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -339,10 +338,10 @@ void main() {
     });
 
     testWidgets('shows auto-switch failure when saving fails', (tester) async {
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -372,12 +371,12 @@ void main() {
         'isDefault': false,
         'isCustom': true,
       };
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.freedium_mirrors': [jsonEncode(customMirror)],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(

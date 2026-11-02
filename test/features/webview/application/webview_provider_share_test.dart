@@ -5,7 +5,6 @@ import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/webview/application/freedium_article_url_builder.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:webview_flutter_platform_interface/webview_flutter_platform_interface.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 
@@ -117,7 +116,7 @@ void main() {
 
 Future<ProviderContainer> _createContainer(ShareLauncher shareLauncher) async {
   await mockPrefs({});
-  final prefs = await SharedPreferences.getInstance();
+  final prefs = await testPrefs();
   return ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWith((ref) async => prefs),

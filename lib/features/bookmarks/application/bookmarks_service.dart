@@ -12,7 +12,7 @@ class BookmarksService(this._prefs) {
       'bookmark_library_recovery_snapshot';
   static const String _bookmarksKey = 'bookmarked_articles';
   static const String _foldersKey = 'bookmark_folders';
-  final SharedPreferences _prefs;
+  final SharedPreferencesWithCache _prefs;
 
   List<BookmarkedArticle> getBookmarks() {
     final json = _readList(_bookmarksKey);
@@ -87,11 +87,9 @@ class BookmarksService(this._prefs) {
       if (existing == raw) return;
       if (existing == null) {
         try {
-          if (!await _prefs.setString(key, raw)) {
-            throw StateError('Failed to preserve bookmark library snapshot');
-          }
+          await _prefs.setString(key, raw);
         } catch (_) {
-          await _prefs.reload();
+          await _prefs.reloadCache();
           rethrow;
         }
         return;
@@ -111,11 +109,9 @@ class BookmarksService(this._prefs) {
       _foldersKey: mergeBookmarkFolders(folders, const []),
     });
     try {
-      if (!await _prefs.setString(_snapshotKey, snapshot)) {
-        throw StateError('Failed to save bookmark library');
-      }
+      await _prefs.setString(_snapshotKey, snapshot);
     } catch (_) {
-      await _prefs.reload();
+      await _prefs.reloadCache();
       rethrow;
     }
   }

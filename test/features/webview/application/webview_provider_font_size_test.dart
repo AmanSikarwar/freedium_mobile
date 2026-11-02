@@ -7,8 +7,7 @@ import 'package:freedium_mobile/features/settings/application/settings_provider.
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 
@@ -49,7 +48,7 @@ void main() {
 
     test('loads persisted font size through supported bounds', () async {
       await mockPrefs({'webview_font_size': 100.0});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -67,7 +66,7 @@ void main() {
 
     test('clamps font size updates before saving state', () async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -95,7 +94,7 @@ void main() {
 
     test('tracks font size changes made from settings', () async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -115,14 +114,14 @@ void main() {
     });
 
     test('keeps font size and reports message when saving fails', () async {
-      final previousStore = SharedPreferencesStorePlatform.instance;
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
+      final previousStore = SharedPreferencesAsyncPlatform.instance;
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
       addTearDown(() {
-        SharedPreferences.setMockInitialValues({});
-        SharedPreferencesStorePlatform.instance = previousStore;
+        mockPrefs();
+        SharedPreferencesAsyncPlatform.instance = previousStore;
       });
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) async => prefs),

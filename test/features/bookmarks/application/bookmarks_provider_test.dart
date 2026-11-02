@@ -5,8 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 
@@ -92,10 +91,10 @@ void main() {
       'reports failures and preserves bookmarks when saving fails',
       () async {
         container.dispose();
-        SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-        SharedPreferences.resetStatic();
-        addTearDown(() => SharedPreferences.setMockInitialValues({}));
-        final prefs = await SharedPreferences.getInstance();
+        SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
+        addTearDown(mockPrefs);
+        final prefs = await testPrefs();
         container = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -127,10 +126,10 @@ void main() {
 
     test('reports failure when toggling a bookmark add fails', () async {
       container.dispose();
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
       container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -158,12 +157,12 @@ void main() {
           title: 'Story',
           savedAt: TestFixtures.seedDate,
         );
-        SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+        SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
           'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
         });
-        SharedPreferences.resetStatic();
-        addTearDown(() => SharedPreferences.setMockInitialValues({}));
-        final prefs = await SharedPreferences.getInstance();
+
+        addTearDown(mockPrefs);
+        final prefs = await testPrefs();
         container = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -190,12 +189,12 @@ void main() {
           title: 'Story',
           savedAt: TestFixtures.seedDate,
         );
-        SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+        SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
           'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
         });
-        SharedPreferences.resetStatic();
-        addTearDown(() => SharedPreferences.setMockInitialValues({}));
-        final prefs = await SharedPreferences.getInstance();
+
+        addTearDown(mockPrefs);
+        final prefs = await testPrefs();
         container = ProviderContainer(
           overrides: [
             sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -258,12 +257,12 @@ void main() {
       () async {
         const rawSnapshot = '{"version":999}';
         container.dispose();
-        SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+        SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
           'flutter.bookmark_library': rawSnapshot,
         });
-        SharedPreferences.resetStatic();
-        addTearDown(() => SharedPreferences.setMockInitialValues({}));
-        final prefs = await SharedPreferences.getInstance();
+
+        addTearDown(mockPrefs);
+        final prefs = await testPrefs();
         container = prefsContainer(prefs);
 
         final notifier = container.read(bookmarksProvider.notifier);

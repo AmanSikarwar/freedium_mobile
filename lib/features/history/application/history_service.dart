@@ -14,7 +14,7 @@ class HistoryService(this._prefs) {
 
   /// Default retention size.
   static const int defaultLimit = 100;
-  final SharedPreferences _prefs;
+  final SharedPreferencesWithCache _prefs;
 
   List<ReadingHistory> getHistory() {
     final historyJson = _prefs.getStringList(_historyKey);
@@ -51,10 +51,7 @@ class HistoryService(this._prefs) {
   Future<void> saveHistory(List<ReadingHistory> history) async {
     try {
       final historyJson = history.map((e) => jsonEncode(e.toJson())).toList();
-      final success = await _prefs.setStringList(_historyKey, historyJson);
-      if (!success) {
-        throw Exception('setStringList returned false for key "$_historyKey"');
-      }
+      await _prefs.setStringList(_historyKey, historyJson);
     } catch (e) {
       debugPrint('Failed to save history to "$_historyKey": $e');
       rethrow;
@@ -63,10 +60,7 @@ class HistoryService(this._prefs) {
 
   Future<void> clearHistory() async {
     try {
-      final success = await _prefs.remove(_historyKey);
-      if (!success) {
-        throw Exception('remove returned false for key "$_historyKey"');
-      }
+      await _prefs.remove(_historyKey);
     } catch (e) {
       debugPrint('Failed to clear history key "$_historyKey": $e');
       rethrow;
@@ -86,10 +80,7 @@ class HistoryService(this._prefs) {
       throw ArgumentError.value(limit, 'limit', 'Unsupported history limit');
     }
     try {
-      final success = await _prefs.setInt(_historyLimitKey, limit);
-      if (!success) {
-        throw Exception('setInt returned false for key "$_historyLimitKey"');
-      }
+      await _prefs.setInt(_historyLimitKey, limit);
     } catch (e) {
       debugPrint('Failed to save history limit: $e');
       rethrow;

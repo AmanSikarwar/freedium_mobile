@@ -18,7 +18,7 @@ class SettingsService(this._prefs) {
   static const String _showSitePopupsKey = 'show_site_popups';
   static const String _autoDetectClipboardKey = 'auto_detect_clipboard';
 
-  final SharedPreferences _prefs;
+  final SharedPreferencesWithCache _prefs;
 
   Future<void> saveThemeMode(ThemeMode themeMode) =>
       saveAllSettings(loadAllSettings().copyWith(themeMode: themeMode));
@@ -140,11 +140,9 @@ class SettingsService(this._prefs) {
       if (existing == raw) return;
       if (existing == null) {
         try {
-          if (!await _prefs.setString(key, raw)) {
-            throw StateError('Failed to preserve settings snapshot');
-          }
+          await _prefs.setString(key, raw);
         } catch (_) {
-          await _prefs.reload();
+          await _prefs.reloadCache();
           rethrow;
         }
         return;
@@ -166,17 +164,13 @@ class SettingsService(this._prefs) {
       _autoDetectClipboardKey: settings.autoDetectClipboard,
     };
     try {
-      await _savePreference(
-        () => _prefs.setString(
-          _snapshotKey,
-          jsonEncode({'version': 1, 'values': values}),
-        ),
-        methodName: 'setString',
-        key: _snapshotKey,
+      await _prefs.setString(
+        _snapshotKey,
+        jsonEncode({'version': 1, 'values': values}),
       );
     } catch (_) {
-      // A failed legacy SharedPreferences write still changes its cache.
-      await _prefs.reload();
+      // Failed writes still change the local cache.
+      await _prefs.reloadCache();
       rethrow;
     }
   }
@@ -199,21 +193,5 @@ class SettingsService(this._prefs) {
       showSitePopups: loadShowSitePopups(),
       autoDetectClipboard: _get<bool>(_autoDetectClipboardKey) ?? true,
     );
-  }
-}
-
-Future<void> _savePreference(
-  Future<bool> Function() save, {
-  required String methodName,
-  required String key,
-}) async {
-  try {
-    final success = await save();
-    if (!success) {
-      throw Exception('$methodName returned false for key "$key"');
-    }
-  } catch (e) {
-    debugPrint('Failed to save setting "$key": $e');
-    rethrow;
   }
 }

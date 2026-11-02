@@ -15,13 +15,13 @@ final sharedPreferencesProvider = SharedPreferencesProvider._();
 final class SharedPreferencesProvider
     extends
         $FunctionalProvider<
-          AsyncValue<SharedPreferences>,
-          SharedPreferences,
-          FutureOr<SharedPreferences>
+          AsyncValue<SharedPreferencesWithCache>,
+          SharedPreferencesWithCache,
+          FutureOr<SharedPreferencesWithCache>
         >
     with
-        $FutureModifier<SharedPreferences>,
-        $FutureProvider<SharedPreferences> {
+        $FutureModifier<SharedPreferencesWithCache>,
+        $FutureProvider<SharedPreferencesWithCache> {
   SharedPreferencesProvider._()
     : super(
         from: null,
@@ -38,14 +38,14 @@ final class SharedPreferencesProvider
 
   @$internal
   @override
-  $FutureProviderElement<SharedPreferences> $createElement(
+  $FutureProviderElement<SharedPreferencesWithCache> $createElement(
     $ProviderPointer pointer,
   ) => $FutureProviderElement(pointer);
 
   @override
-  FutureOr<SharedPreferences> create(Ref ref) {
+  FutureOr<SharedPreferencesWithCache> create(Ref ref) {
     return sharedPreferences(ref);
   }
 }
 
-String _$sharedPreferencesHash() => r'48e60558ea6530114ea20ea03e69b9fb339ab129';
+String _$sharedPreferencesHash() => r'ca20a1662b836234716bee1e7509b363affb9160';

@@ -45,7 +45,7 @@ class _FakeUpdateService() extends UpdateService {
 /// scope by `scoped_providers_should_specify_dependencies`.
 Future<void> _pumpApp({
   required WidgetTester tester,
-  required SharedPreferences prefs,
+  required SharedPreferencesWithCache prefs,
   IntentService? intentService,
 }) {
   return tester.pumpWidget(
@@ -252,7 +252,7 @@ void main() {
       tester,
     ) async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
 
       await _pumpApp(tester: tester, prefs: prefs);
       await tester.pumpAndSettle();
@@ -272,7 +272,7 @@ void main() {
       tester,
     ) async {
       await mockPrefs({'has_seen_onboarding': true});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
 
       await _pumpApp(
         tester: tester,
@@ -290,7 +290,7 @@ void main() {
       tester,
     ) async {
       await mockPrefs({'has_seen_onboarding': true});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final intentService = _RecordingIntentService();
 
       await _pumpApp(

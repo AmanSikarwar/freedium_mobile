@@ -12,10 +12,12 @@ void main() {
     final container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWith((ref) async => prefs),
-        httpClientFactoryProvider.overrideWith((ref) => () {
-          probes++;
-          throw StateError('No probe should be needed');
-        }),
+        httpClientFactoryProvider.overrideWith(
+          (ref) => () {
+            probes++;
+            throw StateError('No probe should be needed');
+          },
+        ),
       ],
     );
     addTearDown(container.dispose);

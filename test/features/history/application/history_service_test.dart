@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/history/application/history_service.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../test_helpers.dart';
 
@@ -41,7 +40,7 @@ void main() {
         ],
       });
 
-      final service = HistoryService(await SharedPreferences.getInstance());
+      final service = HistoryService(await testPrefs());
 
       expect(service.getHistory(), [history]);
     });
@@ -58,7 +57,7 @@ void main() {
         ],
       });
 
-      final service = HistoryService(await SharedPreferences.getInstance());
+      final service = HistoryService(await testPrefs());
 
       final history = service.getHistory();
       expect(history, hasLength(1));
@@ -76,7 +75,7 @@ void main() {
         ],
       });
 
-      final service = HistoryService(await SharedPreferences.getInstance());
+      final service = HistoryService(await testPrefs());
 
       final history = service.getHistory();
       expect(history, hasLength(1));
@@ -103,7 +102,7 @@ void main() {
         ],
       });
 
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final history = HistoryService(prefs).getHistory();
 
       expect(history.first.progress, 0.42);

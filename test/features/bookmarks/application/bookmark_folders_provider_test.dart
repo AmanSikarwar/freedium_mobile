@@ -4,8 +4,7 @@ import 'package:freedium_mobile/features/bookmarks/application/bookmarks_service
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 
@@ -213,10 +212,10 @@ void main() {
 
     test('reports failure when folder persistence fails', () async {
       container.dispose();
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore();
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
       container = prefsContainer(prefs);
       await container.read(bookmarkFoldersProvider.future);
 
@@ -356,7 +355,7 @@ void main() {
         final current = container.read(bookmarksProvider).requireValue;
         expect(current, hasLength(Bookmarks.maxBookmarks));
         expect(current, containsAll(before.skip(1)));
-        final prefs = await SharedPreferences.getInstance();
+        final prefs = await testPrefs();
         expect(
           BookmarksService(prefs).getBookmarks(),
           hasLength(Bookmarks.maxBookmarks),

@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:freedium_mobile/features/settings/domain/settings_state.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../test_helpers.dart';
 
@@ -37,7 +36,7 @@ void main() {
           'freedium_mirrors': ['{bad json', jsonEncode(customMirror.toJson())],
         });
 
-        final service = SettingsService(await SharedPreferences.getInstance());
+        final service = SettingsService(await testPrefs());
 
         expect(service.loadMirrors(), [customMirror]);
       },
@@ -62,7 +61,7 @@ void main() {
         ],
       });
 
-      final service = SettingsService(await SharedPreferences.getInstance());
+      final service = SettingsService(await testPrefs());
 
       expect(service.loadMirrors(), [customMirror]);
     });
@@ -78,7 +77,7 @@ void main() {
         ],
       });
 
-      final service = SettingsService(await SharedPreferences.getInstance());
+      final service = SettingsService(await testPrefs());
 
       expect(service.loadMirrors(), [
         const FreediumMirror(
@@ -100,7 +99,7 @@ void main() {
         'selected_mirror_url': ' HTTPS://Custom.Example/ ',
       });
 
-      final service = SettingsService(await SharedPreferences.getInstance());
+      final service = SettingsService(await testPrefs());
 
       final settings = service.loadAllSettings();
 
@@ -115,7 +114,7 @@ void main() {
           'freedium_mirrors': ['{bad json'],
         });
 
-        final service = SettingsService(await SharedPreferences.getInstance());
+        final service = SettingsService(await testPrefs());
 
         expect(service.loadMirrors(), SettingsState.defaultMirrors);
       },
@@ -135,7 +134,7 @@ void main() {
           'auto_switch_mirror': false,
         });
 
-        final service = SettingsService(await SharedPreferences.getInstance());
+        final service = SettingsService(await testPrefs());
 
         final settings = service.loadAllSettings();
 
@@ -148,7 +147,7 @@ void main() {
     test('loadAllSettings clamps persisted numeric preferences', () async {
       await mockPrefs({'webview_font_size': 100.0, 'mirror_timeout': 0});
 
-      final service = SettingsService(await SharedPreferences.getInstance());
+      final service = SettingsService(await testPrefs());
 
       final settings = service.loadAllSettings();
 
@@ -159,14 +158,14 @@ void main() {
     test('loadAllSettings reads legacy default font size key', () async {
       await mockPrefs({'default_font_size': 22.0});
 
-      final service = SettingsService(await SharedPreferences.getInstance());
+      final service = SettingsService(await testPrefs());
 
       expect(service.loadAllSettings().defaultFontSize, 22.0);
     });
 
     test('site popups default to shown and persist changes', () async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final service = SettingsService(prefs);
 
       expect(service.loadShowSitePopups(), isTrue);
@@ -179,7 +178,7 @@ void main() {
 
     test('save numeric preferences clamps out-of-range values', () async {
       await mockPrefs({});
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await testPrefs();
       final service = SettingsService(prefs);
 
       await service.saveDefaultFontSize(1);

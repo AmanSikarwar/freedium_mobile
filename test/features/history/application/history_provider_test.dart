@@ -5,8 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 
@@ -102,12 +101,12 @@ void main() {
         title: 'Story',
         timestamp: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.reading_history': [jsonEncode(history.toJson())],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
       container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) async => prefs),
@@ -131,12 +130,12 @@ void main() {
         title: 'Story',
         timestamp: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.reading_history': [jsonEncode(history.toJson())],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
       container = ProviderContainer(
         overrides: [
           sharedPreferencesProvider.overrideWith((ref) async => prefs),

@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:material_ui/material_ui.dart' show ThemeMode;
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_service.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -14,12 +14,16 @@ import 'package:freedium_mobile/core/utils/serial_task_queue.dart';
 
 import '../test_helpers.dart';
 
-class _FailedWriteStore(super.initialValues) extends FailingPrefsStore {
+final class _FailedWriteStore(super.initialValues) extends FailingPrefsStore {
   int writes = 0;
   @override
-  Future<bool> setValue(String valueType, String key, Object value) async {
+  Future<bool> setString(
+    String key,
+    String value,
+    SharedPreferencesOptions options,
+  ) async {
     writes++;
-    return false;
+    throw Exception('Failed to save $key');
   }
 }
 
@@ -39,10 +43,10 @@ void main() {
         'flutter.theme_mode': 'dark',
         'flutter.webview_font_size': 26.0,
       });
-      SharedPreferencesStorePlatform.instance = store;
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+      SharedPreferencesAsyncPlatform.instance = store;
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
       final container = prefsContainer(prefs);
       addTearDown(container.dispose);
       await container.read(bookmarksProvider.future);

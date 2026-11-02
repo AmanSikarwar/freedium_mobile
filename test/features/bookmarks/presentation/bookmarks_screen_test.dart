@@ -12,8 +12,7 @@ import 'package:freedium_mobile/features/bookmarks/domain/bookmarked_article.dar
 import 'package:freedium_mobile/features/bookmarks/presentation/bookmarks_screen.dart';
 import 'package:freedium_mobile/shared/widgets/library_search_header.dart';
 import 'package:freedium_mobile/features/history/domain/reading_history.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../test_helpers.dart';
 
@@ -119,12 +118,12 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(
@@ -192,12 +191,12 @@ void main() {
         title: 'Example story',
         savedAt: TestFixtures.seedDate,
       );
-      SharedPreferencesStorePlatform.instance = FailingPrefsStore({
+      SharedPreferencesAsyncPlatform.instance = FailingPrefsStore({
         'flutter.bookmarked_articles': [jsonEncode(bookmark.toJson())],
       });
-      SharedPreferences.resetStatic();
-      addTearDown(() => SharedPreferences.setMockInitialValues({}));
-      final prefs = await SharedPreferences.getInstance();
+
+      addTearDown(mockPrefs);
+      final prefs = await testPrefs();
 
       await tester.pumpWidget(
         ProviderScope(

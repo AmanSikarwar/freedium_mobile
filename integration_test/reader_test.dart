@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:freedium_mobile/app.dart';
+import 'package:freedium_mobile/core/services/font_size_service.dart';
 import 'package:freedium_mobile/core/services/update_service.dart';
 import 'package:freedium_mobile/features/bookmarks/application/bookmarks_provider.dart';
 import 'package:freedium_mobile/features/history/application/history_provider.dart';
@@ -13,7 +14,6 @@ import 'package:freedium_mobile/features/webview/application/webview_provider.da
 import 'package:integration_test/integration_test.dart';
 import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import 'package:webview_flutter_android/webview_flutter_android.dart';
@@ -108,8 +108,11 @@ ${List.filled(180, '<p>A paragraph for native scrolling and reading progress.</p
     });
     addTearDown(() => server.close(force: true));
 
-    final prefs = await SharedPreferences.getInstance();
+    final storageContainer = ProviderContainer();
+    final prefs = await storageContainer.read(sharedPreferencesProvider.future);
+    storageContainer.dispose();
     await prefs.clear();
+    await prefs.setBool('preferences_migrated_v1', true);
     await prefs.setBool('has_seen_onboarding', true);
     await SettingsService(prefs).saveAllSettings(
       const SettingsState(
