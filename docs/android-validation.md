@@ -56,6 +56,22 @@ three ABIs and Android's R8 `mapping.txt`. Keep that bundle with its release;
 use the matching ABI symbol file with `flutter symbolize` and the R8 mapping
 with Android Retrace when decoding crashes.
 
+## Verify downloaded releases
+
+Download the APK and the release's `SHA256SUMS` and
+`SIGNING-CERTIFICATES.txt`. In the download folder, verify the APK's checksum
+against its line in `SHA256SUMS` and verify its provenance with:
+
+```sh
+gh attestation verify app-arm64-v8a-release.apk -R AmanSikarwar/freedium_mobile
+apksigner verify --print-certs app-arm64-v8a-release.apk
+```
+
+Compare the signing certificate SHA-256 fingerprint with a previously trusted
+release. Checksums detect damaged downloads; the GitHub attestation binds the
+APK to the repository's workflow. These files and attestations are generated
+by the updated release workflow; older releases do not have them.
+
 ## Manual device checks
 
 These checks still require a person with a device:
