@@ -93,10 +93,10 @@ packages:
     dependency: "direct dev"
     description:
       name: build_runner
-      sha256: "894c243f6bc32015fec466ce30a6925bd537a77a426ee5bf481120477eb3de67"
+      sha256: "6feadd32d90a68253c1f7b4fcff76adb4b41ad32a53f8bad835dc65f01ac9dc5"
       url: "https://pub.dev"
     source: hosted
-    version: "2.16.1"
+    version: "2.16.2"
   built_collection:
     dependency: transitive
     description:
@@ -310,10 +310,10 @@ packages:
     dependency: "direct dev"
     description:
       name: freezed
-      sha256: "3af98c92d7d4dd182ea1393193e69a840fcbaee1f66f1158bd20504e5f3f6f4f"
+      sha256: cb910646cb09265d49077b63b600ef1f5a718c1d6031836432237ddeabae1b12
       url: "https://pub.dev"
     source: hosted
-    version: "4.0.2"
+    version: "4.0.3"
   freezed_annotation:
     dependency: "direct main"
     description:
@@ -432,10 +432,10 @@ packages:
     dependency: "direct dev"
     description:
       name: json_serializable
-      sha256: e45aefa0324f08c683caafbb94b72837aa6193c61822799c916e45f4a263113d
+      sha256: cc7822761b40be9237bcaae62b755ffe5453ceff96a0001f1f5f2439251c66f1
       url: "https://pub.dev"
     source: hosted
-    version: "6.14.1"
+    version: "6.15.2"
   leak_tracker:
     dependency: transitive
     description:
@@ -504,10 +504,10 @@ packages:
     dependency: "direct main"
     description:
       name: material_3_expressive
-      sha256: "091a6d4bd157983e4a525dd89f60290ca80f98d17e44303a24b0d7393d92d93e"
+      sha256: "960a296792497cea3bb0dddb817dbb67b507f27eec481c631a733cb168901448"
       url: "https://pub.dev"
     source: hosted
-    version: "1.1.7"
+    version: "1.2.0"
   material_color_utilities:
     dependency: "direct main"
     description:
@@ -528,10 +528,10 @@ packages:
     dependency: "direct main"
     description:
       name: material_ui
-      sha256: "27ea1af251a79728ee63068417f2ab469d294931a9bb8366ba8b85b0ef839060"
+      sha256: feb289df1e5f9ed9522f9fe3d909432a7f7bc76943f16abad09f80a16cd25196
       url: "https://pub.dev"
     source: hosted
-    version: "1.7.0"
+    version: "1.9.0"
   meta:
     dependency: transitive
     description:
@@ -1101,10 +1101,10 @@ packages:
     dependency: "direct main"
     description:
       name: webview_flutter_wkwebview
-      sha256: "0f784be1b080e5b918ef7c2c070c1f4616899fd23f1d001feb74b4978f92bdbc"
+      sha256: acac45e0a8d7beb1d0805521f44842f406c46eb5a69410f53d935e3c62138afc
       url: "https://pub.dev"
     source: hosted
-    version: "3.26.2"
+    version: "3.27.2"
   win32:
     dependency: transitive
     description:
