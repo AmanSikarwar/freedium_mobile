@@ -93,6 +93,9 @@ class FakeWebviewController(super.params) extends PlatformWebViewController {
 
   @override
   Future<String?> getTitle() async => 'Article';
+
+  @override
+  Future<bool> canGoBack() async => false;
 }
 
 class FakeWebviewDelegate(super.params) extends PlatformNavigationDelegate {

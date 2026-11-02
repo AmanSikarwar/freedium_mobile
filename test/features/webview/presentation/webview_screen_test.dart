@@ -4,6 +4,8 @@ import 'package:material_3_expressive/material_3_expressive.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:freedium_mobile/core/services/font_size_service.dart';
+import 'package:freedium_mobile/core/services/clipboard_service.dart';
+import 'package:freedium_mobile/features/shell/presentation/app_shell.dart';
 import 'package:freedium_mobile/features/webview/application/webview_provider.dart';
 import 'package:freedium_mobile/features/settings/application/settings_provider.dart';
 import 'package:freedium_mobile/features/webview/presentation/widgets/article_shimmer.dart';
@@ -20,6 +22,35 @@ class _ScreenFreediumUrlService(super.ref) extends FreediumUrlService {
 }
 
 void main() {
+  testWidgets('back from a root reader restores the app toolbar', (
+    tester,
+  ) async {
+    final prefs = await mockPrefs({'auto_switch_mirror': false});
+    WebViewPlatform.instance = FakeWebviewPlatform();
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWith((ref) async => prefs),
+          clipboardServiceProvider.overrideWith(
+            (ref) => FakeClipboardService(),
+          ),
+          themeInjectorServiceProvider.overrideWithValue(FakeThemeInjector()),
+        ],
+        child: const MaterialApp(
+          home: WebviewScreen(url: TestFixtures.storyUrl),
+        ),
+      ),
+    );
+    for (var i = 0; i < 10; i++) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    await tester.binding.handlePopRoute();
+    await tester.pumpAndSettle();
+    expect(find.byType(AppShell), findsOneWidget);
+    expect(find.text('Home'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('reader toolbar exposes labelled buttons and bookmark actions', (
     tester,
   ) async {
