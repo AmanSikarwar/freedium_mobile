@@ -269,7 +269,11 @@ class _WebviewScreenState()
           }
         }
       },
-      child: _buildWebView(webviewState, webviewNotifier),
+      child: Semantics(
+        namesRoute: true,
+        label: 'Article reader',
+        child: _buildWebView(webviewState, webviewNotifier),
+      ),
     );
   }
 

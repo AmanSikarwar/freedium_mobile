@@ -14,6 +14,7 @@ UI_DUMP_PATH = '/sdcard/freedium-release-smoke.xml'
 HOME_TEXT = 'Read Article'
 ONBOARDING_TEXT = 'Skip'
 READER_TEXT_MARKERS = (
+    'Article reader',
     'Failed to Load Article',
     'Current mirror:',
     'Try Another Mirror',

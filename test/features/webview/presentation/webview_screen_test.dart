@@ -76,6 +76,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
     }
     final page = platform.controller.requests.single.toString();
+    expect(find.bySemanticsLabel('Article reader'), findsOneWidget);
     platform.delegate.start(page);
     platform.delegate.finish(page);
     platform.controller.channels['themeApplied']!.onMessageReceived(
