@@ -97,7 +97,7 @@ class FreediumUrlService(this._ref) {
   Future<String> getActiveUrl() async {
     final settings = _ref.read(settingsProvider).value ?? const SettingsState();
 
-    if (!settings.autoSwitchMirror) {
+    if (!settings.autoSwitchMirror || settings.mirrors.length <= 1) {
       return settings.selectedMirrorUrl;
     }
 
