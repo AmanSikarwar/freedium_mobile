@@ -112,8 +112,8 @@ Built with **Flutter** and featuring **Material You** design, Freedium Mobile of
 
 ### Prerequisites
 
-- **Flutter SDK** 3.47.5 or higher; CI and releases use 3.47.5
-- **Dart SDK** 3.13.0 or higher (included with Flutter; tested with 3.13.4)
+- **Flutter SDK** 3.47.5 or higher; CI and releases use the version in [`.fvmrc`](.fvmrc) (3.47.9)
+- **Dart SDK** 3.13.0 or higher (included with Flutter)
 - Android Studio or VS Code with Flutter extensions
 - Git
 
