@@ -67,7 +67,3 @@ kotlin {
 flutter {
     source = "../.."
 }
-
-dependencies {
-    implementation("com.google.android.material:material:1.14.0")
-}

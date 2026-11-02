@@ -1,14 +1,3 @@
-# Flutter specific rules
--keep class io.flutter.app.** { *; }
--keep class io.flutter.plugin.** { *; }
--keep class io.flutter.util.** { *; }
--keep class io.flutter.view.** { *; }
--keep class io.flutter.** { *; }
--keep class io.flutter.plugins.** { *; }
-
-# Keep Flutter engine
--keep class io.flutter.embedding.** { *; }
-
 # WebView - keep JavaScript interface methods
 -keepclassmembers class * {
     @android.webkit.JavascriptInterface <methods>;
@@ -31,13 +20,6 @@
 
 # Keep dynamic_color classes
 -keep class io.material.materialcolorplugin.** { *; }
-
-# Keep Google Fonts (if using HTTP to fetch fonts)
--keep class com.google.android.gms.** { *; }
-
-# Suppress warnings for missing classes
--dontwarn com.google.android.gms.**
--dontwarn io.flutter.embedding.**
 
 # Keep Kotlin metadata
 -keep class kotlin.Metadata { *; }
