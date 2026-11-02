@@ -24,6 +24,7 @@ jobs:
       contents: read
       attestations: write
       id-token: write
+      artifact-metadata: write
     outputs:
       prerelease: ${{ steps.release_version.outputs.prerelease }}
     env:
