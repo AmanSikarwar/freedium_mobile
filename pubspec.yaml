@@ -12,11 +12,11 @@ dependencies:
   flutter:
     sdk: flutter
   material_ui: ^1.7.0
-  material_3_expressive: ^1.1.7
+  material_3_expressive: ^1.2.0
   material_color_utilities: ^0.13.0
   webview_flutter: ^4.14.1
   webview_flutter_android: ^4.14.1
-  webview_flutter_wkwebview: ^3.26.2
+  webview_flutter_wkwebview: ^3.27.2
   flutter_riverpod: ^3.4.3
   flutter_markdown_plus: ^1.0.12
   http: ^1.6.0
@@ -39,7 +39,7 @@ dev_dependencies:
   shared_preferences_platform_interface: ^2.4.2
   webview_flutter_platform_interface: ^2.15.1
   riverpod_generator: ^4.0.9
-  build_runner: ^2.16.1
+  build_runner: ^2.17.1
   freezed: ^4.0.2
   json_serializable: ^6.14.1
   integration_test:
